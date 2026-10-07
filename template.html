@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{NAME}} — {{ROLE}}</title>
+<style>
+  /* ATS-safe house style (2026): single column, no tables, inline SVG
+     contact icons (ignored by parsers, contact data stays real text),
+     cool-grey accent on section labels only, bold for structure only. */
+  @page { size: A4; margin: 11mm 13mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 9.3pt; line-height: 1.22; color: #111;
+    margin: 0; padding: 0;
+  }
+  header { text-align: center; margin-bottom: 6px; }
+  header h1 { font-size: 17.5pt; margin: 0; letter-spacing: 0.5px; color: #111; }
+  .contact { font-size: 8.8pt; color: #333; margin-top: 3px; }
+  .contact span { white-space: nowrap; }
+  .contact a { color: #333; text-decoration: none; }
+  .icon { width: 10.5px; height: 10.5px; vertical-align: -1.5px; }
+  h2 {
+    font-size: 10.2pt; text-transform: uppercase; letter-spacing: 1.2px;
+    color: #3f3f46; /* cool grey accent — text only */
+    border-bottom: 1px solid #3f3f46;
+    margin: 4px 0 3px; padding-bottom: 1px;
+  }
+  h2:first-of-type { margin-top: 2px; }
+  p { margin: 0 0 2px; }
+  /* Body text justified: flush left AND right edges. */
+  .just, .job li, .project li, .skills p { text-align: justify; }
+  ul { margin: 0 0 2px; padding-left: 14px; }
+  li { margin-bottom: 0; }
+  /* One employer, multiple roles: employer on top, roles underneath.
+     Bullets share ONE left edge across experience AND projects. */
+  .employer { font-weight: 700; }
+  .meta { font-size: 9pt; color: #333; }
+  .employer .meta { font-weight: 400; }
+  .employer .dates, .role-line .dates { float: right; font-size: 9pt; color: #333; }
+  .role-line { margin: 1px 0 1px; clear: both; }
+  .role-line .title { font-weight: 600; }
+  .role-sub { margin-left: 0; }
+  .proj-name { font-weight: 600; }
+  .proj-line { margin: 1px 0 1px; clear: both; }
+  .proj-line .dates { float: right; font-size: 9pt; color: #333; }
+  .live-line { font-size: 9pt; color: #333; margin: 0 0 1px; }
+  .skills p em, em.cat { font-style: normal; font-weight: 600; }
+  .live { color: #3f3f46; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>{{NAME}}</h1>
+  <div class="contact">
+    <span><a href="{{LOCATION_MAP_URL}}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> {{LOCATION}}</a></span> ·
+    <span><a href="mailto:{{EMAIL}}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> {{EMAIL}}</a></span> ·
+    <span><a href="tel:{{PHONE_DIGITS}}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> {{PHONE}}</a></span> ·
+    <span><a href="{{LINKEDIN_URL}}" title="LinkedIn"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a></span> ·
+    <span><a href="{{GITHUB_URL}}" title="GitHub"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></a></span> ·
+    <span><a href="{{SITE_URL}}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> {{SITE}}</a></span>
+  </div>
+</header>
+
+<h2>Professional Summary</h2>
+<p>{{SUMMARY}}</p>
+
+<h2>Skills</h2>
+<div class="skills">
+<p>
+  <em>{{SKILLS_CAT_1}}:</em> {{SKILLS_1}}<br>
+  <em>{{SKILLS_CAT_2}}:</em> {{SKILLS_2}}<br>
+  <em>{{SKILLS_CAT_3}}:</em> {{SKILLS_3}}<br>
+  <em>{{SKILLS_CAT_4}}:</em> {{SKILLS_4}}
+</p>
+</div>
+
+<h2>Certifications</h2>
+<p>{{CERTS_ONE_LINE}}</p>
+
+<h2>Professional Experience</h2>
+
+<div class="job">
+  <div class="employer">{{COMPANY}} <span class="meta">— {{COMPANY_LOCATION}}</span></div>
+  <div class="role-line"><span class="title">{{ROLE_1_TITLE}}</span><span class="dates">{{ROLE_1_DATES}}</span></div>
+  <div class="role-sub">
+    <ul>
+      <li>{{ROLE_1_BULLET_1}}</li>
+      <li>{{ROLE_1_BULLET_2}}</li>
+      <li>{{ROLE_1_BULLET_3}}</li>
+    </ul>
+  </div>
+  <div class="role-line"><span class="title">{{ROLE_2_TITLE}}</span><span class="dates">{{ROLE_2_DATES}}</span></div>
+  <div class="role-sub">
+    <ul>
+      <li>{{ROLE_2_BULLET_1}}</li>
+      <li>{{ROLE_2_BULLET_2}}</li>
+      <li>{{ROLE_2_BULLET_3}}</li>
+    </ul>
+  </div>
+  <div class="role-line"><span class="title">{{ROLE_3_TITLE}}</span><span class="dates">{{ROLE_3_DATES}}</span></div>
+  <div class="role-sub">
+    <ul>
+      <li>{{ROLE_3_BULLET_1}}</li>
+      <li>{{ROLE_3_BULLET_2}}</li>
+      <li>{{ROLE_3_BULLET_3}}</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Projects</h2>
+
+<div class="project">
+  <div class="proj-line"><span class="proj-name">{{PROJECT_1_NAME}}</span> <span class="meta">— {{PROJECT_1_TAGLINE}}</span><span class="dates">{{PROJECT_1_DATES}}</span></div>
+  <div class="live-line">Live: <a class="live" href="{{PROJECT_1_URL}}">{{PROJECT_1_URL_TEXT}}</a></div>
+  <ul>
+    <li>{{PROJECT_1_BULLET_1}}</li>
+    <li>{{PROJECT_1_BULLET_2}}</li>
+  </ul>
+</div>
+
+<div class="project">
+  <div class="proj-line"><span class="proj-name">{{PROJECT_2_NAME}}</span> <span class="meta">— {{PROJECT_2_TAGLINE}}</span><span class="dates">{{PROJECT_2_DATES}}</span></div>
+  <div class="live-line">Live: <a class="live" href="{{PROJECT_2_URL}}">{{PROJECT_2_URL_TEXT}}</a></div>
+  <ul>
+    <li>{{PROJECT_2_BULLET_1}}</li>
+    <li>{{PROJECT_2_BULLET_2}}</li>
+  </ul>
+</div>
+
+<h2>Education</h2>
+<p>{{EDUCATION_1}}</p>
+<p>{{EDUCATION_2}}</p>
+
+<h2>Languages</h2>
+<p>{{LANGUAGES_ONE_LINE}}</p>
+
+</body>
+</html>
