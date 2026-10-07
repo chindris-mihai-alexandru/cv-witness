@@ -1,22 +1,22 @@
 <p align="center">
-  <img src="assets/banner.png" alt="cvwitness — tailored CVs, nothing invented" width="100%">
+  <img src="assets/banner.png" alt="cv-witness — tailored CVs, nothing invented" width="100%">
 </p>
 
-<h1 align="center">cvwitness</h1>
+<h1 align="center">cv-witness</h1>
 
 <p align="center">
   <a href="#verification-principles"><img alt="output ATS-safe" src="https://img.shields.io/badge/output-ATS%E2%80%91safe-3f3f46"></a>
-  <a href="#how-cvwitness-differs"><img alt="anti-fabrication gated" src="https://img.shields.io/badge/anti%E2%80%91fabrication-gated-FF5898"></a>
+  <a href="#how-cv-witness-differs"><img alt="anti-fabrication gated" src="https://img.shields.io/badge/anti%E2%80%91fabrication-gated-FF5898"></a>
   <a href="https://github.com/rezi-io/rezi-mcp"><img alt="Rezi MCP optional" src="https://img.shields.io/badge/Rezi%20MCP-optional-4c8bf5"></a>
-  <a href="https://github.com/Mihai-Codes/cvwitness/blob/main/LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/Mihai-Codes/cvwitness"></a>
-  <a href="https://github.com/Mihai-Codes/cvwitness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen"></a>
+  <a href="https://github.com/Mihai-Codes/cv-witness/blob/main/LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/Mihai-Codes/cv-witness"></a>
+  <a href="https://github.com/Mihai-Codes/cv-witness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen"></a>
 </p>
 
 An [AdaL](https://adalagent.ai/) skill that turns **verified experience** into tailored, ATS-safe, one-page CVs — tailored CVs, nothing invented. Works as a standalone personal skill or in tandem with the [Rezi MCP](https://github.com/rezi-io/rezi-mcp).
 
-## How cvwitness differs
+## How cv-witness differs
 
-The job-hunt skill space is crowded: broad agents scan job boards and fill applications, template packs generate LaTeX and HTML resumes by the dozen. cvwitness is deliberately narrow. It is the CV skill whose output cannot lie, and the gates are structural, not vibes:
+The job-hunt skill space is crowded: broad agents scan job boards and fill applications, template packs generate LaTeX and HTML resumes by the dozen. cv-witness is deliberately narrow. It is the CV skill whose output cannot lie, and the gates are structural, not vibes:
 
 - **Merge-checked citations.** Every open-source PR cited on the CV is verified against the GitHub API first; closed-unmerged work is never presented as merged.
 - **The `[FILL: …]` gate.** A plausible metric that is not confirmed becomes a visible marker, never a guess. Nothing fabricated can slip through, because the rule is in the workflow, not the model's mood.
@@ -40,7 +40,7 @@ If you connect the [Rezi MCP server](https://github.com/rezi-io/rezi-mcp), the s
 ## Install
 
 ```bash
-git clone https://github.com/Mihai-Codes/cvwitness.git ~/.adal/skills/cvwitness
+git clone https://github.com/Mihai-Codes/cv-witness.git ~/.adal/skills/cv-witness
 ```
 
 Requirements: [AdaL CLI](https://adalagent.ai/), a Chrome-family browser (PDF rendering), and the [`gh` CLI](https://cli.github.com/) authenticated for merge-state verification. Claude Code-compatible skill format.
@@ -64,7 +64,7 @@ render.sh        # HTML → PDF via headless Chrome/Brave/Edge/Chromium
 assets/          # banner
 ```
 
-**Intentionally not in this repo:** `foundation.md`, the private master resume the skill reads at runtime. Keep yours at `~/.adal/skills/cvwitness/foundation.md` — it is personal data and must never be committed here.
+**Intentionally not in this repo:** `foundation.md`, the private master resume the skill reads at runtime. Keep yours at `~/.adal/skills/cv-witness/foundation.md` — it is personal data and must never be committed here.
 
 ## Verification principles
 
