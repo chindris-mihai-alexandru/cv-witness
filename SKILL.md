@@ -2,7 +2,7 @@
 name: cv-forge
 description: "Handle job applications end to end: find or review roles with Rezi, compare them with verified resume evidence, and tailor a CV using the user's chosen creation workflow. Use when job searching, assessing fit, or preparing a role-specific CV."
 author: mihai
-version: 0.3.0
+version: 0.3.1
 ---
 
 # Job applications with CV Forge
@@ -44,6 +44,17 @@ When driving Quick Desktop's CV creation, follow the pattern its own sessions us
 4. Export to PDF, then raster the page and count pages. If it spills past one page, tighten spacing/fonts and rebuild before delivering.
 5. Known edge case: Romanian diacritics (`ș`, `ț`) need a Unicode font registered in the document (Arial worked; Helvetica lacks the glyph).
 6. Never tell the user a Quick document exists unless a Quick tool call actually created it.
+
+## ATS parsing rules (verify on every rendered CV)
+
+Greenhouse, Ashby, Workday, and similar parsers rank single-column, live-text documents with standard headings highest. Before delivering:
+
+1. Run `pdftotext` on the output and confirm every section extracts cleanly — no missing content, no `{{placeholders}}`, no `[FILL: …]` markers left.
+2. Standard section headings only (Professional Summary, Skills, Professional Experience, Projects, Education, Languages, Certifications).
+3. Single column, no tables, no text boxes, no content-carrying images; contact icons are inline SVG decorations with the data as real text.
+4. `ul` needs `padding-left: ≥ 17px` with `list-style-position: outside` so disc markers never clip at the left edge.
+5. Consistent date format and tense throughout; keywords mirrored from the posting only where truthful.
+6. Filename: `Firstname-Lastname-CV-Company-Role.pdf`.
 
 ## Safety and privacy
 
