@@ -1,20 +1,30 @@
 <p align="center">
-  <img src="assets/banner.png" alt="cv-forge — evidence-first CV tailoring" width="100%">
+  <img src="assets/banner.png" alt="cvwitness — tailored CVs, nothing invented" width="100%">
 </p>
 
-<h1 align="center">cv-forge</h1>
+<h1 align="center">cvwitness</h1>
 
 <p align="center">
   <a href="#verification-principles"><img alt="output ATS-safe" src="https://img.shields.io/badge/output-ATS%E2%80%91safe-3f3f46"></a>
-  <a href="https://github.com/Mihai-Codes/cv-forge/actions"><img alt="no fabrication" src="https://img.shields.io/badge/anti%E2%80%91fabrication-gated-FF5898"></a>
+  <a href="#how-cvwitness-differs"><img alt="anti-fabrication gated" src="https://img.shields.io/badge/anti%E2%80%91fabrication-gated-FF5898"></a>
   <a href="https://github.com/rezi-io/rezi-mcp"><img alt="Rezi MCP optional" src="https://img.shields.io/badge/Rezi%20MCP-optional-4c8bf5"></a>
-  <a href="https://github.com/Mihai-Codes/cv-forge/blob/main/LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/Mihai-Codes/cv-forge"></a>
-  <a href="https://github.com/Mihai-Codes/cv-forge/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen"></a>
+  <a href="https://github.com/Mihai-Codes/cvwitness/blob/main/LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/Mihai-Codes/cvwitness"></a>
+  <a href="https://github.com/Mihai-Codes/cvwitness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen"></a>
 </p>
 
-An [AdaL](https://adalagent.ai/) skill that turns **verified experience** into tailored, ATS-safe, one-page CVs — evidence-first and fabrication-proof. Works as a standalone personal skill or in tandem with the [Rezi MCP](https://github.com/rezi-io/rezi-mcp).
+An [AdaL](https://adalagent.ai/) skill that turns **verified experience** into tailored, ATS-safe, one-page CVs — tailored CVs, nothing invented. Works as a standalone personal skill or in tandem with the [Rezi MCP](https://github.com/rezi-io/rezi-mcp).
 
-Most CV tailoring fails in one of two ways: it invents polish the candidate cannot back up, or it ships a wall of keywords that parses badly and reads worse. cv-forge takes the opposite stance. Every claim on the page must trace to a source you control: a master resume, a merged pull request, a confirmed fact. When evidence is missing, the skill says so instead of filling the gap.
+## How cvwitness differs
+
+The job-hunt skill space is crowded: broad agents scan job boards and fill applications, template packs generate LaTeX and HTML resumes by the dozen. cvwitness is deliberately narrow. It is the CV skill whose output cannot lie, and the gates are structural, not vibes:
+
+- **Merge-checked citations.** Every open-source PR cited on the CV is verified against the GitHub API first; closed-unmerged work is never presented as merged.
+- **The `[FILL: …]` gate.** A plausible metric that is not confirmed becomes a visible marker, never a guess. Nothing fabricated can slip through, because the rule is in the workflow, not the model's mood.
+- **Mechanical output verification.** Every render is checked with `pdftotext` extraction, a one-page assertion, and a placeholder scan — not "looks good to me".
+- **Data and code are separated.** Your master resume (`foundation.md`) is personal data: gitignored, never committed, never published.
+- **Approval before render.** The tailored content is reviewed with you before any PDF exists.
+
+Most resume skills help you say more. This one helps you say only what is true, and prove it.
 
 ## What it does
 
@@ -25,12 +35,12 @@ Most CV tailoring fails in one of two ways: it invents polish the candidate cann
 
 ## Works with Rezi (optional)
 
-If you connect the [Rezi MCP server](https://github.com/rezi-io/rezi-mcp), the skill can use your Rezi account as a live evidence source: listing and reading your saved resumes, checking the current section schema, and — only with your explicit approval — writing tailored content back to a chosen resume, then reading it back to verify. Reads are the default; writes are always opt-in. Without Rezi, the skill runs entirely on local sources.
+If you connect the [Rezi MCP server](https://github.com/rezi-io/rezi-mcp), the skill can use your Rezi account as a live source: listing and reading your saved resumes, checking the current section schema, and — only with your explicit approval — writing tailored content back to a chosen resume, then reading it back to verify. Reads are the default; writes are always opt-in. Without Rezi, the skill runs entirely on local sources.
 
 ## Install
 
 ```bash
-git clone https://github.com/Mihai-Codes/cv-forge.git ~/.adal/skills/cv-forge
+git clone https://github.com/Mihai-Codes/cvwitness.git ~/.adal/skills/cvwitness
 ```
 
 Requirements: [AdaL CLI](https://adalagent.ai/), a Chrome-family browser (PDF rendering), and the [`gh` CLI](https://cli.github.com/) authenticated for merge-state verification. Claude Code-compatible skill format.
@@ -54,7 +64,7 @@ render.sh        # HTML → PDF via headless Chrome/Brave/Edge/Chromium
 assets/          # banner
 ```
 
-**Intentionally not in this repo:** `foundation.md`, the private master resume the skill reads at runtime. Keep yours at `~/.adal/skills/cv-forge/foundation.md` — it is personal data and must never be committed here.
+**Intentionally not in this repo:** `foundation.md`, the private master resume the skill reads at runtime. Keep yours at `~/.adal/skills/cvwitness/foundation.md` — it is personal data and must never be committed here.
 
 ## Verification principles
 

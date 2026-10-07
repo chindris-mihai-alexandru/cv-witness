@@ -1,11 +1,11 @@
 ---
-name: cv-forge
+name: cvwitness
 description: "Handle job applications end to end: find or review roles with Rezi, compare them with verified resume evidence, and tailor a CV using the user's chosen creation workflow. Use when job searching, assessing fit, or preparing a role-specific CV."
 author: mihai
 version: 0.3.1
 ---
 
-# Job applications with CV Forge
+# Job applications with CV Witness
 
 This is the user's main job-application workflow. Rezi is an optional source for live job listings and resume facts. CV Forge and the user's preferred CV creation workflow produce the application document. Do not replace that workflow with Rezi's resume editor.
 

@@ -1,4 +1,4 @@
-# Contributing to cv-forge
+# Contributing to cvwitness
 
 Thanks for considering a contribution. The skill exists to keep CVs honest, so the contributing rules mirror that goal.
 
