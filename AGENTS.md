@@ -16,3 +16,9 @@ Codex, and any agent that reads AGENTS.md.
   `scripts/jd_overlap.py <cv> <posting>` to catch it mechanically.
 - Render with `render.sh` and pass the mechanical checks in SKILL.md
   (pdftotext extraction, one page, no placeholders) before delivering.
+- Voice corpora and derived references are private style sources, never CV
+  facts. Do not read real sources while developing; tests use synthetic prose.
+  Imports require explicit source selection and human-authorship attestation.
+- Run `python3 -m unittest discover -s tests -q` for the voice workflow.
+  Python 3.11+ and the standard library are sufficient; Git is needed only for
+  checking ignored repository-local storage and the synthetic repository tests.

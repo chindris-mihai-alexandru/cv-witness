@@ -2,3 +2,8 @@
 # Private files - never commit (see README: Verification principles)
 foundation.md
 provenance.md
+# Optional local writing corpus and generated style references
+.voice/
+voice-corpus/
+__pycache__/
+*.py[cod]

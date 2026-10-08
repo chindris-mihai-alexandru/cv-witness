@@ -1,7 +1,7 @@
 {
   "name": "cv-witness",
-  "description": "Tailored, ATS-safe one-page CVs from verified experience - nothing invented, nothing mirrored from the job description.",
-  "version": "0.4.0",
+  "description": "Draft and review CVs from verified experience, with optional private writing-style references.",
+  "version": "0.5.0",
   "author": {
     "name": "cv-witness contributors",
     "url": "https://github.com/chindris-mihai-alexandru/cv-witness"

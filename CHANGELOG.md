@@ -8,6 +8,14 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-09
+
+### Added
+
+- Private, opt-in writing corpus with local Markdown/Cabinet, Sanity export, original-record and author-filtered message imports.
+- Descriptive voice references, optional private excerpts, draft comparison and author-scoped deletion. No model training or live provider connector is included.
+- Source revision handling, duplicate-text suppression, private-output protections and synthetic CLI tests on Linux/macOS with Python 3.11 and 3.14.
+
 ### Changed
 
 - Refined the landing page with a fictional document preview, readable typography, responsive navigation and explicit product limitations.

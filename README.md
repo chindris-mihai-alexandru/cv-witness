@@ -111,13 +111,28 @@ python3 scripts/jd_overlap.py CV.pdf posting.txt
 
 The script compares literal word sequences. `--strict` exits with a failure when any shared run of four or more words is found, including ordinary industry phrases. Use that flag only when this behavior fits your review process; a pass is not an ATS or originality certification.
 
+## Optional candidate voice reference
+
+Use your own selected writing as a private style reference. The local corpus tool accepts text/Markdown (including Cabinet pages), Sanity exports, and a common original-text format for other CMS or memory exports. It filters authors and message roles, excludes labelled generated/quoted content, and measures writing habits without training a model or uploading text.
+
+```sh
+python3 scripts/voice_corpus.py import /absolute/path/to/approved-writing \
+  --format text --author my-author-id --language en --genre blog \
+  --attest-human --dry-run
+```
+
+Confirm that the selected prose is your own human-written original before using `--attest-human`. Remove `--dry-run` only after reviewing the counts. Cabinet agent outputs, memory summaries and benchmark data are not original writing; names of source tools do not establish authorship.
+
+The store defaults to `~/.cv-witness/voice`. Generate a profile, optionally approve private excerpts, and use it to guide a draft while keeping resume facts separate. No exact voice-match score is promised. See the [voice corpus guide](docs/voice-corpus.md) for Sanity fields, message formats, provider limits, privacy, updates and deletion. The voice tool requires Python 3.11+; it has no third-party Python dependencies.
+
 ## Repository structure
 
 ```text
 SKILL.md                 # canonical skill instructions
 AGENTS.md                # short contributor/agent entry point
 .claude-plugin/          # plugin and marketplace manifests
-.github/workflows/       # GitHub Pages deployment
+.github/workflows/       # Pages deployment and synthetic voice tests
+docs/voice-corpus.md      # corpus sources, commands and privacy
 index.html               # landing page, styles and interaction code
 assets/                  # branding, hero atmosphere and rendered sample
 examples/sample-cv.json  # fictional public sample data
@@ -125,6 +140,8 @@ template.html            # local CV layout
 render.sh                # macOS HTML-to-PDF renderer
 scripts/jd_overlap.py    # phrase-overlap review tool
 scripts/render_sample.py # reproduce and validate the public sample
+scripts/voice_corpus.py  # local original-writing corpus and style reference
+tests/test_voice_corpus.py # synthetic corpus and CLI regression tests
 ```
 
 README, contribution guidance, changelog and license stay at the root. The small static site needs no framework, package install or generated bundle.
@@ -145,7 +162,7 @@ The helper fills the canonical template, runs the existing renderer, checks one-
 
 ## Contributing and status
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review. Run the synthetic voice suite with `python3 -m unittest discover -s tests -q`; no personal corpus or connected account is needed.
 
 [Releases](https://github.com/Mihai-Codes/cv-witness/releases) describe shipped versions, [CHANGELOG.md](CHANGELOG.md) records changes, and [roadmap issue #1](https://github.com/Mihai-Codes/cv-witness/issues/1) links the planned work. Implementation issues hold their own scope and acceptance criteria.
 

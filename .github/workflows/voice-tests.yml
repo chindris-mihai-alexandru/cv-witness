@@ -1,0 +1,51 @@
+name: Test private voice corpus
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-tests:
+    name: Synthetic corpus · ${{ matrix.os }} · Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.11", "3.14"]
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Test imports, source preservation and private outputs
+        run: python -m unittest discover -s tests -p "test_voice_corpus.py" -v
+      - name: Check the distributable command
+        run: python scripts/voice_corpus.py --help
+      - name: Ensure tests left no checkout artifacts
+        run: |
+          git diff --exit-code
+          test -z "$(git ls-files --others --exclude-standard)"
+
+  voice-test-gate:
+    name: Voice corpus tests
+    runs-on: ubuntu-latest
+    needs: [synthetic-tests]
+    if: ${{ always() }}
+    steps:
+      - name: Require every synthetic test job to pass
+        env:
+          MATRIX_RESULT: ${{ needs.synthetic-tests.result }}
+        run: |
+          if [ "$MATRIX_RESULT" != "success" ]; then
+            printf 'Synthetic test matrix did not succeed (%s).\n' "$MATRIX_RESULT"
+            exit 1
+          fi
