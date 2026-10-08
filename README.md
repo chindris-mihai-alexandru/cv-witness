@@ -99,7 +99,7 @@ Rezi can provide resume facts from an account you choose. Writes require your ex
 
 Ask your agent:
 
-> "Draft a CV from my verified experience for this role: <posting URL or text>. Keep my voice and show me the wording before exporting."
+> "Draft a CV from my verified experience for this role: [paste the posting URL or text here]. Keep my voice and show me the wording before exporting."
 
 Provide a master resume and any verification notes privately. Review the selected facts, resolve unanswered questions, and approve the draft before rendering. The local workflow saves the final PDF to your configured output directory, which defaults to `~/Downloads/`.
 
