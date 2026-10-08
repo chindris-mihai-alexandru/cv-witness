@@ -11,14 +11,19 @@ Codex, and any agent that reads AGENTS.md.
   anyone, and never treat their contents as public data.
 - Verify any external GitHub PR with `gh pr view <url>` before citing it as
   merged. Closed-unmerged work is never presented as merged.
-- Never mirror the job description: the posting informs emphasis and ordering
-  only. Rewrite any phrasing the CV shares with the posting; run
-  `scripts/jd_overlap.py <cv> <posting>` to catch it mechanically.
-- Render with `render.sh` and pass the mechanical checks in SKILL.md
-  (pdftotext extraction, one page, no placeholders) before delivering.
+- The posting informs emphasis and ordering, not invented facts or copied
+  sentences. Run the shared posting checks; generic industry wording needs
+  context review rather than automatic rewriting.
+- Use `scripts/build_cv.py` for repeatable structured templates or `render.sh`
+  for approved self-contained HTML. Select A4/Letter and an approved page limit;
+  pass `--posting` when present. Failed checks must preserve previous output.
+  Inspect every page and verify facts before delivery.
 - Voice corpora and derived references are private style sources, never CV
   facts. Do not read real sources while developing; tests use synthetic prose.
   Imports require explicit source selection and human-authorship attestation.
-- Run `python3 -m unittest discover -s tests -q` for the voice workflow.
-  Python 3.11+ and the standard library are sufficient; Git is needed only for
-  checking ignored repository-local storage and the synthetic repository tests.
+- Run `CV_WITNESS_REQUIRE_PDF_TESTS=1 python3 -m unittest discover -s tests -q`
+  with Python 3.11+, Chromium and Poppler to include actual export checks.
+  Unit/corpus tests use the standard library and synthetic data.
+- Regenerate public diagrams only from committed, reviewed public sources.
+  Forbidden tracked paths must fail before any content read; do not scan this
+  working tree or private vaults directly. See `docs/exploration.md`.

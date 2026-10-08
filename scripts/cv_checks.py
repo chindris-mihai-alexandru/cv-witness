@@ -67,7 +67,8 @@ def read_text(path, pdf_allowed=True):
     if not path.is_file() or path.stat().st_size > MAX_BYTES:
         raise CheckError("Input is missing, not a regular file, or exceeds 16 MiB.")
     if path.suffix.lower() == ".pdf" and pdf_allowed:
-        return run_tool(["pdftotext", str(path), "-"])
+        # Preserve printed hyphens in wrapped URLs and technical identifiers.
+        return run_tool(["pdftotext", "-layout", str(path), "-"])
     if path.suffix.lower() not in {".txt", ".md", ".html"}:
         raise CheckError("Use a PDF, UTF-8 text or Markdown input as appropriate.")
     try:
@@ -170,7 +171,14 @@ def validate_pdf(path, paper="a4", max_pages=1, expected_text=(), posting=None,
     for number, expected in enumerate(expected_text, 1):
         if not isinstance(expected, str) or not expected.strip():
             raise CheckError("Expected-text contract must contain nonempty strings.")
-        if normalized_text(expected) not in normalized:
+        needle = normalized_text(expected)
+        # Printed links can wrap within a token; collapse extraction whitespace
+        # only for explicit URL expectations, never for arbitrary prose.
+        is_url = bool(re.match(r"^(?:https?://|mailto:|tel:)", needle))
+        present = needle in normalized
+        if is_url:
+            present = re.sub(r"\s+", "", needle) in re.sub(r"\s+", "", normalized)
+        if not present:
             problems.append({"code": "missing_expected_text", "item": number})
     overlap = None
     if posting is not None:

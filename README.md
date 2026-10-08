@@ -113,6 +113,28 @@ The script compares literal word sequences. `--strict` fails on any shared run o
 
 For checked output, use `sh render.sh approved.html output.pdf a4 --posting posting.txt`. The renderer validates a temporary PDF before publishing and preserves previous output if any check fails. See [delivery checks](docs/delivery-checks.md) for page limits, Letter, expected-text contracts and review policy.
 
+## Repeatable career-lane templates
+
+For a local CV with more than the legacy template's fixed role slots, provide approved structured wording:
+
+```sh
+python3 scripts/build_cv.py approved-cv.json output.pdf \
+  --lane engineering --paper a4 --max-pages 1 \
+  --posting selected-posting.txt
+```
+
+Engineering, Operations/Support, Research and Management are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
+
+## Explore the repository
+
+[Open the interactive project guide](https://mihai-codes.github.io/cv-witness/assets/explore/) for the animated workflow, searchable source map, three guided reading tours and eight fictional template PDFs.
+
+<a href="https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html"><img src="assets/explore/workflow-preview.svg" alt="Approved wording passes through the shared layout, temporary PDF and delivery checks. Failure preserves prior output; passing output still needs visual and factual review." width="420"></a>
+
+[Workflow](https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html) · [Source map](https://mihai-codes.github.io/cv-witness/assets/explore/codegraph.html) · [Regeneration and limits](docs/exploration.md)
+
+The README uses a static preview because GitHub cannot run interactive HTML. The full maps have theme and pause controls, work offline, and respect reduced motion. They describe verified workflow and public source structure, not live telemetry; private resumes and writing corpora are excluded.
+
 ## Optional candidate voice reference
 
 Use your own selected writing as a private style reference. The local corpus tool accepts text/Markdown (including Cabinet pages and Obsidian notes), Sanity exports, and a common original-text format for other CMS or memory exports. It filters authors and message roles, excludes labelled generated/quoted content, and measures writing habits without training a model or uploading text.
@@ -133,12 +155,14 @@ The store defaults to `~/.cv-witness/voice`. Generate a profile, optionally appr
 SKILL.md                 # canonical skill instructions
 AGENTS.md                # short contributor/agent entry point
 .claude-plugin/          # plugin and marketplace manifests
-.github/workflows/       # Pages deployment and synthetic voice tests
-docs/voice-corpus.md      # corpus sources, commands and privacy
-index.html               # landing page, styles and interaction code
-assets/                  # branding, hero atmosphere and rendered sample
-examples/sample-cv.json  # fictional public sample data
-template.html            # local CV layout
+.github/workflows/       # Pages deployment and required synthetic/PDF tests
+docs/                   # corpus, delivery, template and exploration guides
+index.html              # landing page, styles and interaction code
+assets/explore/         # interactive maps and fictional template gallery
+examples/               # fictional legacy and structured inputs
+template.html           # legacy manual CV layout
+templates/structured.html # shared repeatable print layout
+scripts/build_cv.py     # structured wording and career-lane ordering
 render.sh                # portable checked-render entrypoint
 scripts/render_cv.py     # Chromium export, validation and atomic publication
 scripts/check_cv.py      # pre-delivery checks for an existing PDF
@@ -146,7 +170,9 @@ scripts/cv_checks.py     # shared PDF/phrase validation
 scripts/jd_overlap.py    # phrase-overlap review tool
 scripts/render_sample.py # reproduce and validate the public sample
 scripts/voice_corpus.py  # local original-writing corpus and style reference
-tests/test_voice_corpus.py # synthetic corpus and CLI regression tests
+scripts/render_exploration.py # public-snapshot diagram regeneration
+scripts/render_template_gallery.py # fictional lane/paper PDF gallery
+tests/                  # synthetic contracts and actual export regressions
 ```
 
 README, contribution guidance, changelog and license stay at the root. The small static site needs no framework, package install or generated bundle.
@@ -167,7 +193,7 @@ The helper fills the canonical template, runs the existing renderer, checks one-
 
 ## Contributing and status
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review. Run the synthetic voice suite with `python3 -m unittest discover -s tests -q`; no personal corpus or connected account is needed.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review. Run `CV_WITNESS_REQUIRE_PDF_TESTS=1 python3 -m unittest discover -s tests -q` with Chromium and Poppler to include actual export checks. All fixtures are synthetic; no personal corpus or connected account is needed.
 
 [Releases](https://github.com/Mihai-Codes/cv-witness/releases) describe shipped versions, [CHANGELOG.md](CHANGELOG.md) records changes, and [roadmap issue #1](https://github.com/Mihai-Codes/cv-witness/issues/1) links the planned work. Implementation issues hold their own scope and acceptance criteria.
 

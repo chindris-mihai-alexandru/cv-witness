@@ -8,14 +8,22 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-09
+
 ### Added
 
+- Repeatable structured CV input and Engineering, Operations/Support, Research and Management ordering presets over one 10.5pt single-column layout.
+- A4/Letter template gallery using fictional data; empty optional sections are omitted without fixed role slots or hidden content trimming.
+- An animated export workflow and interactive public source map with three guided tours, compact mobile controls and regeneration helpers.
 - Shared PDF delivery checks and automatic selected-posting overlap review before publishing a local render.
 - Actual Chromium/Poppler failure-path tests on Linux and macOS, alongside the private corpus tests.
 - Selected Obsidian Markdown imports with comment/embed/callout exclusions and conflicting-author protections.
 
 ### Fixed
 
+- Handle macOS headless browsers that write a completed PDF but linger during shutdown, stopping only the owned render session before full PDF validation.
+- Technical prose is no longer mistaken for CSS resource loading; layout-preserving extraction retains wrapped URL hyphens.
+- Public diagram generation rejects forbidden tracked paths before reading content and stages all outputs before publication.
 - Paper overrides no longer depend on one exact CSS string. Failed exports cannot replace an existing output; temporary browser profiles and HTML are cleaned up.
 - Phrase reports show maximal runs and Unicode-aware metrics, omit private passages by default, and distinguish strict failure from review mode.
 

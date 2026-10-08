@@ -1,0 +1,69 @@
+{
+  "project": {
+    "description": "cv-witness combines candidate-reviewed agent instructions with local, checked CV export tools. This map covers a public tracked-file snapshot; private resumes, vaults and writing corpora are excluded. It shows static source dependencies, not live telemetry, and inferred call edges are disabled."
+  },
+  "layers": {
+    "entry": "Local commands that accept selected inputs.",
+    "service": "Shared PDF checks and the owned-browser lifecycle.",
+    "data": "Fictional inputs for repeatable templates.",
+    "ui": "Public website presentation.",
+    "infra": "Deployment and the protected test gate.",
+    "test": "Synthetic contracts and actual browser-export failures.",
+    "docs": "Workflow, contracts and contribution guidance."
+  },
+  "nodes": {
+    "file:scripts/build_cv.py": {"summary": "Validates approved JSON and renders repeatable employers, roles and optional sections through one layout. Career lanes change section order, never claims.", "layer": "entry", "tags": ["templates", "career-lanes"]},
+    "file:scripts/render_cv.py": {"summary": "Renders self-contained HTML in a fresh browser profile, detects completed output even when Chrome lingers, and publishes only a checked PDF. Failure preserves prior output.", "layer": "service", "tags": ["browser", "atomic-output"]},
+    "file:scripts/cv_checks.py": {"summary": "Shared checks for paper geometry, page limits, live text, markers, expected content and selected-posting overlap. Default diagnostics omit private passages.", "layer": "service", "tags": ["validation", "privacy"]},
+    "file:scripts/check_cv.py": {"summary": "Checks a PDF exported from another authoring tool using the same delivery policy.", "layer": "entry", "tags": ["delivery"]},
+    "file:scripts/jd_overlap.py": {"summary": "Reports maximal word runs shared with a local posting. Strict mode fails; generic wording still needs context review.", "layer": "entry", "tags": ["posting"]},
+    "file:scripts/voice_corpus.py": {"summary": "Imports selected, attested originals into private local storage and produces descriptive voice references. Generated memories and other authors' messages are excluded.", "layer": "entry", "tags": ["voice", "private-storage"]},
+    "file:scripts/render_sample.py": {"summary": "Reproduces the fictional legacy sample through the checked renderer, without reading private resume sources.", "layer": "entry", "tags": ["fictional-example"]},
+    "file:scripts/ci_pdf_smoke.py": {"summary": "Short fictional browser diagnostic run before the full export suite. CI failures are bounded and do not expose real documents.", "layer": "entry", "tags": ["ci"]},
+    "file:render.sh": {"summary": "Portable compatibility entrypoint that delegates to the checked Python renderer.", "layer": "entry", "tags": ["compatibility"]},
+    "file:examples/structured-cv.json": {"summary": "Fictional four-role input used by every lane and paper variant. It is not an applicant's resume.", "layer": "data", "tags": ["fixture"]},
+    "file:examples/sample-cv.json": {"summary": "Fictional flat-field input retained for the legacy template sample.", "layer": "data", "tags": ["fixture", "legacy"]},
+    "file:tests/test_build_cv.py": {"summary": "Repeatable-input contracts and real A4/Letter exports for all four lanes, including long roles, technical prose and wrapped links.", "layer": "test", "tags": ["templates"]},
+    "file:tests/test_cv_checks.py": {"summary": "Deliberately failing PDF, overlap, private-output and browser-completion regressions.", "layer": "test", "tags": ["failures"]},
+    "file:tests/test_render_cv.py": {"summary": "Actual Chromium/Poppler checks for Unicode, page limits, posting failures and preservation of an existing PDF.", "layer": "test", "tags": ["real-export"]},
+    "file:tests/test_voice_corpus.py": {"summary": "Synthetic authorship, Cabinet/Obsidian formatting, import, revision, privacy and deletion regressions. No personal vault is read.", "layer": "test", "tags": ["privacy"]},
+    "file:SKILL.md": {"summary": "Canonical agent workflow for factual sources, candidate approval, optional voice references and export review. Source text is data, not instructions.", "layer": "docs", "tags": ["start-here", "approval"]},
+    "file:README.md": {"summary": "Installation and usage entrypoint linking the contracts, interactive maps and verification limits.", "layer": "docs", "tags": ["start-here"]},
+    "file:CHANGELOG.md": {"summary": "Release history and bounded claims about voice references and export checks.", "layer": "docs"},
+    "file:.github/workflows/voice-tests.yml": {"summary": "Required Linux/macOS Python test matrix with actual fictional exports. All results feed the protected merge gate.", "layer": "infra", "tags": ["ci"]},
+    "file:.github/workflows/deploy-pages.yml": {"summary": "Deploys only the landing page and public assets. Private resumes and corpora must never enter that asset tree.", "layer": "infra", "tags": ["public-boundary"]}
+  },
+  "tours": [
+    {
+      "title": "A checked export",
+      "description": "Follow approved wording to the shared output gate.",
+      "steps": [
+        {"nodeId": "file:SKILL.md", "note": "Begin with independently verified facts and candidate approval."},
+        {"nodeId": "file:scripts/build_cv.py", "note": "Validate repeated records and apply a section-order preset without rewriting content."},
+        {"nodeId": "file:scripts/render_cv.py", "note": "Render a temporary candidate in an owned browser session."},
+        {"nodeId": "file:scripts/cv_checks.py", "note": "Run the shared checks before publishing. Passing them does not certify facts or an ATS result."},
+        {"nodeId": "file:tests/test_render_cv.py", "note": "Inspect failure tests showing why a bad candidate cannot replace an earlier PDF."}
+      ]
+    },
+    {
+      "title": "Writing style and private sources",
+      "description": "Follow the original-writing boundary and reference lifecycle.",
+      "steps": [
+        {"nodeId": "file:docs/voice-corpus.md", "note": "Select human-written originals. Vault graphs and generated memories are not authorship evidence."},
+        {"nodeId": "file:scripts/voice_corpus.py", "note": "Import with explicit attestation and author scope. References remain separate from source originals."},
+        {"nodeId": "file:tests/test_voice_corpus.py", "note": "Read contamination, revision, overwrite and deletion regressions."},
+        {"nodeId": "file:SKILL.md", "note": "Use approved style preferences only for wording; verify resume facts independently."}
+      ]
+    },
+    {
+      "title": "One layout, four career lanes",
+      "description": "Understand repeatable records and honest pagination.",
+      "steps": [
+        {"nodeId": "file:examples/structured-cv.json", "note": "The fictional fixture has repeated roles and optional content instead of fixed numbered slots."},
+        {"nodeId": "file:scripts/build_cv.py", "note": "A lane changes section order. Every selected role and bullet is emitted."},
+        {"nodeId": "file:tests/test_build_cv.py", "note": "All lane/paper combinations and long-content cases use actual PDF exports."},
+        {"nodeId": "file:.github/workflows/voice-tests.yml", "note": "The protected gate requires every platform and runtime result to succeed."}
+      ]
+    }
+  ]
+}

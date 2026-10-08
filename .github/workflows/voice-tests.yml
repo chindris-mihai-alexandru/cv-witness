@@ -59,6 +59,9 @@ jobs:
           python scripts/voice_corpus.py --help
           python scripts/check_cv.py --help
           python scripts/render_cv.py --help
+          python scripts/build_cv.py --help
+          python scripts/render_exploration.py --help
+          python scripts/render_template_gallery.py --help
       - name: Ensure tests left no checkout artifacts
         run: |
           git diff --exit-code

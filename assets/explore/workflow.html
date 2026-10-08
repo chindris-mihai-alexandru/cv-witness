@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<title>Checked CV export — glowmotion</title>
+<style>:root { --bg:#020617;--grid:#0f1b33;--card-bg:#030a1c;--border:#1e293b;--border-hi:#334155;--text:#e2e8f0;--subtext:#64748b;--legend-text:#94a3b8;--footer:#475569;--flow-node-fill:rgba(16,185,129,0.04);--flow-node-stroke:#10b981;--flow-pill-fill:rgba(52,211,153,0.06);--flow-pill-stroke:#34d399;--flow-conn:#10b981;--flow-dot:#34d399;--arch-conn:#64748b;--arch-async:#fb923c;--arch-auth:#fb7185;--arch-dot:#22d3ee;--node-base:#0b1226;--region:#fbbf24;--subnet:#fb7185;--capsule-fill:rgba(16,185,129,0.16);--capsule-text:#34d399;--t-frontend-fill:rgba(8,51,68,0.45);--t-frontend-stroke:#22d3ee;--t-backend-fill:rgba(6,78,59,0.45);--t-backend-stroke:#34d399;--t-database-fill:rgba(76,29,149,0.45);--t-database-stroke:#a78bfa;--t-cloud-fill:rgba(120,53,15,0.35);--t-cloud-stroke:#fbbf24;--t-security-fill:rgba(136,19,55,0.45);--t-security-stroke:#fb7185;--t-bus-fill:rgba(154,52,18,0.35);--t-bus-stroke:#fb923c;--t-external-fill:rgba(30,41,59,0.5);--t-external-stroke:#94a3b8;--accent-0:#22d3ee;--accent-1:#a78bfa;--accent-2:#fb7185;--accent-3:#34d399;--pulse:#34d399; }
+:root[data-theme="light"] { --bg:#e8eef5;--grid:#d3dded;--card-bg:#f8fafc;--border:#cbd5e1;--border-hi:#94a3b8;--text:#0f172a;--subtext:#64748b;--legend-text:#475569;--footer:#94a3b8;--flow-node-fill:rgba(5,150,105,0.08);--flow-node-stroke:#059669;--flow-pill-fill:rgba(4,120,87,0.12);--flow-pill-stroke:#047857;--flow-conn:#059669;--flow-dot:#059669;--arch-conn:#64748b;--arch-async:#ea580c;--arch-auth:#e11d48;--arch-dot:#0891b2;--node-base:#ffffff;--region:#d97706;--subnet:#e11d48;--capsule-fill:rgba(8,145,178,0.12);--capsule-text:#0e7490;--t-frontend-fill:rgba(8,145,178,0.10);--t-frontend-stroke:#0891b2;--t-backend-fill:rgba(5,150,105,0.10);--t-backend-stroke:#059669;--t-database-fill:rgba(124,58,237,0.10);--t-database-stroke:#7c3aed;--t-cloud-fill:rgba(217,119,6,0.10);--t-cloud-stroke:#d97706;--t-security-fill:rgba(225,29,72,0.10);--t-security-stroke:#e11d48;--t-bus-fill:rgba(234,88,12,0.10);--t-bus-stroke:#ea580c;--t-external-fill:rgba(100,116,139,0.10);--t-external-stroke:#64748b;--accent-0:#0891b2;--accent-1:#7c3aed;--accent-2:#e11d48;--accent-3:#059669;--pulse:#059669; }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) { --bg:#e8eef5;--grid:#d3dded;--card-bg:#f8fafc;--border:#cbd5e1;--border-hi:#94a3b8;--text:#0f172a;--subtext:#64748b;--legend-text:#475569;--footer:#94a3b8;--flow-node-fill:rgba(5,150,105,0.08);--flow-node-stroke:#059669;--flow-pill-fill:rgba(4,120,87,0.12);--flow-pill-stroke:#047857;--flow-conn:#059669;--flow-dot:#059669;--arch-conn:#64748b;--arch-async:#ea580c;--arch-auth:#e11d48;--arch-dot:#0891b2;--node-base:#ffffff;--region:#d97706;--subnet:#e11d48;--capsule-fill:rgba(8,145,178,0.12);--capsule-text:#0e7490;--t-frontend-fill:rgba(8,145,178,0.10);--t-frontend-stroke:#0891b2;--t-backend-fill:rgba(5,150,105,0.10);--t-backend-stroke:#059669;--t-database-fill:rgba(124,58,237,0.10);--t-database-stroke:#7c3aed;--t-cloud-fill:rgba(217,119,6,0.10);--t-cloud-stroke:#d97706;--t-security-fill:rgba(225,29,72,0.10);--t-security-stroke:#e11d48;--t-bus-fill:rgba(234,88,12,0.10);--t-bus-stroke:#ea580c;--t-external-fill:rgba(100,116,139,0.10);--t-external-stroke:#64748b;--accent-0:#0891b2;--accent-1:#7c3aed;--accent-2:#e11d48;--accent-3:#059669;--pulse:#059669; } }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace; background: var(--bg);
+         min-height: 100vh; padding: 2rem; color: var(--text); }
+  .container { max-width: 960px; margin: 0 auto; }
+  .header { display: flex; align-items: center; gap: 12px; margin-bottom: 0.4rem; }
+  .pulse-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pulse); }
+  h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+  .capsule { display: inline-block; background: var(--capsule-fill); color: var(--capsule-text);
+    border: 1px solid var(--capsule-text); border-radius: 999px; padding: 0 14px;
+    margin-left: 10px; font-size: 1.05rem; line-height: 1.75; }
+  .sig { margin-left: auto; color: var(--text); font-size: 0.85rem; font-weight: 600;
+    text-shadow: -1px 1px 0 var(--accent-1), 1px -1px 0 var(--accent-0); opacity: 0.85; }
+  .subtitle { color: var(--subtext); font-size: 0.8rem; margin-bottom: 1.5rem; }
+  .diagram-card { border: 1px solid var(--border); border-radius: 12px; position: relative;
+    background: repeating-linear-gradient(0deg, var(--grid) 0 0.5px, transparent 0.5px 40px),
+      repeating-linear-gradient(90deg, var(--grid) 0 0.5px, transparent 0.5px 40px), var(--card-bg);
+    padding: 1.25rem 1rem; }
+  .ctrls { position: absolute; top: 12px; right: 12px; z-index: 2; display: flex; gap: 6px; }
+  .ctrl { background: transparent; border: 1px solid var(--border); color: var(--subtext);
+    border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 11px; cursor: pointer; }
+  .ctrl:hover { color: var(--text); border-color: var(--border-hi); }
+  .footer { color: var(--footer); font-size: 0.7rem; margin-top: 1rem; }
+  .flow { stroke-dasharray: 5 5; }
+  .flow-async { stroke-dasharray: 2 4; }
+  .flow-auth { stroke-dasharray: 4 4; }
+  .halo { opacity: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .flow { animation: dashmove 0.75s linear infinite; }
+    .flow-async { animation: dashasync 0.9s linear infinite; }
+    .flow-auth { animation: dashauth 1.2s linear infinite; }
+    .pulse-dot { animation: pulse 2s ease-in-out infinite; }
+    .halo { animation: halo 4.8s ease-in-out infinite; }
+  }
+  @keyframes dashmove { to { stroke-dashoffset: -10; } }
+  @keyframes dashasync { to { stroke-dashoffset: -12; } }
+  @keyframes dashauth { to { stroke-dashoffset: -8; } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  @keyframes halo { 0%, 20%, 100% { opacity: 0; } 7% { opacity: 0.8; } 13% { opacity: 0.3; } }
+  body.paused .flow, body.paused .flow-async, body.paused .flow-auth,
+  body.paused .pulse-dot, body.paused .halo { animation-play-state: paused; }
+</style>
+
+<style id="project-presentation">
+body { padding:24px; }
+.header { align-items:flex-start; }
+h1 { line-height:1.45; }
+.subtitle { color:var(--legend-text); font-size:.9rem; line-height:1.6; }
+.footer { color:var(--legend-text); font-size:.8rem; line-height:1.7; }
+.ctrls { position:static; justify-content:flex-end; margin-bottom:16px; }
+.ctrl { min-height:44px; color:var(--text); }
+.diagram-card { overflow-x:auto; }
+#flowsvg { display:block; max-width:100%; }
+:root { --subtext:#9cacc4; }
+:root[data-theme="light"] { --subtext:#475569; }
+button:focus-visible,a:focus-visible { outline:3px solid var(--pulse); outline-offset:4px; }
+.map-nav { margin:0 0 18px; font-size:.9rem; }
+.map-nav a { color:var(--text); }
+.mobile-hint { display:none; }
+@media(max-width:600px) {
+  body { padding:16px; }
+  .header { gap:8px; }
+  h1 { font-size:1.1rem; }
+  .capsule { font-size:.8rem; margin-left:4px; }
+  .diagram-card { padding:12px; }
+  #flowsvg { min-width:560px; max-width:none; }
+  .mobile-hint { display:block; color:var(--legend-text); font-size:.8rem; margin-bottom:12px; line-height:1.6; }
+}
+</style>
+
+</head>
+<body>
+<div class="container">
+<nav class="map-nav"><a href="index.html">Back to project exploration</a></nav>
+  <div class="header"><div class="pulse-dot"></div><h1>Checked CV export<span class="capsule">Local workflow</span></h1></div>
+  <p class="subtitle">Follow approved wording through one shared export and validation path.</p>
+  <p class="mobile-hint">Scroll the diagram sideways for readable labels. The full workflow and source guide are also linked from the exploration page.</p>
+  <div class="diagram-card" tabindex="0" aria-label="Scrollable export workflow">
+    <div class="ctrls"><button class="ctrl" id="themeBtn" aria-label="Switch theme">☀ light</button><button class="ctrl" id="pauseBtn" aria-pressed="false">⏸ pause</button></div>
+    <svg id="flowsvg" width="100%" viewBox="0 0 428 814" role="img" aria-roledescription="flowchart" aria-labelledby="flowsvg-title" aria-describedby="flowsvg-desc"><title id="flowsvg-title">Checked CV export animated diagram</title><desc id="flowsvg-desc">Top-down flow diagram; dashed connectors animate in the direction of flow and glowing dots ride the main paths.</desc><defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker><filter id="glow" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="2.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><symbol id="sparkle" viewBox="0 0 12 12"><path d="M6 1v10M1 6h10" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></symbol></defs><g fill="none"><path class="flow" d="M109 74 V102 H116 V126" style="stroke:var(--flow-conn)" stroke-width="1.5" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M109 74 V102 H285.5 V126" style="stroke:var(--flow-conn)" stroke-width="1" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M116 174 V202 H199 V226" style="stroke:var(--flow-conn)" stroke-width="1.5" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M199 274 V326" style="stroke:var(--flow-conn)" stroke-width="1.5" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M285.5 174 V306 H199 V326" style="stroke:var(--flow-conn)" stroke-width="1" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M199 374 V426" style="stroke:var(--flow-conn)" stroke-width="1.5" opacity="0.85" marker-end="url(#arrow)"/><path class="flow-async" d="M289 74 V98 H394 V402 H199 V426" style="stroke:var(--flow-conn)" stroke-width="1" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M199 474 V526" style="stroke:var(--flow-conn)" stroke-width="1.5" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M199 574 V603 H125.5 V628" style="stroke:var(--flow-conn)" stroke-width="1" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M199 574 V602 H289 V626" style="stroke:var(--flow-conn)" stroke-width="1.5" opacity="0.85" marker-end="url(#arrow)"/><path class="flow" d="M289 674 V702 H199 V726" style="stroke:var(--flow-conn)" stroke-width="1.5" opacity="0.85" marker-end="url(#arrow)"/></g><text x="172.2" y="600" style="fill:var(--subtext)" font-size="10">no</text><text x="250" y="599" style="fill:var(--subtext)" font-size="10">yes</text><g><circle r="3.5" class="dot" style="fill:var(--flow-dot)" filter="url(#glow)"><animateMotion id="j0_0" dur="0.9s" begin="0s;j0_2.end+0.6s" fill="freeze" path="M116 174 V202 H199 V226"/></circle><circle r="2.4" class="trail" style="fill:var(--flow-dot)" opacity="0.5"><animateMotion dur="0.9s" begin="j0_0.begin+0.09s" fill="freeze" path="M116 174 V202 H199 V226"/></circle><circle r="1.7" class="trail" style="fill:var(--flow-dot)" opacity="0.28"><animateMotion dur="0.9s" begin="j0_0.begin+0.18s" fill="freeze" path="M116 174 V202 H199 V226"/></circle><circle r="3.5" class="dot" style="fill:var(--flow-dot)" filter="url(#glow)"><animateMotion id="j0_1" dur="0.6s" begin="j0_0.end+0.3s" fill="freeze" path="M199 274 V326"/></circle><circle r="2.4" class="trail" style="fill:var(--flow-dot)" opacity="0.5"><animateMotion dur="0.6s" begin="j0_1.begin+0.09s" fill="freeze" path="M199 274 V326"/></circle><circle r="1.7" class="trail" style="fill:var(--flow-dot)" opacity="0.28"><animateMotion dur="0.6s" begin="j0_1.begin+0.18s" fill="freeze" path="M199 274 V326"/></circle><circle r="3.5" class="dot" style="fill:var(--flow-dot)" filter="url(#glow)"><animateMotion id="j0_2" dur="0.6s" begin="j0_1.end+0.3s" fill="freeze" path="M199 374 V426"/></circle><circle r="2.4" class="trail" style="fill:var(--flow-dot)" opacity="0.5"><animateMotion dur="0.6s" begin="j0_2.begin+0.09s" fill="freeze" path="M199 374 V426"/></circle><circle r="1.7" class="trail" style="fill:var(--flow-dot)" opacity="0.28"><animateMotion dur="0.6s" begin="j0_2.begin+0.18s" fill="freeze" path="M199 374 V426"/></circle><circle r="3.5" class="dot" style="fill:var(--accent-0)" filter="url(#glow)"><animateMotion id="j1_0" dur="0.9s" begin="0s;j1_1.end+0.6s" fill="freeze" path="M199 574 V602 H289 V626"/></circle><circle r="2.4" class="trail" style="fill:var(--accent-0)" opacity="0.5"><animateMotion dur="0.9s" begin="j1_0.begin+0.09s" fill="freeze" path="M199 574 V602 H289 V626"/></circle><circle r="1.7" class="trail" style="fill:var(--accent-0)" opacity="0.28"><animateMotion dur="0.9s" begin="j1_0.begin+0.18s" fill="freeze" path="M199 574 V602 H289 V626"/></circle><circle r="3.5" class="dot" style="fill:var(--accent-0)" filter="url(#glow)"><animateMotion id="j1_1" dur="0.9s" begin="j1_0.end+0.3s" fill="freeze" path="M289 674 V702 H199 V726"/></circle><circle r="2.4" class="trail" style="fill:var(--accent-0)" opacity="0.5"><animateMotion dur="0.9s" begin="j1_1.begin+0.09s" fill="freeze" path="M289 674 V702 H199 V726"/></circle><circle r="1.7" class="trail" style="fill:var(--accent-0)" opacity="0.28"><animateMotion dur="0.9s" begin="j1_1.begin+0.18s" fill="freeze" path="M289 674 V702 H199 V726"/></circle></g><g font-family="'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace" text-anchor="middle"><rect x="34" y="34" width="150" height="40" rx="20" style="fill:var(--flow-pill-fill);stroke:var(--flow-pill-stroke)" stroke-width="1.5"/><text x="109" y="58" style="fill:var(--text)" font-size="13" font-weight="600">Approved wording</text><rect x="44.5" y="130" width="143" height="44" rx="8" style="fill:var(--flow-node-fill);stroke:var(--flow-node-stroke)"/><rect x="44.5" y="130" width="143" height="44" rx="8" fill="none" stroke-width="2" class="halo" filter="url(#glow)" style="stroke:var(--flow-node-stroke);animation-delay:0.0s"/><text x="116" y="147" style="fill:var(--text)" font-size="13" font-weight="500">Structured JSON</text><text x="116" y="164" style="fill:var(--subtext)" font-size="10">Repeatable input</text><rect x="217.5" y="130" width="136" height="44" rx="8" style="fill:var(--flow-node-fill);stroke:var(--flow-node-stroke)"/><text x="285.5" y="147" style="fill:var(--text)" font-size="13" font-weight="500">Approved HTML</text><text x="285.5" y="164" style="fill:var(--subtext)" font-size="10">Legacy option</text><rect x="116" y="230" width="166" height="44" rx="8" style="fill:var(--flow-node-fill);stroke:var(--flow-node-stroke)"/><rect x="116" y="230" width="166" height="44" rx="8" fill="none" stroke-width="2" class="halo" filter="url(#glow)" style="stroke:var(--flow-node-stroke);animation-delay:0.6s"/><text x="199" y="247" style="fill:var(--text)" font-size="13" font-weight="500">Shared print layout</text><text x="199" y="264" style="fill:var(--subtext)" font-size="10">Lane + A4 / Letter</text><rect x="214" y="34" width="150" height="40" rx="20" style="fill:var(--flow-pill-fill);stroke:var(--flow-pill-stroke)" stroke-width="1.5"/><text x="289" y="58" style="fill:var(--text)" font-size="13" font-weight="600">Optional posting</text><rect x="131" y="330" width="136" height="44" rx="8" style="fill:var(--flow-node-fill);stroke:var(--flow-node-stroke)"/><rect x="131" y="330" width="136" height="44" rx="8" fill="none" stroke-width="2" class="halo" filter="url(#glow)" style="stroke:var(--flow-node-stroke);animation-delay:1.2s"/><text x="199" y="347" style="fill:var(--text)" font-size="13" font-weight="500">Temporary PDF</text><text x="199" y="364" style="fill:var(--subtext)" font-size="10">Fresh browser profile</text><rect x="127.5" y="430" width="143" height="44" rx="8" style="fill:var(--flow-node-fill);stroke:var(--flow-node-stroke)"/><rect x="127.5" y="430" width="143" height="44" rx="8" fill="none" stroke-width="2" class="halo" filter="url(#glow)" style="stroke:var(--flow-node-stroke);animation-delay:1.8s"/><text x="199" y="447" style="fill:var(--text)" font-size="13" font-weight="500">Delivery checks</text><text x="199" y="464" style="fill:var(--subtext)" font-size="10">PDF text + posting</text><rect x="136.5" y="530" width="125" height="44" rx="8" style="fill:var(--flow-node-fill);stroke:var(--flow-node-stroke)" stroke-dasharray="4 3"/><rect x="136.5" y="530" width="125" height="44" rx="8" fill="none" stroke-width="2" class="halo" filter="url(#glow)" style="stroke:var(--flow-node-stroke);animation-delay:2.4s"/><text x="199" y="556" style="fill:var(--text)" font-size="13" font-weight="500">Checks pass?</text><rect x="50.5" y="632" width="150" height="40" rx="20" style="fill:var(--flow-pill-fill);stroke:var(--flow-pill-stroke)" stroke-width="1.5"/><text x="125.5" y="656" style="fill:var(--text)" font-size="13" font-weight="600">Keep prior output</text><rect x="230.5" y="630" width="117" height="44" rx="8" style="fill:var(--flow-node-fill);stroke:var(--flow-node-stroke)"/><rect x="230.5" y="630" width="117" height="44" rx="8" fill="none" stroke-width="2" class="halo" filter="url(#glow)" style="stroke:var(--flow-node-stroke);animation-delay:3.0s"/><text x="289" y="647" style="fill:var(--text)" font-size="13" font-weight="500">Checked PDF</text><text x="289" y="664" style="fill:var(--subtext)" font-size="10">Atomic publication</text><rect x="124" y="730" width="150" height="40" rx="20" style="fill:var(--flow-pill-fill);stroke:var(--flow-pill-stroke)" stroke-width="1.5"/><rect x="124" y="730" width="150" height="40" rx="20" fill="none" stroke-width="2" class="halo" filter="url(#glow)" style="stroke:var(--flow-pill-stroke);animation-delay:3.6s"/><text x="199" y="754" style="fill:var(--text)" font-size="13" font-weight="600">Visual/fact review</text></g><use href="#sparkle" x="10" y="8" width="12" height="12" style="color:var(--accent-0)" opacity="0.35"/><use href="#sparkle" x="404" y="12" width="12" height="12" style="color:var(--accent-1)" opacity="0.35"/><use href="#sparkle" x="8" y="790" width="12" height="12" style="color:var(--accent-2)" opacity="0.35"/><use href="#sparkle" x="400" y="786" width="12" height="12" style="color:var(--accent-3)" opacity="0.35"/></svg>
+  </div>
+
+  <p class="footer">Candidate approval precedes rendering. Visual and factual review remain required; export checks do not certify ATS parsing.</p>
+</div>
+
+<script>
+(function () {
+  // Theme toggle — flips [data-theme] on <html>; all colors are CSS vars, so
+  // one attribute change repaints CSS and inline SVG together. Independent of
+  // reduced-motion, so it is wired first and always.
+  var root = document.documentElement;
+  var tbtn = document.getElementById('themeBtn');
+  if (tbtn) {
+    var mq = matchMedia('(prefers-color-scheme: light)');
+    var cur = function () {
+      return root.getAttribute('data-theme') || (mq.matches ? 'light' : 'dark');
+    };
+    var sync = function () {
+      var c = cur();
+      tbtn.textContent = c === 'light' ? '\u263e dark' : '\u2600 light';
+      tbtn.setAttribute('aria-label', 'Switch to ' + (c === 'light' ? 'dark' : 'light') + ' theme');
+    };
+    tbtn.addEventListener('click', function () {
+      root.setAttribute('data-theme', cur() === 'light' ? 'dark' : 'light');
+      sync();
+    });
+    mq.addEventListener && mq.addEventListener('change', sync);
+    sync();
+  }
+  var svg = document.getElementById('flowsvg');
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    document.querySelectorAll('.dot, .trail').forEach(function (d) { d.remove(); });
+    var b = document.getElementById('pauseBtn'); if (b) b.remove(); return;
+  }
+  var btn = document.getElementById('pauseBtn'); if (!btn) return; var paused = false;
+  btn.addEventListener('click', function () {
+    paused = !paused; document.body.classList.toggle('paused', paused);
+    paused ? svg.pauseAnimations() : svg.unpauseAnimations();
+    btn.textContent = paused ? '\u25b6 play' : '\u23f8 pause';
+    btn.setAttribute('aria-pressed', String(paused));
+  });
+})();
+</script>
+
+</body>
+</html>

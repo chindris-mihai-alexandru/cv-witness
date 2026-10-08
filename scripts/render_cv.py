@@ -2,6 +2,7 @@
 """Render self-contained local HTML and check the PDF before publishing it."""
 
 import argparse
+from html.parser import HTMLParser
 import json
 import os
 from pathlib import Path
@@ -68,16 +69,54 @@ def checked_source(path, paper):
     return validate_source(source, paper)
 
 
+class SourcePreflight(HTMLParser):
+    """Inspect markup and style declarations, not the candidate's prose."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.in_style = False
+        self.styles = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in {"script", "iframe", "object", "embed", "base", "link", "meta-refresh"}:
+            raise CheckError("Source HTML must be self-contained, without active markup or external resources.")
+        attributes = dict(attrs)
+        if tag == "meta" and attributes.get("http-equiv", "").lower() == "refresh":
+            raise CheckError("Source HTML cannot redirect the rendering browser.")
+        for key, value in attrs:
+            if key in {"src", "srcset", "poster", "background"} or key.startswith("on"):
+                raise CheckError("Render assets and active attributes must not load external content.")
+            if key == "href" and tag != "a":
+                raise CheckError("Only text links are supported in self-contained render input.")
+            if key == "style" and value:
+                self.styles.append(value)
+        if tag == "style":
+            self.in_style = True
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        if tag == "style":
+            self.in_style = False
+
+    def handle_data(self, data):
+        if self.in_style:
+            self.styles.append(data)
+
+
 def validate_source(source, paper):
     if not isinstance(source, str) or not source.strip() or len(source.encode("utf-8")) > MAX_BYTES:
         raise CheckError("Source HTML must be nonempty UTF-8 text within 16 MiB.")
     if MARKER.search(source):
         raise CheckError("Source HTML contains unresolved template or fill markers.")
-    # The bundled templates are self-contained. Rendering arbitrary remote HTML is out of scope.
-    if re.search(r"<script\b|<(?:iframe|object|embed)\b|<base\b|@import\b|url\s*\(", source, re.I):
-        raise CheckError("Source HTML must be self-contained, without scripts, embeds or CSS resource loads.")
-    if re.search(r"\b(?:src|srcset)\s*=", source, re.I) or re.search(r"<link\b[^>]*rel\s*=\s*[\"']?stylesheet", source, re.I):
-        raise CheckError("External or relative render assets are not supported; use inline text and styles.")
+    # A narrow bundled-template preflight, not a general hostile-HTML sanitizer.
+    preflight = SourcePreflight()
+    preflight.feed(source)
+    preflight.close()
+    if any(re.search(r"@import\b|url\s*\(", style, re.I) for style in preflight.styles):
+        raise CheckError("Source styles must not load external or relative resources.")
     return page_css(source, paper)
 
 

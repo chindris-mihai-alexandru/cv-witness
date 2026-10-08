@@ -415,8 +415,9 @@ in this short example.</pre>
         <ol class="steps">
           <li><h3>Choose the facts</h3><p>Share a posting and a resume source. Your agent selects relevant work, checks supported claims and asks about anything missing.</p></li>
           <li><h3>Review the draft</h3><p>Read the proposed wording before an application file is produced. Fix details that don't sound like you, and resolve any placeholders.</p></li>
-          <li><h3>Inspect the export</h3><p>Use the local PDF workflow or a supported document-authoring path. Check the text and layout before you send it.</p></li>
+          <li><h3>Inspect the export</h3><p>Local templates run text, page and selected-posting checks before publishing. Inspect every page and verify the facts before you send it.</p></li>
         </ol>
+        <p class="demo-note"><a href="assets/explore/">Explore the animated workflow, source map and fictional career-lane PDFs.</a></p>
       </div>
     </section>
 
@@ -426,7 +427,7 @@ in this short example.</pre>
           <span class="eyebrow">Get started</span>
           <h2 id="install-title">Bring it to your agent.</h2>
           <p>Add the skill to your agent, then review your first draft.</p>
-          <p class="requirements">The local PDF renderer currently targets macOS and needs a Chromium-based browser. Review tools use Python 3 and Poppler's <code>pdftotext</code> and <code>pdfinfo</code>. GitHub CLI is used when checking public contributions.</p>
+          <p class="requirements">Local exports are tested on Linux and macOS with Python 3.11+, a Chromium-family browser, and Poppler's <code>pdftotext</code> and <code>pdfinfo</code>. GitHub CLI is used when checking public contributions.</p>
           <p class="requirements">Rezi can be an optional resume source. Amazon Quick is an optional DOCX workflow; the skill does not bundle either service.</p>
         </div>
         <div>
@@ -483,7 +484,11 @@ in this short example.</pre>
           </details>
           <details>
             <summary>Can it sound exactly like me?</summary>
-            <p>You can now build a private style reference from selected original Markdown, Cabinet pages, Sanity exports, or normalized original-text records. It describes writing habits rather than training a model. Generated memories and assistant prose are excluded when labelled; you still confirm authorship and review the draft. Exact voice matching is not promised. Read the <a href="https://github.com/Mihai-Codes/cv-witness/blob/main/docs/voice-corpus.md">voice corpus guide</a>.</p>
+            <p>You can now build a private style reference from selected original Markdown, Cabinet pages, Obsidian notes, Sanity exports, or normalized original-text records. It describes writing habits rather than training a model. Generated memories and assistant prose are excluded when labelled; you still confirm authorship and review the draft. Exact voice matching is not promised. Read the <a href="https://github.com/Mihai-Codes/cv-witness/blob/main/docs/voice-corpus.md">voice corpus guide</a>.</p>
+          </details>
+          <details>
+            <summary>Can I change the layout or paper size?</summary>
+            <p>Engineering, Operations/Support, Research and Management presets reorder complete sections in one single-column layout. Roles repeat without fixed slots, and A4 or Letter is explicit. Longer CVs need an approved page limit; no content is dropped to force a pass. Inspect the <a href="assets/explore/#samples-title">fictional template gallery</a>.</p>
           </details>
           <details>
             <summary>Do I need a paid resume service?</summary>

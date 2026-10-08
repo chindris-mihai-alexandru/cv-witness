@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "note": "Fictional demonstration only. The candidate, employers, education and achievements are invented. Links use reserved example domains.",
+  "header": {
+    "name": "Alex Morgan",
+    "role": "Fictional demonstration profile",
+    "contacts": [
+      {"label": "Location", "value": "Manchester, UK"},
+      {"label": "Email", "value": "alex@example.com", "url": "mailto:alex@example.com"},
+      {"label": "Portfolio", "value": "alex.example", "url": "https://alex.example"}
+    ]
+  },
+  "summary": "I build small reporting tools and write practical notes about how they work. My experience includes release support, application development and coordinating improvements with the people using the software.",
+  "skills": [
+    {"category": "Development", "text": "Python services, SQL queries and TypeScript interfaces for internal tools."},
+    {"category": "Working practices", "text": "Regression tests, support investigation and clear handover notes."}
+  ],
+  "experience": [
+    {
+      "employer": "Sample Studio (fictional)",
+      "location": "Manchester, UK",
+      "roles": [
+        {"title": "Software Engineer", "dates": "2024 - Present", "bullets": ["Built a reporting service with explicit checks for empty inputs and duplicate records."]},
+        {"title": "Junior Software Engineer", "dates": "2022 - 2023", "bullets": ["Added API tests and documented the expected response when imported data was incomplete."]},
+        {"title": "Release Support Associate", "dates": "2021", "bullets": ["Reproduced reported issues and kept release checklists focused on user-visible changes."]},
+        {"title": "Application Support Trainee", "dates": "2020", "bullets": ["Updated setup instructions using questions raised by new colleagues."]}
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Garden Planner (fictional)",
+      "dates": "2024",
+      "description": "A small scheduling example.",
+      "url": "https://example.com/garden",
+      "bullets": ["Recorded watering tasks and made the schedule easy to change."]
+    }
+  ],
+  "education": ["B.Sc. Computer Science, Sample University (fictional), 2020"],
+  "certifications": [],
+  "publications": [
+    {"citation": "Morgan, A. (2024). Practical notes on small reporting tools. Sample Journal (fictional).", "url": "https://example.com/paper"}
+  ],
+  "languages": ["English (native), fictional demonstration only"]
+}

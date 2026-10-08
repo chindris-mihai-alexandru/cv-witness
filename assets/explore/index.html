@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explore cv-witness</title>
+<meta name="description" content="Follow the checked CV export workflow, explore the public source code, and inspect fictional career-lane templates.">
+<style>
+:root { color-scheme: light dark; --bg:#0b0e14; --surface:#151a23; --text:#eff1f6; --muted:#afb9cb; --line:#354052; --accent:#ff82b1; }
+@media (prefers-color-scheme:light) { :root { --bg:#f5f7fb; --surface:#fff; --text:#182232; --muted:#47566d; --line:#c8d0df; --accent:#a71c55; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:16px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+main { width:min(100% - 40px,960px); margin:48px auto 64px; }
+a { color:var(--accent); text-underline-offset:4px; }
+a:focus-visible { outline:3px solid var(--accent); outline-offset:5px; }
+nav { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:48px; }
+h1 { font-size:clamp(30px,5vw,48px); letter-spacing:-1.2px; line-height:1.15; margin:0 0 20px; }
+h2 { font-size:23px; line-height:1.3; margin:0 0 12px; }
+p { margin:0 0 18px; }
+.intro { max-width:740px; color:var(--muted); }
+.cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; margin:36px 0 48px; }
+article { border:1px solid var(--line); border-radius:14px; background:var(--surface); padding:26px; }
+article p { color:var(--muted); }
+.open { display:inline-block; font-weight:650; padding:10px 0; }
+section { margin-top:44px; }
+ul { padding-left:23px; }
+code { font-size:.9em; overflow-wrap:anywhere; }
+.note { color:var(--muted); font-size:14px; }
+@media(max-width:600px) { main { width:calc(100% - 32px); margin-top:28px; } .cards { grid-template-columns:1fr; } nav { margin-bottom:32px; } article { padding:22px; } }
+</style>
+</head>
+<body>
+<main>
+<nav aria-label="Project navigation">
+<a href="../../">cv-witness home</a>
+<a href="https://github.com/Mihai-Codes/cv-witness">Repository</a>
+<a href="https://github.com/Mihai-Codes/cv-witness/blob/main/docs/template-contract.md">Template guide</a>
+</nav>
+<h1>Explore the work behind an export.</h1>
+<p class="intro">Start with the workflow to understand the approval and validation boundaries. Use the source map when you want to find the implementation, its dependencies, or the tests that exercise a failure.</p>
+<div class="cards">
+<article>
+<h2>Checked-export workflow</h2>
+<p>An animated path from approved wording through a shared layout, temporary browser export, posting review and output checks. Failed checks preserve the previous PDF.</p>
+<a class="open" href="workflow.html">Open the workflow</a>
+<p class="note">Light/dark themes, pause control and reduced-motion support. Animation illustrates direction; it is not live telemetry.</p>
+</article>
+<article>
+<h2>Interactive source map</h2>
+<p>Search public files and symbols, inspect dependencies, or follow a guided reading tour. The overview starts small; the explorer reveals detail when you need it.</p>
+<a class="open" href="codegraph.html">Explore the source</a>
+<p class="note">Built from a public tracked-file snapshot. Private resumes and writing corpora are excluded; heuristic call edges are disabled.</p>
+</article>
+</div>
+<section aria-labelledby="reading-title">
+<h2 id="reading-title">A useful reading order</h2>
+<ol>
+<li><code>SKILL.md</code>: candidate approval, factual sources and private voice references.</li>
+<li><code>scripts/build_cv.py</code>: structured input and career-lane section ordering.</li>
+<li><code>scripts/render_cv.py</code>: browser lifecycle and checked output publication.</li>
+<li><code>scripts/cv_checks.py</code>: the shared PDF and posting checks.</li>
+<li><code>tests/</code>: synthetic failures and actual A4/Letter exports.</li>
+</ol>
+</section>
+<section aria-labelledby="samples-title">
+<h2 id="samples-title">Inspect fictional template outputs</h2>
+<p>Engineering, Operations/Support, Research and Management use one single-column layout. Presets change section order, not the candidate's claims. All sample data is fictional.</p>
+<ul>
+<li><a href="samples/engineering-a4.pdf">Engineering · A4</a> / <a href="samples/engineering-letter.pdf">Letter</a></li>
+<li><a href="samples/operations-a4.pdf">Operations/Support · A4</a> / <a href="samples/operations-letter.pdf">Letter</a></li>
+<li><a href="samples/research-a4.pdf">Research · A4</a> / <a href="samples/research-letter.pdf">Letter</a></li>
+<li><a href="samples/management-a4.pdf">Management · A4</a> / <a href="samples/management-letter.pdf">Letter</a></li>
+</ul>
+<p class="note">Text extraction, paper geometry and page limits were checked. These checks do not certify ATS parsing or resume facts; inspect each page and approve the wording before using a real CV.</p>
+</section>
+</main>
+</body>
+</html>
