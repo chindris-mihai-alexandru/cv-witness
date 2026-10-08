@@ -23,6 +23,8 @@ The job-hunt skill space is crowded: broad agents scan job boards and fill appli
 - **Mechanical output verification.** Every render is checked with `pdftotext` extraction, a one-page assertion, and a placeholder scan — not "looks good to me".
 - **Data and code are separated.** Your master resume (`foundation.md`) is personal data: gitignored, never committed, never published.
 - **Approval before render.** The tailored content is reviewed with you before any PDF exists.
+- **No job-description mirroring.** The posting informs emphasis and ordering only; bullets stay in the candidate's own words. Resumes that match a posting too closely are increasingly flagged by screening software and experienced reviewers alike.
+- **Narrow on purpose.** cv-witness is not a job finder; discovery and auto-apply belong to the broad agents. This skill does one thing: craft and verify the CV itself, down to how every element parses.
 
 Most resume skills help you say more. This one helps you say only what is true, and prove it.
 
@@ -61,8 +63,10 @@ The skill gathers the posting, maps it to evidence, proposes the tailored conten
 SKILL.md         # the skill: workflow, rules, safety boundaries
 template.html    # ATS-safe one-page layout (single column, inline SVG contact icons)
 render.sh        # HTML → PDF via headless Chrome/Brave/Edge/Chromium
-assets/          # banner
+assets/          # banner.png + banner.html (its deterministic source)
 ```
+
+Regenerate the banner: `chrome --headless --screenshot=assets/banner.png --window-size=2100,900 assets/banner.html`. The wordmark is real type, not model-drawn, so it can never be misspelled.
 
 **Intentionally not in this repo:** `foundation.md`, the private master resume the skill reads at runtime. Keep yours at `~/.adal/skills/cv-witness/foundation.md` — it is personal data and must never be committed here.
 
@@ -82,9 +86,10 @@ PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Small, focused PRs get t
 
 - [x] Fix bullet-marker clipping and header/footer spacing in the template (2026-10)
 - [x] Merge-state verification for external PRs before citing (2026-10)
-- [ ] Split verification notes out of the master resume into a structured evidence file
-- [ ] Portable paths (currently reflects the author's machine)
-- [ ] Drive a host assistant's native DOCX flow end-to-end (Amazon Quick, in progress)
+- [x] Drive a host assistant's native DOCX flow end-to-end (Amazon Quick, 2026-10-08)
+- [x] Split verification notes into a private evidence file; portable paths via a configuration section (2026-10-08)
+- [ ] Voice-sample support: match the owner's writing style from a personal corpus
+- [ ] JD-overlap lint: a script that flags CV phrasing shared with the posting
 - [ ] Additional render targets and template variants per career lane
 
 ## License

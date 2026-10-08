@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>cv-witness banner</title>
+<style>
+  /* Regenerate: chrome --headless --screenshot=assets/banner.png --window-size=2100,900 assets/banner.html
+     Deterministic on purpose: text is real type, not model-drawn, so the wordmark
+     can never be misspelled. Apple-grade restraint: one glow, one mark, one lockup. */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 2100px; height: 900px; overflow: hidden; }
+  body {
+    background:
+      radial-gradient(ellipse 55% 85% at 50% 52%, #191d25 0%, rgba(13,17,23,0) 68%),
+      #0d1117;
+    display: flex; align-items: center; justify-content: center;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  .lockup { display: flex; align-items: center; gap: 64px; }
+  .mark { width: 168px; height: 168px; }
+  .word {
+    color: #f0f3f6; font-size: 96px; font-weight: 500;
+    letter-spacing: 1px; line-height: 1; font-variant-ligatures: none;
+  }
+  .tag {
+    margin-top: 18px; color: #8b949e;
+    font-size: 32px; font-weight: 400; letter-spacing: 0.3px;
+  }
+</style>
+</head>
+<body>
+  <div class="lockup">
+    <svg class="mark" viewBox="0 0 150 150" fill="none" aria-hidden="true">
+      <polygon points="75,13 128.7,44 128.7,106 75,137 21.3,106 21.3,44"
+               stroke="#FF5898" stroke-width="6.5" stroke-linejoin="round" fill="none"/>
+      <polyline points="50,77 68,95 101,56"
+                stroke="#FF5898" stroke-width="9" stroke-linecap="round"
+                stroke-linejoin="round" fill="none"/>
+    </svg>
+    <div>
+      <div class="word">cv-witness</div>
+      <div class="tag">tailored CVs, nothing invented</div>
+    </div>
+  </div>
+</body>
+</html>
