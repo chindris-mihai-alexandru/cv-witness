@@ -12,7 +12,7 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 - No job-description mirroring gate: the posting informs emphasis and ordering only; CV wording stays in the candidate's voice.
 - Candidate-voice rule: plain, specific, lightly warm; write-like-human discipline; voice-sample support planned.
-- Private `provenance.md`: verification notes, external PR merge states, metrics bank, voice plan — separated from the master resume.
+- Private `provenance.md`: verification notes, external PR merge states, metrics bank, voice plan - separated from the master resume.
 - Personal configuration section for portable paths (CV guide, applications log, output directory).
 - ATS punctuation rules: no em/en dashes or smart quotes; plain hyphens in date ranges (documented top parsing failures).
 - Deterministic banner: `assets/banner.html` rendered by headless Chrome; the wordmark is real type and cannot be misspelled.

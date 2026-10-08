@@ -1,4 +1,4 @@
-# AGENTS.md — cv-witness
+# AGENTS.md - cv-witness
 
 This repository is an agent skill for crafting and verifying job-application
 CVs. It follows the SKILL.md standard and works with AdaL, Claude Code,

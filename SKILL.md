@@ -59,7 +59,7 @@ When driving Quick Desktop's CV creation, follow the pattern its own sessions us
 
 Greenhouse, Ashby, Workday, and similar parsers rank single-column, live-text documents with standard headings highest. Before delivering:
 
-1. Run `pdftotext` on the output and confirm every section extracts cleanly — no missing content, no `{{placeholders}}`, no `[FILL: …]` markers left.
+1. Run `pdftotext` on the output and confirm every section extracts cleanly - no missing content, no `{{placeholders}}`, no `[FILL: …]` markers left.
 2. Standard section headings only (Professional Summary, Skills, Professional Experience, Projects, Education, Languages, Certifications).
 3. Single column, no tables, no text boxes, no content-carrying images; contact icons are inline SVG decorations with the data as real text.
 4. `ul` needs `padding-left: ≥ 17px` with `list-style-position: outside` so disc markers never clip at the left edge.

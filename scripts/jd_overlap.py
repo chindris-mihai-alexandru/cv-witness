@@ -38,7 +38,7 @@ def text_of(path: str) -> str:
 
 def words(text: str) -> list:
     text = unicodedata.normalize("NFKD", text)
-    text = text.lower().replace("’", "'")
+    text = text.lower().replace("'", "'")
     text = re.sub(r"[^a-z0-9]+", " ", text)
     return text.split()
 
