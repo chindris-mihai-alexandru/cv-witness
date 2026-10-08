@@ -119,10 +119,12 @@ AGENTS.md                # short contributor/agent entry point
 .claude-plugin/          # plugin and marketplace manifests
 .github/workflows/       # GitHub Pages deployment
 index.html               # landing page, styles and interaction code
-assets/                  # shared logo, banner source and published image
+assets/                  # branding, hero atmosphere and rendered sample
+examples/sample-cv.json  # fictional public sample data
 template.html            # local CV layout
 render.sh                # macOS HTML-to-PDF renderer
 scripts/jd_overlap.py    # phrase-overlap review tool
+scripts/render_sample.py # reproduce and validate the public sample
 ```
 
 README, contribution guidance, changelog and license stay at the root. The small static site needs no framework, package install or generated bundle.
@@ -130,6 +132,16 @@ README, contribution guidance, changelog and license stay at the root. The small
 `foundation.md` and `provenance.md` are private local sources excluded by `.gitignore`. They are not included in the public repository. Keep them outside public artifacts and remember that your agent provider's data policy applies when it reads them.
 
 The banner source is `assets/banner.html`; it reuses `assets/mark.svg`. Render it in a Chromium browser at 2100 × 900 CSS pixels when updating the published `assets/banner.png`.
+
+## Reproduce the public sample
+
+The website shows a screenshot of [this PDF](assets/sample-cv.pdf), rendered from the unchanged `template.html` using `render.sh`. The candidate, employer, credentials and achievements in [the source fixture](examples/sample-cv.json) are fictional. No private resume data is used.
+
+```sh
+python3 scripts/render_sample.py
+```
+
+The helper fills the canonical template, runs the existing renderer, checks one-page output and text extraction, then creates the PDF and screenshot in `assets/`. The site links to both the PDF and its source; this demonstrates the current layout, not universal ATS compatibility.
 
 ## Contributing and status
 
@@ -139,4 +151,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks a
 
 ## License
 
-[MIT](LICENSE). Personal project by [cv-witness contributors](https://github.com/chindris-mihai-alexandru/cv-witness).
+[MIT](LICENSE)

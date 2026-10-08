@@ -11,6 +11,14 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 ### Changed
 
 - Refined the landing page with a fictional document preview, readable typography, responsive navigation and explicit product limitations.
+- Added glass-inspired navigation and convection-inspired ambient motion with a soft fade into the sample section. Each page load starts with a fresh random arrangement; the lower sections have no lava effect.
+- Added independently levitating chalk-style icons to the reading sections only, with motion controls and reduced-motion support. The header and footer have no chalk icons; the footer has a static bottom glow.
+- Improved paragraph alignment, shortened the desktop subtitle, and added accessible command highlighting.
+- Added smooth native FAQ expansion with an instant reduced-motion fallback.
+- Added an Appearance panel with persistent settings, explicit transparency opt-in, accessibility fallbacks and pausing when hidden or offscreen.
+- Unified section spacing on a responsive scale: 96px between desktop sections and 64px on narrow screens.
+- Replaced the website mockup with an actual rendered sample PDF and screenshot, with fictional public source data and a reproduction command. The wider viewer has readable-size and fit-page modes.
+- Simplified the README license footer to the MIT link.
 - Grouped README badges by host, local tool and optional service; removed the employer-specific footer disclaimer.
 - Shared one logo asset across the website and banner source.
 - Used an explicit root-skill path in the Claude plugin manifest instead of recursive or resource-breaking links.
