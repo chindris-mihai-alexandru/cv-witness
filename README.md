@@ -1,116 +1,142 @@
 <p align="center">
-  <img src="assets/banner.png" alt="cv-witness - tailored CVs, nothing invented" width="100%">
+  <img src="assets/banner.png" alt="cv-witness: tailored CVs, nothing invented" width="100%">
 </p>
 
 <h1 align="center">cv-witness</h1>
 
 <p align="center">
-  <a href="#verification-principles"><img alt="output ATS-safe" src="https://img.shields.io/badge/output-ATS%E2%80%91safe-3f3f46"></a>
-  <a href="#how-cv-witness-differs"><img alt="anti-fabrication gated" src="https://img.shields.io/badge/anti%E2%80%91fabrication-gated-FF5898"></a>
-  <a href="https://github.com/rezi-io/rezi-mcp"><img alt="Rezi MCP optional" src="https://img.shields.io/badge/Rezi%20MCP-optional-4c8bf5"></a>
-  <a href="https://github.com/Mihai-Codes/cv-witness/blob/main/LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/Mihai-Codes/cv-witness"></a>
-  <a href="https://github.com/Mihai-Codes/cv-witness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen"></a>
+  <a href="https://github.com/Mihai-Codes/cv-witness/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Mihai-Codes/cv-witness?color=FF5898&labelColor=1b222c"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2b3542?labelColor=1b222c"></a>
+  <a href="https://github.com/Mihai-Codes/cv-witness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2b3542?labelColor=1b222c"></a>
 </p>
 
 <p align="center">
-  <img alt="AdaL" src="https://img.shields.io/badge/AdaL-agent%20skill-FF5898?style=flat">
-  <img alt="Claude Code" src="https://img.shields.io/badge/Claude_Code-plugin-D97706?style=flat&logo=anthropic&logoColor=white">
-  <img alt="Codex" src="https://img.shields.io/badge/Codex-SKILL.md-412991?style=flat&logo=openai&logoColor=white">
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.9+-3776AB?style=flat&logo=python&logoColor=white">
-  <img alt="Chromium" src="https://img.shields.io/badge/Chromium-headless%20engine-4285F4?style=flat&logo=googlechrome&logoColor=white">
-  <img alt="GitHub CLI" src="https://img.shields.io/badge/GitHub_CLI-v2+-181717?style=flat&logo=github&logoColor=white">
+  <a href="https://mihai-codes.github.io/cv-witness/">Website</a> ·
+  <a href="#install">Install</a> ·
+  <a href="https://github.com/Mihai-Codes/cv-witness/issues/1">Roadmap</a>
 </p>
 
-An [AdaL](https://adalagent.ai/) skill that turns **verified experience** into tailored, ATS-safe, one-page CVs - tailored CVs, nothing invented. Works as a standalone personal skill or in tandem with the [Rezi MCP](https://github.com/rezi-io/rezi-mcp).
+An open-source agent skill for drafting and reviewing a CV from your real experience. It helps you select relevant work, trace claims to a source and inspect the exported document. You review the facts and wording before applying.
 
 ## How cv-witness differs
 
-The job-hunt skill space is crowded: broad agents scan job boards and fill applications, template packs generate LaTeX and HTML resumes by the dozen. cv-witness is deliberately narrow. It is the CV skill whose output cannot lie, and the gates are structural, not vibes:
+The job posting guides emphasis and ordering. It should not become a script for rewriting your history. Describe the work you did, keep accurate technical terms, and flag missing facts instead of inventing them.
 
-- **Merge-checked citations.** Every open-source PR cited on the CV is verified against the GitHub API first; closed-unmerged work is never presented as merged.
-- **The `[FILL: ...]` gate.** A plausible metric that is not confirmed becomes a visible marker, never a guess. Nothing fabricated can slip through, because the rule is in the workflow, not the model's mood.
-- **Mechanical output verification.** Every render is checked with `pdftotext` extraction, a one-page assertion, and a placeholder scan - not "looks good to me".
-- **Data and code are separated.** Your master resume (`foundation.md`) is personal data: gitignored, never committed, never published.
-- **Approval before render.** The tailored content is reviewed with you before any PDF exists.
-- **No job-description mirroring.** The posting informs emphasis and ordering only; bullets stay in the candidate's own words. Resumes that match a posting too closely are increasingly flagged by screening software and experienced reviewers alike.
-- **Narrow on purpose.** cv-witness is not a job finder; discovery and auto-apply belong to the broad agents. This skill does one thing: craft and verify the CV itself, down to how every element parses.
+The skill asks your agent to:
 
-Most resume skills help you say more. This one helps you say only what is true, and prove it.
+- Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged.
+- Use `[FILL: ...]` markers in a draft when information is missing, then resolve or remove them before delivery.
+- Run the phrase-overlap script and review shared wording in context. A common technical phrase is not proof of copying and need not be changed just to avoid a match.
+- Inspect the exported text, page count, placeholders and layout before sending the CV.
 
-## What it does
-
-- **Maps a job posting to your evidence.** Required vs. preferred qualifications are matched against your master resume, your GitHub record, and facts you confirm - with unsupported requirements flagged as gaps, not papered over.
-- **Verifies external claims.** Any open-source PR cited on the CV is merge-checked against the GitHub API first. Closed-unmerged work is never presented as merged.
-- **Tailors without inflating.** Reorders and rephrases what is real; uses `[FILL: ...]` markers where a metric is plausible but unconfirmed, so nothing fabricated slips through.
-- **Renders an ATS-safe PDF.** Single column, no tables, one muted accent, real text everywhere - via headless Chrome.
-
-## Works with Rezi (optional)
-
-If you connect the [Rezi MCP server](https://github.com/rezi-io/rezi-mcp), the skill can use your Rezi account as a live source: listing and reading your saved resumes, checking the current section schema, and - only with your explicit approval - writing tailored content back to a chosen resume, then reading it back to verify. Reads are the default; writes are always opt-in. Without Rezi, the skill runs entirely on local sources.
+These are workflow instructions, not guarantees an agent cannot bypass. The PDF renderer creates a file; it does not automatically certify its contents. No ATS parsing result, ranking, exact voice match or interview is promised.
 
 ## Install
 
-The repo root is the skill: one `SKILL.md`, valid for every host that reads the SKILL.md standard (AdaL, Claude Code, Codex, Copilot, Gemini CLI, and more).
+One root `SKILL.md` is shared by every installation. The template and scripts live beside it, so there are no duplicate skills or recursive directory links.
 
-```bash
-# AdaL
+### AdaL
+
+```sh
 git clone https://github.com/Mihai-Codes/cv-witness.git ~/.adal/skills/cv-witness
-
-# Claude Code - as a plugin (recommended)
-#   /plugin marketplace add Mihai-Codes/cv-witness
-#   /plugin install cv-witness
-# or as a personal skill:
-git clone https://github.com/Mihai-Codes/cv-witness.git ~/.claude/skills/cv-witness
-
-# Codex (reads SKILL.md directories; symlinked folders supported)
-git clone https://github.com/Mihai-Codes/cv-witness.git ~/.agents/skills/cv-witness
-
-# Any agent that reads AGENTS.md - keep the repo checked out and read SKILL.md
 ```
 
-Requirements: an agent host, a Chrome-family browser (PDF rendering), and the [`gh` CLI](https://cli.github.com/) authenticated for merge-state verification and the JD-overlap lint.
+### Claude Code
+
+Send these as two separate commands inside Claude Code:
+
+```text
+/plugin marketplace add Mihai-Codes/cv-witness
+/plugin install cv-witness@cv-witness
+```
+
+The plugin manifest points to the root skill. Alternatively, install a personal skill:
+
+```sh
+git clone https://github.com/Mihai-Codes/cv-witness.git ~/.claude/skills/cv-witness
+```
+
+### Codex
+
+```sh
+git clone https://github.com/Mihai-Codes/cv-witness.git ~/.agents/skills/cv-witness
+```
+
+For other hosts, follow their skill-discovery instructions or ask the agent to read the root `SKILL.md`. If the destination already contains a clone, update it instead of overwriting your private sources.
+
+## Compatibility and tools
+
+### Agent hosts
+
+<p>
+  <a href="https://docs.sylph.ai/"><img alt="AdaL skill" src="https://img.shields.io/badge/AdaL-skill-2b3542?style=flat&labelColor=1b222c"></a>
+  <a href="https://code.claude.com/docs/en/plugins/overview"><img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-2b3542?style=flat&labelColor=1b222c&logo=anthropic&logoColor=white"></a>
+  <a href="https://learn.chatgpt.com/docs/build-skills"><img alt="Codex skill" src="https://img.shields.io/badge/Codex-skill-2b3542?style=flat&labelColor=1b222c"></a>
+</p>
+
+AdaL, Claude Code and Codex have installation paths above. Other hosts may read the same skill format; they are not all independently tested.
+
+### Local tools
+
+<p>
+  <img alt="Python 3" src="https://img.shields.io/badge/Python-3-2b3542?style=flat&labelColor=1b222c&logo=python&logoColor=white">
+  <img alt="Chromium PDF rendering" src="https://img.shields.io/badge/Chromium-PDF-2b3542?style=flat&labelColor=1b222c&logo=googlechrome&logoColor=white">
+  <a href="https://cli.github.com/"><img alt="GitHub CLI" src="https://img.shields.io/badge/GitHub-CLI-2b3542?style=flat&labelColor=1b222c&logo=github&logoColor=white"></a>
+</p>
+
+The current `render.sh` targets macOS and discovers installed Chrome, Brave, Edge or Chromium applications. The overlap script uses Python 3 and `pdftotext` for PDF input. Review instructions also use `pdfinfo`; both PDF tools are supplied by Poppler. Authenticated GitHub CLI is used for contribution checks, not for the overlap script.
+
+### Optional services
+
+<p>
+  <a href="https://github.com/rezi-io/rezi-mcp"><img alt="Rezi MCP optional" src="https://img.shields.io/badge/Rezi%20MCP-optional-2b3542?style=flat&labelColor=1b222c"></a>
+  <img alt="Amazon Quick optional" src="https://img.shields.io/badge/Amazon%20Quick-optional-2b3542?style=flat&labelColor=1b222c">
+</p>
+
+Rezi can provide resume facts from an account you choose. Writes require your explicit approval and a read-back check. Amazon Quick is a documented host-native DOCX workflow, not a bundled integration. Neither service is required for the local PDF path.
 
 ## Usage
 
-Point AdaL at a job posting and ask for a tailored CV. Typical prompts:
+Ask your agent:
 
-> "Tailor my CV for this role: <posting URL or text>"
+> "Draft a CV from my verified experience for this role: <posting URL or text>. Keep my voice and show me the wording before exporting."
 
-> "Find roles matching my profile and draft the top application"
+Provide a master resume and any verification notes privately. Review the selected facts, resolve unanswered questions, and approve the draft before rendering. The local workflow saves the final PDF to your configured output directory, which defaults to `~/Downloads/`.
 
-The skill gathers the posting, maps it to evidence, proposes the tailored content, and renders the final PDF to `~/Downloads/` after you approve the content.
+For phrase review:
+
+```sh
+python3 scripts/jd_overlap.py CV.pdf posting.txt
+```
+
+The script compares literal word sequences. `--strict` exits with a failure when any shared run of four or more words is found, including ordinary industry phrases. Use that flag only when this behavior fits your review process; a pass is not an ATS or originality certification.
 
 ## Repository structure
 
 ```text
-SKILL.md         # the skill: workflow, rules, safety boundaries
-template.html    # ATS-safe one-page layout (single column, inline SVG contact icons)
-render.sh        # HTML → PDF via headless Chrome/Brave/Edge/Chromium
-assets/          # banner.png + banner.html (its deterministic source)
+SKILL.md                 # canonical skill instructions
+AGENTS.md                # short contributor/agent entry point
+.claude-plugin/          # plugin and marketplace manifests
+.github/workflows/       # GitHub Pages deployment
+index.html               # landing page, styles and interaction code
+assets/                  # shared logo, banner source and published image
+template.html            # local CV layout
+render.sh                # macOS HTML-to-PDF renderer
+scripts/jd_overlap.py    # phrase-overlap review tool
 ```
 
-Regenerate the banner: `chrome --headless --screenshot=assets/banner.png --window-size=2100,900 assets/banner.html`. The wordmark is real type, not model-drawn, so it can never be misspelled.
+README, contribution guidance, changelog and license stay at the root. The small static site needs no framework, package install or generated bundle.
 
-**Intentionally not in this repo:** `foundation.md`, the private master resume the skill reads at runtime. Keep yours at `~/.adal/skills/cv-witness/foundation.md` - it is personal data and must never be committed here.
+`foundation.md` and `provenance.md` are private local sources excluded by `.gitignore`. They are not included in the public repository. Keep them outside public artifacts and remember that your agent provider's data policy applies when it reads them.
 
-## Verification principles
+The banner source is `assets/banner.html`; it reuses `assets/mark.svg`. Render it in a Chromium browser at 2100 × 900 CSS pixels when updating the published `assets/banner.png`.
 
-1. Every experience, metric, and credential traces to the master resume, a confirmed fact, or a public artifact.
-2. External PRs and issues are checked for merge/state before they are cited.
-3. Unverifiable but plausible metrics become `[FILL: ...]` markers, never guesses.
-4. Expired or in-progress credentials are labelled as such or omitted.
-5. No ATS scores, rankings, or interview promises - those cannot be honestly guaranteed. Output is instead validated mechanically: `pdftotext` extraction, one-page check, placeholder scan, and the ATS checklist in `SKILL.md`.
+## Contributing and status
 
-## Contributing
+See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review.
 
-PRs welcome - see [CONTRIBUTING.md](CONTRIBUTING.md). Small, focused PRs get the fastest review; non-code contributions (docs, template variants, render targets) are as valuable as code.
-
-## Status
-
-Current release: [v0.4.0](https://github.com/Mihai-Codes/cv-witness/releases/tag/v0.4.0) - full history in [CHANGELOG.md](CHANGELOG.md). What is shipped and what is next lives in the [roadmap issue](https://github.com/Mihai-Codes/cv-witness/issues/1).
+[Releases](https://github.com/Mihai-Codes/cv-witness/releases) describe shipped versions, [CHANGELOG.md](CHANGELOG.md) records changes, and [roadmap issue #1](https://github.com/Mihai-Codes/cv-witness/issues/1) links the planned work. Implementation issues hold their own scope and acceptance criteria.
 
 ## License
 
-[MIT](LICENSE)
-
-Personal project by [cv-witness contributors](https://github.com/chindris-mihai-alexandru/cv-witness). Not affiliated with or endorsed by Amazon, Yubico, Rezi, or any employer named in examples.
+[MIT](LICENSE). Personal project by [cv-witness contributors](https://github.com/chindris-mihai-alexandru/cv-witness).

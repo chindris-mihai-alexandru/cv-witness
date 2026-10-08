@@ -4,9 +4,8 @@
 <meta charset="utf-8">
 <title>cv-witness banner</title>
 <style>
-  /* Regenerate: chrome --headless --screenshot=assets/banner.png --window-size=2100,900 assets/banner.html
-     Deterministic on purpose: text is real type, not model-drawn, so the wordmark
-     can never be misspelled. Apple-grade restraint: one glow, one mark, one lockup. */
+  /* Render in Chromium at 2100 x 900 CSS pixels.
+     The wordmark is text and the logo is shared with the landing page. */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 2100px; height: 900px; overflow: hidden; }
   body {
@@ -30,13 +29,7 @@
 </head>
 <body>
   <div class="lockup">
-    <svg class="mark" viewBox="0 0 150 150" fill="none" aria-hidden="true">
-      <polygon points="75,13 128.7,44 128.7,106 75,137 21.3,106 21.3,44"
-               stroke="#FF5898" stroke-width="6.5" stroke-linejoin="round" fill="none"/>
-      <polyline points="50,77 68,95 101,56"
-                stroke="#FF5898" stroke-width="9" stroke-linecap="round"
-                stroke-linejoin="round" fill="none"/>
-    </svg>
+    <img class="mark" src="mark.svg" width="168" height="168" alt="">
     <div>
       <div class="word">cv-witness</div>
       <div class="tag">tailored CVs, nothing invented</div>

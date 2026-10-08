@@ -6,6 +6,22 @@ All notable changes to cv-witness are documented here. The format follows
 developed in a private history that was purged when the repository went
 public; their entries are consolidated summaries, not commit-for-commit notes.
 
+## [Unreleased]
+
+### Changed
+
+- Refined the landing page with a fictional document preview, readable typography, responsive navigation and explicit product limitations.
+- Grouped README badges by host, local tool and optional service; removed the employer-specific footer disclaimer.
+- Shared one logo asset across the website and banner source.
+- Used an explicit root-skill path in the Claude plugin manifest instead of recursive or resource-breaking links.
+
+### Fixed
+
+- Keyboard navigation and selected-state semantics for installation and example tabs.
+- Clipboard feedback and recovery when automatic copying is denied or unavailable.
+- Installation instructions that incorrectly chained Claude session commands as shell commands.
+- Public claims that overstated automated enforcement, ATS compatibility and exact voice matching.
+
 ## [0.4.0] - 2026-10-08
 
 ### Added

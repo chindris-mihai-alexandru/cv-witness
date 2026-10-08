@@ -6,6 +6,7 @@
     "name": "cv-witness contributors",
     "url": "https://github.com/chindris-mihai-alexandru/cv-witness"
   },
-  "homepage": "https://github.com/Mihai-Codes/cv-witness",
+  "homepage": "https://mihai-codes.github.io/cv-witness/",
+  "skills": ["./"],
   "keywords": ["resume", "cv", "ats", "job-applications", "agent-skills"]
 }
