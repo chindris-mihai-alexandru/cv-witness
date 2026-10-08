@@ -41,11 +41,25 @@ If you connect the [Rezi MCP server](https://github.com/rezi-io/rezi-mcp), the s
 
 ## Install
 
+The repo root is the skill: one `SKILL.md`, valid for every host that reads the SKILL.md standard (AdaL, Claude Code, Codex, Copilot, Gemini CLI, and more).
+
 ```bash
+# AdaL
 git clone https://github.com/Mihai-Codes/cv-witness.git ~/.adal/skills/cv-witness
+
+# Claude Code — as a plugin (recommended)
+#   /plugin marketplace add Mihai-Codes/cv-witness
+#   /plugin install cv-witness
+# or as a personal skill:
+git clone https://github.com/Mihai-Codes/cv-witness.git ~/.claude/skills/cv-witness
+
+# Codex (reads SKILL.md directories; symlinked folders supported)
+git clone https://github.com/Mihai-Codes/cv-witness.git ~/.agents/skills/cv-witness
+
+# Any agent that reads AGENTS.md — keep the repo checked out and read SKILL.md
 ```
 
-Requirements: [AdaL CLI](https://adalagent.ai/), a Chrome-family browser (PDF rendering), and the [`gh` CLI](https://cli.github.com/) authenticated for merge-state verification. Claude Code-compatible skill format.
+Requirements: an agent host, a Chrome-family browser (PDF rendering), and the [`gh` CLI](https://cli.github.com/) authenticated for merge-state verification and the JD-overlap lint.
 
 ## Usage
 
@@ -87,13 +101,15 @@ PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Small, focused PRs get t
 - [x] Fix bullet-marker clipping and header/footer spacing in the template (2026-10)
 - [x] Merge-state verification for external PRs before citing (2026-10)
 - [x] Drive a host assistant's native DOCX flow end-to-end (Amazon Quick, 2026-10-08)
-- [x] Split verification notes into a private evidence file; portable paths via a configuration section (2026-10-08)
+- [x] Split verification notes into a private provenance file; portable paths via a configuration section (2026-10-08)
+- [x] JD-overlap lint: a script that flags CV phrasing shared with the posting (2026-10-08)
+- [x] Claude Code plugin and marketplace manifests; Codex and AGENTS.md support (2026-10-08)
 - [ ] Voice-sample support: match the owner's writing style from a personal corpus
-- [ ] JD-overlap lint: a script that flags CV phrasing shared with the posting
+- [ ] Landing page (GitHub Pages enabled; design pending)
 - [ ] Additional render targets and template variants per career lane
 
 ## License
 
 [MIT](LICENSE)
 
-Personal project by [cv-witness contributors](https://mihai.codes). Not affiliated with or endorsed by Amazon, Yubico, Rezi, or any employer named in examples.
+Personal project by [cv-witness contributors](https://github.com/chindris-mihai-alexandru/cv-witness). Not affiliated with or endorsed by Amazon, Yubico, Rezi, or any employer named in examples.
