@@ -20,11 +20,13 @@ Do not select agent-written notes, AI-edited rewrites, generated summaries, grap
 
 Choose a language and, preferably, a consistent genre. The tool does not automatically identify language or turn casual chat into professional CV prose. English-specific signals are omitted for other declared languages; token and sentence counting remain approximate, particularly for scripts without spaces.
 
-## Local Markdown, including Cabinet
+## Local Markdown, including Cabinet and Obsidian
 
 [Cabinet](https://docs.runcabinet.com/concepts/cabinet-file-format/) stores knowledge pages as Markdown on disk. No Cabinet connector or account export is necessary for an ordinary selected `.md` file.
 
 Cabinet also stores agent-written pages and memory. Its Git history can help you review a page, but a commit author does not prove human authorship of every sentence. Select exact files or a curated writing folder; do not import an entire Cabinet root. Hidden agent/job/history directories and symlinked folders are not followed. Linked Cabinet sources need an explicit non-symlinked original or a reviewed local copy.
+
+[Obsidian vaults](https://obsidian.md/help/file-formats) also keep Markdown on disk. Import selected original `.md` notes with the same command. The importer skips hidden configuration folders, ignores Canvas/Bases files, removes `%% comments %%`, embeds and quoted callouts, and preserves wiki-link display words without following their targets. Graph relations and file location do not prove authorship. Multiple or conflicting author properties are excluded; normalize complex metadata into the original-record format. No personal vault is scanned automatically.
 
 First inspect the proposed import:
 

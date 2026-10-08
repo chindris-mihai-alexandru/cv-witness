@@ -1,92 +1,43 @@
 #!/usr/bin/env python3
-"""JD-overlap lint: flag CV phrasing that is shared with the job posting.
+"""Review literal job-posting overlap. No match is an originality certificate."""
 
-Enforces the cv-witness no-mirroring gate mechanically. The script only
-surfaces shared word runs; a human (or the agent) decides which are generic
-industry phrases and which are copied JD wording that must be rewritten.
-
-Usage:
-    python3 jd_overlap.py <cv-file> <posting-file> [--strict]
-
-    <cv-file>       .pdf (via pdftotext), .txt, or .md
-    <posting-file>  .txt or .md
-    --strict        exit 1 when any run of 4+ words is shared
-
-Exit codes: 0 no 4+ word overlaps, 1 strict violations found, 2 usage error.
-"""
-import re
-import subprocess
+import argparse
+import json
 import sys
-import unicodedata
-from pathlib import Path
+
+if __package__:
+    from .cv_checks import CheckError, overlap_report, read_text, words
+else:
+    from cv_checks import CheckError, overlap_report, read_text, words
 
 
-def text_of(path: str) -> str:
-    p = Path(path)
-    if not p.exists():
-        sys.exit(f"error: {path} not found")
-    if p.suffix.lower() == ".pdf":
-        try:
-            out = subprocess.run(
-                ["pdftotext", str(p), "-"], capture_output=True, text=True, check=True
-            )
-        except FileNotFoundError:
-            sys.exit("error: pdftotext not installed; cannot read PDF input")
-        return out.stdout
-    return p.read_text(encoding="utf-8", errors="ignore")
-
-
-def words(text: str) -> list:
-    text = unicodedata.normalize("NFKD", text)
-    text = text.lower().replace("'", "'")
-    text = re.sub(r"[^a-z0-9]+", " ", text)
-    return text.split()
-
-
-def ngrams(ws: list, n: int) -> set:
-    return {" ".join(ws[i : i + n]) for i in range(len(ws) - n + 1)}
-
-
-def main() -> None:
-    args = [a for a in sys.argv[1:] if a != "--strict"]
-    strict = "--strict" in sys.argv
-    if len(args) != 2:
-        print(__doc__)
-        sys.exit(2)
-    cv_w = words(text_of(args[0]))
-    jd_w = words(text_of(args[1]))
-    if not cv_w or not jd_w:
-        sys.exit("error: one of the inputs extracted to no text")
-
-    hits: dict = {}
-    for n in (6, 5, 4, 3):
-        shared = ngrams(jd_w, n) & ngrams(cv_w, n)
-        if shared:
-            hits[n] = sorted(shared)
-
-    # Keep only the longest runs: a 5-word hit subsumes its 4- and 3-word parts.
-    long_runs = {run for n in (6, 5, 4) for run in hits.get(n, [])}
-    triples = [t for t in hits.get(3, []) if not any(t in run for run in long_runs)]
-
-    print("JD-overlap lint")
-    print(f"  cv: {args[0]}  ({len(cv_w)} words)")
-    print(f"  jd: {args[1]}  ({len(jd_w)} words)")
-    four_plus = [run for n in (6, 5, 4) for run in hits.get(n, [])]
-    if four_plus:
-        print("\n  SHARED RUNS (4+ words) - rewrite these unless they are your own:")
-        for run in four_plus:
-            print(f"    [{run.count(' ') + 1}w] {run}")
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("cv", help="PDF, UTF-8 text or Markdown CV")
+    parser.add_argument("posting", help="UTF-8 text or Markdown posting")
+    parser.add_argument("--strict", action="store_true", help="Fail on any literal run of four or more shared words")
+    parser.add_argument("--show-phrases", action="store_true", help="Opt in to printing shared wording; may expose private text")
+    parser.add_argument("--json", action="store_true", help="Print machine-readable metrics")
+    args = parser.parse_args(argv)
+    try:
+        report = overlap_report(read_text(args.cv), read_text(args.posting, pdf_allowed=False), args.show_phrases)
+    except CheckError as error:
+        print("jd-overlap: " + str(error), file=sys.stderr)
+        return 2
+    failed = args.strict and report["shared_runs"] > 0
+    report["strict"] = args.strict
+    report["passed"] = not failed
+    if args.json:
+        print(json.dumps(report, ensure_ascii=False, indent=2))
     else:
-        print("\n  no shared runs of 4+ words")
-    if triples:
-        print("  shared 3-word runs (usually generic; review):")
-        for run in triples:
-            print(f"    [3w] {run}")
-    if strict and four_plus:
-        print("\nstrict: FAIL")
-        sys.exit(1)
-    print("\nverdict: no verbatim JD-mirroring detected" + (" (strict pass)" if strict else ""))
+        print(f"JD overlap: {report['shared_runs']} shared runs; longest {report['longest_run_words']} words.")
+        for run in report["runs"]:
+            location = f"CV word {run['cv_word']}, posting word {run['posting_word']}: {run['words']} words"
+            print("  " + location + (" | " + run["phrase"] if args.show_phrases else ""))
+        print(report["note"])
+        print("strict: FAIL" if failed else "strict: PASS" if args.strict else "Review shared wording in context before delivery.")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

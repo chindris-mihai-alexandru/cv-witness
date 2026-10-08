@@ -84,7 +84,7 @@ AdaL, Claude Code and Codex have installation paths above. Other hosts may read 
   <a href="https://cli.github.com/"><img alt="GitHub CLI" src="https://img.shields.io/badge/GitHub-CLI-2b3542?style=flat&labelColor=1b222c&logo=github&logoColor=white"></a>
 </p>
 
-The current `render.sh` targets macOS and discovers installed Chrome, Brave, Edge or Chromium applications. The overlap script uses Python 3 and `pdftotext` for PDF input. Review instructions also use `pdfinfo`; both PDF tools are supplied by Poppler. Authenticated GitHub CLI is used for contribution checks, not for the overlap script.
+`render.sh` delegates to the shared Python 3.11+ renderer, which discovers Chromium-family browsers on Linux and macOS. Poppler supplies `pdftotext` and `pdfinfo` for pre-delivery checks; `pdftoppm` creates sample previews. Authenticated GitHub CLI is used for contribution checks, not for rendering or phrase review.
 
 ### Optional services
 
@@ -109,11 +109,13 @@ For phrase review:
 python3 scripts/jd_overlap.py CV.pdf posting.txt
 ```
 
-The script compares literal word sequences. `--strict` exits with a failure when any shared run of four or more words is found, including ordinary industry phrases. Use that flag only when this behavior fits your review process; a pass is not an ATS or originality certification.
+The script compares literal word sequences. `--strict` fails on any shared run of four or more words, including ordinary industry phrases. Reports give counts and positions; `--show-phrases` is an explicit opt-in for private wording. A pass is not an ATS or originality certification.
+
+For checked output, use `sh render.sh approved.html output.pdf a4 --posting posting.txt`. The renderer validates a temporary PDF before publishing and preserves previous output if any check fails. See [delivery checks](docs/delivery-checks.md) for page limits, Letter, expected-text contracts and review policy.
 
 ## Optional candidate voice reference
 
-Use your own selected writing as a private style reference. The local corpus tool accepts text/Markdown (including Cabinet pages), Sanity exports, and a common original-text format for other CMS or memory exports. It filters authors and message roles, excludes labelled generated/quoted content, and measures writing habits without training a model or uploading text.
+Use your own selected writing as a private style reference. The local corpus tool accepts text/Markdown (including Cabinet pages and Obsidian notes), Sanity exports, and a common original-text format for other CMS or memory exports. It filters authors and message roles, excludes labelled generated/quoted content, and measures writing habits without training a model or uploading text.
 
 ```sh
 python3 scripts/voice_corpus.py import /absolute/path/to/approved-writing \
@@ -137,7 +139,10 @@ index.html               # landing page, styles and interaction code
 assets/                  # branding, hero atmosphere and rendered sample
 examples/sample-cv.json  # fictional public sample data
 template.html            # local CV layout
-render.sh                # macOS HTML-to-PDF renderer
+render.sh                # portable checked-render entrypoint
+scripts/render_cv.py     # Chromium export, validation and atomic publication
+scripts/check_cv.py      # pre-delivery checks for an existing PDF
+scripts/cv_checks.py     # shared PDF/phrase validation
 scripts/jd_overlap.py    # phrase-overlap review tool
 scripts/render_sample.py # reproduce and validate the public sample
 scripts/voice_corpus.py  # local original-writing corpus and style reference

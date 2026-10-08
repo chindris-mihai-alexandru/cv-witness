@@ -1,4 +1,4 @@
-name: Test private voice corpus
+name: Test local CV workflows
 
 on:
   pull_request:
@@ -12,8 +12,9 @@ permissions:
 
 jobs:
   synthetic-tests:
-    name: Synthetic corpus · ${{ matrix.os }} · Python ${{ matrix.python }}
+    name: Synthetic workflows · ${{ matrix.os }} · Python ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -21,15 +22,43 @@ jobs:
         python: ["3.11", "3.14"]
     env:
       PYTHONDONTWRITEBYTECODE: "1"
+      CV_WITNESS_REQUIRE_PDF_TESTS: "1"
+      CV_WITNESS_CI_NO_SANDBOX: ${{ matrix.os == 'ubuntu-latest' && '1' || '0' }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-python@v7.0.0
         with:
           python-version: ${{ matrix.python }}
-      - name: Test imports, source preservation and private outputs
-        run: python -m unittest discover -s tests -p "test_voice_corpus.py" -v
-      - name: Check the distributable command
-        run: python scripts/voice_corpus.py --help
+      - name: Install missing PDF tools on Linux
+        if: runner.os == 'Linux'
+        run: |
+          if ! command -v pdfinfo >/dev/null || ! command -v pdftotext >/dev/null || ! command -v pdftoppm >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq poppler-utils
+          fi
+      - name: Install missing PDF tools on macOS
+        if: runner.os == 'macOS'
+        run: |
+          if ! command -v pdfinfo >/dev/null || ! command -v pdftotext >/dev/null || ! command -v pdftoppm >/dev/null; then
+            brew install --quiet poppler
+          fi
+      - name: Require actual browser and PDF tools
+        run: |
+          python -c "from scripts.render_cv import browser_path; print('Browser ready:', browser_path())"
+          command -v pdfinfo
+          command -v pdftotext
+          command -v pdftoppm
+      - name: Bounded fictional browser smoke check
+        timeout-minutes: 2
+        run: python -u scripts/ci_pdf_smoke.py
+      - name: Test fictional exports, strict failures and private corpus handling
+        timeout-minutes: 6
+        run: python -u -m unittest discover -s tests -v
+      - name: Check the distributable commands
+        run: |
+          python scripts/voice_corpus.py --help
+          python scripts/check_cv.py --help
+          python scripts/render_cv.py --help
       - name: Ensure tests left no checkout artifacts
         run: |
           git diff --exit-code

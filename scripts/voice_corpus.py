@@ -119,6 +119,13 @@ def clean_prose(raw, markdown=True):
         if end is None:
             raise CorpusError("Markdown front matter is not closed.")
         lines = lines[end + 1:]
+    content = "\n".join(lines)
+    if markdown:
+        if content.count("%%") % 2:
+            raise CorpusError("Obsidian comment is not closed; review the selected original.")
+        content = re.sub(r"%%.*?%%", " ", content, flags=re.DOTALL)
+        content = re.sub(r"!\[\[[^]]+\]\]", " ", content)
+        lines = content.splitlines()
     result = []
     fence = None
     quoted = False
@@ -356,9 +363,12 @@ def frontmatter_claims(raw):
         raise CorpusError("Markdown front matter is not closed.")
     claims = {}
     for line in lines[1:end]:
-        match = re.match(r"^(author_id|author|authorship|content_kind|language|genre):\s*(.*?)\s*$", line)
+        match = re.match(r"^(author_id|author|authors|authorship|content_kind|language|genre):\s*(.*?)\s*$", line)
         if match:
-            claims[match[1]] = match[2].strip("\"'")
+            key, value = match[1], match[2].strip("\"'")
+            if key in claims:
+                raise CorpusError("Duplicate provenance property in Markdown; normalize it explicitly.")
+            claims[key] = value
     return claims
 
 
@@ -402,8 +412,8 @@ def import_sources(args):
             if claims.get("authorship", "human_original") not in {"human_original", "user_attested_original"} or claims.get("content_kind", "original") != "original":
                 excluded["non_original"] += 1
                 continue
-            declared = claims.get("author_id", claims.get("author", author))
-            if declared != author:
+            declared = [claims[key] for key in ("author_id", "author", "authors") if key in claims]
+            if any(value != author for value in declared):
                 excluded["other_or_mixed_author"] += 1
                 continue
             admit("markdown", str(path), raw, str(path), claims.get("language", language), claims.get("genre", genre))

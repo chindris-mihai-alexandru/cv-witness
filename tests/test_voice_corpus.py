@@ -697,6 +697,40 @@ class CorpusTests(unittest.TestCase):
                 self.assertEqual(result["accepted_records"], 0)
         self.assertFalse(self.store.exists())
 
+    def test_obsidian_comments_and_embeds_are_not_authored_prose(self):
+        raw = PROSE + "\n\n%% " + SECRET + "\n" + SECRET + " %%\n\n![[Other note#Heading|600]]\n![[image.png]]\n\n[[Garden planner|the planner]] helps."
+        prose = voice.clean_prose(raw)
+        self.assertNotIn(SECRET, prose)
+        self.assertNotIn("Other note", prose)
+        self.assertNotIn("image.png", prose)
+        self.assertIn("the planner helps.", prose)
+
+    def test_obsidian_unclosed_comment_fails_closed(self):
+        with self.assertRaises(voice.CorpusError):
+            voice.clean_prose(PROSE + "\n%% hidden comment")
+
+    def test_obsidian_callout_content_is_excluded(self):
+        raw = PROSE + "\n\n> [!quote] Imported quotation\n> " + SECRET + "\ncontinuation of the quoted note\n\n" + OTHER
+        prose = voice.clean_prose(raw)
+        self.assertNotIn(SECRET, prose)
+        self.assertNotIn("continuation", prose)
+        self.assertIn(OTHER, prose)
+
+    def test_obsidian_multiple_author_properties_are_not_overridden(self):
+        for properties in ("authors: [alex, bob]", "authors:\n  - alex\n  - bob", "author_id: alex\nauthor: bob"):
+            with self.subTest(properties=properties):
+                result = self.import_text("---\n" + properties + "\n---\n" + PROSE)
+                self.assertEqual(result["accepted_records"], 0)
+        self.assertFalse(self.store.exists())
+
+    def test_obsidian_vault_metadata_canvas_and_bases_are_not_followed(self):
+        self.write("vault/writing.md", PROSE)
+        self.write("vault/.obsidian/workspace.json", json.dumps({"text": SECRET}))
+        self.write("vault/graph.canvas", json.dumps({"nodes": [{"text": SECRET}]}))
+        self.write("vault/view.base", "description: " + SECRET)
+        result = voice.execute(self.args("import", str(self.root / "vault"), "--format", "text", "--recursive", "--attest-human", "--dry-run"))
+        self.assertEqual(result["accepted_records"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

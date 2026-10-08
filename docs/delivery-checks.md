@@ -1,0 +1,79 @@
+# Checked local CV exports
+
+Date: 2026-10-09
+POC: cv-witness contributors
+TL;DR: Render approved, self-contained HTML to a temporary PDF, run the shared checks, then publish only a passing candidate. A selected posting triggers phrase review automatically.
+
+## Tools and inputs
+
+Use Python 3.11+, a Chromium-family browser and Poppler (`pdfinfo`, `pdftotext`). Linux and macOS are covered by CI. `pdftoppm` is also needed to reproduce the fictional website sample.
+
+The renderer discovers macOS browser applications and common Linux executable names. Set `CV_WITNESS_BROWSER` or pass `--browser` for a different executable. An explicit invalid setting fails instead of silently falling back.
+
+Render only approved, self-contained HTML with one `@page` rule and an explicit size declaration. Scripts, embedded documents and resource-loading attributes/styles are rejected. This preflight supports the bundled templates; it is not a general-purpose hostile-HTML sandbox.
+
+## Render and check before publication
+
+```sh
+sh render.sh approved.html "$HOME/Downloads/Candidate-CV-Company-Role.pdf" a4 \
+  --posting selected-posting.txt \
+  --expected-text "Professional Experience"
+```
+
+The default page limit is one. Choose `letter` explicitly for US Letter and use `--max-pages 2` when two pages have been approved. The same content may occupy different page counts on A4 and Letter. A failing page limit is reported; text is never dropped or silently reduced to make a pass.
+
+`--posting` selects a local `.txt` or `.md` file. Its presence triggers the shared phrase checker; the default policy fails on a literal run of four or more shared words. Common industry wording can match, so inspect the wording privately. Use `--overlap-policy review` only after deciding that these matches should be reviewed rather than blocked. Do not add false distinctions to accurate technical names merely to evade the detector.
+
+The renderer uses a fresh temporary browser profile and a percent-encoded local file URL. The source is unchanged. Temporary HTML/PDF/profile files are removed when the render completes or fails.
+
+A passing PDF is published atomically with owner-only file permissions. An existing output is preserved unless `--replace` is explicitly requested. Even with `--replace`, a failed render or validation cannot replace the previous PDF. Symlinked output paths and directories are rejected; use a canonical destination.
+
+## Check a PDF from another authoring tool
+
+```sh
+python3 scripts/check_cv.py exported.pdf \
+  --paper a4 --max-pages 1 \
+  --expected-text "Professional Experience" \
+  --posting selected-posting.txt
+```
+
+The report checks:
+
+- A readable PDF signature and bounded file size.
+- Every page's A4/Letter geometry and the chosen page limit.
+- Live extracted text on every page, encryption, unresolved fill/template markers and replacement glyphs.
+- Expected text supplied by the caller. Failure reports use item numbers rather than printing private claims.
+- Posting phrase overlap when a posting is selected.
+
+Expected text should include the candidate's name, actual headings and any details that must survive export. A PDF may have readable text and still contain poor wrapping or clipping; inspect every page visually and verify facts against the selected resume sources before delivery.
+
+## Phrase diagnostics
+
+```sh
+python3 scripts/jd_overlap.py CV.pdf selected-posting.txt --strict --json
+```
+
+Reports contain shared-run counts, maximum length and word offsets in both documents. Maximal runs are reported instead of repeatedly listing the smaller pieces of a longer match. Case, punctuation and diacritics are normalized; Unicode letters are retained.
+
+Passages are omitted by default. `--show-phrases` explicitly allows shared wording in the standalone check report; do not use it in public logs with real documents. All checks are local and make no model or account calls.
+
+Exit codes are consistent: **0** passes the selected policy, **1** reports failed checks, and **2** reports an invalid input, missing tool or local operation failure. A non-strict phrase report can contain matches and return 0 because it asks for review. A pass does not establish originality or ATS compatibility.
+
+## Public CI and failure cases
+
+The required test workflow runs on every PR and main push. It uses only fictional documents and temporary outputs. Actual Chromium/Poppler tests must run in CI; missing tools cause failure rather than a skipped green job.
+
+Tests include A4/Letter geometry, Unicode extraction, strict posting failures, expected-text failures, unresolved markers, extra/blank pages, output preservation and a shell invocation from another directory. Tool output and runtime are bounded, with private tool diagnostics discarded.
+
+`--no-sandbox` is available only with `CI=true` for an already isolated runner/container. It is not a recommended local flag or a claim that an environment is isolated merely because a variable is set.
+
+Run locally:
+
+```sh
+CV_WITNESS_REQUIRE_PDF_TESTS=1 PYTHONDONTWRITEBYTECODE=1 \
+  python3 -m unittest discover -s tests -q
+```
+
+Without the require flag, local environments missing browser/PDF tools skip the real-export tests and must not claim to have verified rendering. Corpus and unit tests still run.
+
+The website sample remains fictional. `python3 scripts/render_sample.py --output-dir /canonical/temporary/path` reproduces it without changing the published assets; the helper uses the same checked renderer.

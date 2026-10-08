@@ -8,6 +8,17 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+### Added
+
+- Shared PDF delivery checks and automatic selected-posting overlap review before publishing a local render.
+- Actual Chromium/Poppler failure-path tests on Linux and macOS, alongside the private corpus tests.
+- Selected Obsidian Markdown imports with comment/embed/callout exclusions and conflicting-author protections.
+
+### Fixed
+
+- Paper overrides no longer depend on one exact CSS string. Failed exports cannot replace an existing output; temporary browser profiles and HTML are cleaned up.
+- Phrase reports show maximal runs and Unicode-aware metrics, omit private passages by default, and distinguish strict failure from review mode.
+
 ## [0.5.0] - 2026-10-09
 
 ### Added
