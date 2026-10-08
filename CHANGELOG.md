@@ -50,4 +50,4 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ### Added
 
-- Initial skill: foundation-driven tailoring, single-column ATS-safe template, headless-Chrome renderer, anti-fabrication `[FILL: …]` gate.
+- Initial skill: foundation-driven tailoring, single-column ATS-safe template, headless-Chrome renderer, anti-fabrication `[FILL: ...]` gate.

@@ -12,6 +12,15 @@
   <a href="https://github.com/Mihai-Codes/cv-witness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen"></a>
 </p>
 
+<p align="center">
+  <img alt="AdaL" src="https://img.shields.io/badge/AdaL-agent%20skill-FF5898?style=flat">
+  <img alt="Claude Code" src="https://img.shields.io/badge/Claude_Code-plugin-D97706?style=flat&logo=anthropic&logoColor=white">
+  <img alt="Codex" src="https://img.shields.io/badge/Codex-SKILL.md-412991?style=flat&logo=openai&logoColor=white">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.9+-3776AB?style=flat&logo=python&logoColor=white">
+  <img alt="Chromium" src="https://img.shields.io/badge/Chromium-headless%20engine-4285F4?style=flat&logo=googlechrome&logoColor=white">
+  <img alt="GitHub CLI" src="https://img.shields.io/badge/GitHub_CLI-v2+-181717?style=flat&logo=github&logoColor=white">
+</p>
+
 An [AdaL](https://adalagent.ai/) skill that turns **verified experience** into tailored, ATS-safe, one-page CVs - tailored CVs, nothing invented. Works as a standalone personal skill or in tandem with the [Rezi MCP](https://github.com/rezi-io/rezi-mcp).
 
 ## How cv-witness differs
@@ -19,7 +28,7 @@ An [AdaL](https://adalagent.ai/) skill that turns **verified experience** into t
 The job-hunt skill space is crowded: broad agents scan job boards and fill applications, template packs generate LaTeX and HTML resumes by the dozen. cv-witness is deliberately narrow. It is the CV skill whose output cannot lie, and the gates are structural, not vibes:
 
 - **Merge-checked citations.** Every open-source PR cited on the CV is verified against the GitHub API first; closed-unmerged work is never presented as merged.
-- **The `[FILL: …]` gate.** A plausible metric that is not confirmed becomes a visible marker, never a guess. Nothing fabricated can slip through, because the rule is in the workflow, not the model's mood.
+- **The `[FILL: ...]` gate.** A plausible metric that is not confirmed becomes a visible marker, never a guess. Nothing fabricated can slip through, because the rule is in the workflow, not the model's mood.
 - **Mechanical output verification.** Every render is checked with `pdftotext` extraction, a one-page assertion, and a placeholder scan - not "looks good to me".
 - **Data and code are separated.** Your master resume (`foundation.md`) is personal data: gitignored, never committed, never published.
 - **Approval before render.** The tailored content is reviewed with you before any PDF exists.
@@ -32,7 +41,7 @@ Most resume skills help you say more. This one helps you say only what is true, 
 
 - **Maps a job posting to your evidence.** Required vs. preferred qualifications are matched against your master resume, your GitHub record, and facts you confirm - with unsupported requirements flagged as gaps, not papered over.
 - **Verifies external claims.** Any open-source PR cited on the CV is merge-checked against the GitHub API first. Closed-unmerged work is never presented as merged.
-- **Tailors without inflating.** Reorders and rephrases what is real; uses `[FILL: …]` markers where a metric is plausible but unconfirmed, so nothing fabricated slips through.
+- **Tailors without inflating.** Reorders and rephrases what is real; uses `[FILL: ...]` markers where a metric is plausible but unconfirmed, so nothing fabricated slips through.
 - **Renders an ATS-safe PDF.** Single column, no tables, one muted accent, real text everywhere - via headless Chrome.
 
 ## Works with Rezi (optional)
@@ -88,7 +97,7 @@ Regenerate the banner: `chrome --headless --screenshot=assets/banner.png --windo
 
 1. Every experience, metric, and credential traces to the master resume, a confirmed fact, or a public artifact.
 2. External PRs and issues are checked for merge/state before they are cited.
-3. Unverifiable but plausible metrics become `[FILL: …]` markers, never guesses.
+3. Unverifiable but plausible metrics become `[FILL: ...]` markers, never guesses.
 4. Expired or in-progress credentials are labelled as such or omitted.
 5. No ATS scores, rankings, or interview promises - those cannot be honestly guaranteed. Output is instead validated mechanically: `pdftotext` extraction, one-page check, placeholder scan, and the ATS checklist in `SKILL.md`.
 
