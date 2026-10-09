@@ -140,6 +140,35 @@ class ExplorationTests(unittest.TestCase):
         self.assertNotIn('<script src=', source)
         self.assertNotIn('href="https://', source)
 
+    def test_exploration_pages_declare_valid_favicons(self):
+        for name in ("index.html", "workflow.html", "codegraph.html"):
+            with self.subTest(page=name):
+                source = (ROOT / "assets/explore" / name).read_text(encoding="utf-8")
+                icon = re.search(r'<link\b[^>]*rel="icon"[^>]*href="([^"]+)"', source)
+                self.assertIsNotNone(icon, "Exploration pages must not request a missing root favicon.")
+                if name == "index.html":
+                    self.assertTrue((ROOT / "assets/explore" / icon[1]).is_file())
+                else:
+                    from urllib.parse import unquote
+                    self.assertTrue(icon[1].startswith("data:image/svg+xml,"))
+                    self.assertEqual(unquote(icon[1].split(",", 1)[1]),
+                                     (ROOT / "assets/mark.svg").read_text(encoding="utf-8"))
+
+
+    def test_exploration_prose_aligns_both_edges_without_stretching_last_lines(self):
+        source = (ROOT / "assets/explore/index.html").read_text(encoding="utf-8")
+        rule = re.search(r"p,\s*ol li\s*\{([^}]+)\}", source)
+        self.assertIsNotNone(rule)
+        declarations = dict(part.strip().split(":", 1) for part in rule[1].split(";") if part.strip())
+        self.assertEqual(declarations["text-align"].strip(), "justify")
+        self.assertEqual(declarations["text-align-last"].strip(), "left")
+        self.assertEqual(declarations["hyphens"].strip(), "auto")
+        intro = re.search(r"\.intro\s*\{([^}]+)\}", source)
+        self.assertNotIn("max-width", intro[1])
+        self.assertIn('<html lang="en">', source)
+        code = re.search(r"code\s*\{([^}]+)\}", source)
+        self.assertIn("hyphens:none", code[1])
+
 
 if __name__ == "__main__":
     unittest.main()

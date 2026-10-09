@@ -18,6 +18,7 @@ import sys
 import tarfile
 import tempfile
 import xml.etree.ElementTree as ET
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIVATE = {"foundation.md", "provenance.md", ".voice", "voice-corpus"}
@@ -184,15 +185,20 @@ def replace_once(source, old, new):
     return source.replace(old, new, 1)
 
 
+def embedded_icon():
+    logo = (ROOT / "assets/mark.svg").read_text(encoding="utf-8")
+    return '<link rel="icon" href="data:image/svg+xml,' + quote(logo, safe="") + '" type="image/svg+xml">'
+
+
 def adapt_workflow(source):
-    source = replace_once(source, "</head>", WORKFLOW_STYLE + "\n</head>")
+    source = replace_once(source, "</head>", embedded_icon() + "\n" + WORKFLOW_STYLE + "\n</head>")
     source = replace_once(source, '<div class="container">', '<div class="container">\n<nav class="map-nav"><a href="index.html">Back to project exploration</a></nav>')
     source = replace_once(source, '  <div class="diagram-card">', '  <p class="mobile-hint">Scroll the diagram sideways for readable labels. The full workflow and source guide are also linked from the exploration page.</p>\n  <div class="diagram-card" tabindex="0" aria-label="Scrollable export workflow">')
     return source
 
 
 def adapt_source_map(source):
-    source = replace_once(source, "</head>", MAP_STYLE + "\n</head>")
+    source = replace_once(source, "</head>", embedded_icon() + "\n" + MAP_STYLE + "\n</head>")
     source = replace_once(source, '<div class="panel" id="top">', '<div class="panel" id="top">\n  <a class="map-home" href="index.html">Project guide</a>\n  <button id="railToggle" type="button" aria-controls="rail" aria-expanded="false">Files</button>')
     source = replace_once(source, 'const ovWorthShowing = OV && OV.boxes.length >= 2;', 'const ovWorthShowing = OV && OV.boxes.length >= 2 && OV.edges.length > 0;')
     source = replace_once(source, '  S.tx = 268;\n  S.ty = 96;', '  S.tx = innerWidth <= 700 ? 28 : 268;\n  S.ty = innerWidth <= 700 ? document.getElementById("top").getBoundingClientRect().bottom + 32 : 96;')
