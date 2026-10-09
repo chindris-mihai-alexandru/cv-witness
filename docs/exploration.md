@@ -21,7 +21,7 @@ For a noninteractive reading order, use the exploration landing page or the cont
 
 ## README and offline use
 
-GitHub READMEs cannot execute an interactive HTML page. The README displays a static workflow preview linked to the full Pages view. The actual HTML artifacts are self-contained and can also be opened from a local clone:
+GitHub READMEs cannot execute an interactive HTML page. The static workflow preview has an opaque light background and explicit dark labels so it stays readable in either GitHub theme. It links to the interactive workflow, which retains its light/dark switch. The actual HTML artifacts are self-contained and can also be opened from a local clone:
 
 ```text
 assets/explore/index.html
@@ -30,6 +30,14 @@ assets/explore/codegraph.html
 ```
 
 The landing page links eight fictional A4/Letter template PDFs. A preview is not the application document; the linked PDFs contain live text and were exported through the shared checks.
+
+Refresh only the README image from the existing checked workflow without installing the diagram plugins:
+
+```sh
+python3 scripts/render_exploration.py --preview-only
+```
+
+This changes the static preview only. It preserves the generated labels and connector geometry, removes motion and theme dependencies, and replaces the image only after conversion succeeds.
 
 ## Regenerate after source changes
 
@@ -56,7 +64,3 @@ Commit source changes before regenerating so the embedded revision corresponds t
 No personal Cabinet or Obsidian vault, private resume, voice corpus, model account or provider API is used to build the public diagrams. Keep sensitive files untracked and out of `assets/`; GitHub Pages publishes that asset tree.
 
 A Git snapshot is not a general secret scanner. Public tracked content still needs review before it is mapped or published.
-
-## Media choice
-
-The finger-frame effect was reviewed and left out: it restyles a hand-gesture video and composites the result inside the fingers. It requires source footage and a paid external media operation, and would not help someone understand this repository.

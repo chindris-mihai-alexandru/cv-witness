@@ -64,6 +64,8 @@ git clone https://github.com/Mihai-Codes/cv-witness.git ~/.agents/skills/cv-witn
 
 For other hosts, follow their skill-discovery instructions or ask the agent to read the root `SKILL.md`. If the destination already contains a clone, update it instead of overwriting your private sources.
 
+Before first use, review the personal configuration and authoring preferences in `SKILL.md`. Set your own CV-guide, application-log and output paths; the owner's Cabinet paths and Quick preference are examples, not requirements for your setup.
+
 ## Compatibility and tools
 
 ### Agent hosts
@@ -79,7 +81,7 @@ AdaL, Claude Code and Codex have installation paths above. Other hosts may read 
 ### Local tools
 
 <p>
-  <img alt="Python 3" src="https://img.shields.io/badge/Python-3-2b3542?style=flat&labelColor=1b222c&logo=python&logoColor=white">
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/Python-3.11%2B-2b3542?style=flat&labelColor=1b222c&logo=python&logoColor=white">
   <img alt="Chromium PDF rendering" src="https://img.shields.io/badge/Chromium-PDF-2b3542?style=flat&labelColor=1b222c&logo=googlechrome&logoColor=white">
   <a href="https://cli.github.com/"><img alt="GitHub CLI" src="https://img.shields.io/badge/GitHub-CLI-2b3542?style=flat&labelColor=1b222c&logo=github&logoColor=white"></a>
 </p>
@@ -97,11 +99,13 @@ Rezi can provide resume facts from an account you choose. Writes require your ex
 
 ## Usage
 
+Run the command examples from your cloned skill directory. The Python tools use the standard library; PDF export also needs a Chromium-family browser and Poppler. Keep real inputs and outputs outside the public `examples/` and `assets/` folders.
+
 Ask your agent:
 
 > "Draft a CV from my verified experience for this role: [paste the posting URL or text here]. Keep my voice and show me the wording before exporting."
 
-Provide a master resume and any verification notes privately. Review the selected facts, resolve unanswered questions, and approve the draft before rendering. The local workflow saves the final PDF to your configured output directory, which defaults to `~/Downloads/`.
+Provide a master resume and any verification notes privately. Review the selected facts, resolve unanswered questions, and approve the draft before rendering. The agent workflow defaults to `~/Downloads/`; standalone build and render commands require an explicit output path.
 
 For phrase review:
 
@@ -111,7 +115,18 @@ python3 scripts/jd_overlap.py CV.pdf posting.txt
 
 The script compares literal word sequences. `--strict` fails on any shared run of four or more words, including ordinary industry phrases. Reports give counts and positions; `--show-phrases` is an explicit opt-in for private wording. A pass is not an ATS or originality certification.
 
-For checked output, use `sh render.sh approved.html output.pdf a4 --posting posting.txt`. The renderer validates a temporary PDF before publishing and preserves previous output if any check fails. See [delivery checks](docs/delivery-checks.md) for page limits, Letter, expected-text contracts and review policy.
+For checked output, use `sh render.sh approved.html output.pdf a4 --posting posting.txt`. The renderer validates a temporary PDF before publishing and preserves previous output if any check fails. Selecting a posting uses strict overlap checks by default; choose `--overlap-policy review` explicitly when shared generic wording should be reviewed rather than blocked.
+
+For a PDF exported from another authoring tool:
+
+```sh
+python3 scripts/check_cv.py exported.pdf \
+  --paper a4 --max-pages 1 \
+  --expected-text "Professional Experience" \
+  --posting posting.txt
+```
+
+Add the candidate's name and other critical text as further `--expected-text` arguments. Exit codes are `0` for a policy pass, `1` for failed checks and `2` for input or tool errors. See [delivery checks](docs/delivery-checks.md) for Letter, page limits and privacy-safe diagnostics.
 
 ## Repeatable career-lane templates
 
@@ -129,11 +144,13 @@ Engineering, Operations/Support, Research and Management are section-order prese
 
 [Open the interactive project guide](https://mihai-codes.github.io/cv-witness/assets/explore/) for the animated workflow, searchable source map, three guided reading tours and eight fictional template PDFs.
 
-<a href="https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html"><img src="assets/explore/workflow-preview.svg" alt="Approved wording passes through the shared layout, temporary PDF and delivery checks. Failure preserves prior output; passing output still needs visual and factual review." width="420"></a>
+<p align="center">
+  <a href="https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html"><img src="assets/explore/workflow-preview.svg" alt="Approved wording passes through the shared layout, temporary PDF and delivery checks. Failure preserves prior output; passing output still needs visual and factual review." width="520"></a>
+</p>
 
 [Workflow](https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html) · [Source map](https://mihai-codes.github.io/cv-witness/assets/explore/codegraph.html) · [Regeneration and limits](docs/exploration.md)
 
-The README uses a static preview because GitHub cannot run interactive HTML. The full maps have theme and pause controls, work offline, and respect reduced motion. They describe verified workflow and public source structure, not live telemetry; private resumes and writing corpora are excluded.
+The README preview has a fixed light background and dark labels in either GitHub theme. Open it for the interactive workflow, whose theme and pause controls remain available. The full maps work offline and respect reduced motion. They describe verified workflow and public source structure, not live telemetry; private resumes and writing corpora are excluded.
 
 ## Optional candidate voice reference
 
@@ -151,29 +168,49 @@ The store defaults to `~/.cv-witness/voice`. Generate a profile, optionally appr
 
 ## Repository structure
 
+Key files and folders:
+
 ```text
-SKILL.md                 # canonical skill instructions
-AGENTS.md                # short contributor/agent entry point
-.claude-plugin/          # plugin and marketplace manifests
-.github/workflows/       # Pages deployment and required synthetic/PDF tests
-docs/                   # corpus, delivery, template and exploration guides
-index.html              # landing page, styles and interaction code
-assets/explore/         # interactive maps and fictional template gallery
-examples/               # fictional legacy and structured inputs
-template.html           # legacy manual CV layout
-templates/structured.html # shared repeatable print layout
-scripts/build_cv.py     # structured wording and career-lane ordering
-render.sh                # portable checked-render entrypoint
-scripts/render_cv.py     # Chromium export, validation and atomic publication
-scripts/check_cv.py      # pre-delivery checks for an existing PDF
-scripts/cv_checks.py     # shared PDF/phrase validation
-scripts/jd_overlap.py    # phrase-overlap review tool
-scripts/render_sample.py # reproduce and validate the public sample
-scripts/voice_corpus.py  # local original-writing corpus and style reference
-scripts/render_exploration.py # public-snapshot diagram regeneration
-scripts/render_template_gallery.py # fictional lane/paper PDF gallery
-tests/                  # synthetic contracts and actual export regressions
+cv-witness/
+├── .claude-plugin/
+├── .github/
+│   └── workflows/
+├── assets/
+│   └── explore/
+├── docs/
+├── examples/
+│   ├── sample-cv.json
+│   └── structured-cv.json
+├── scripts/
+│   ├── build_cv.py
+│   ├── check_cv.py
+│   ├── ci_pdf_smoke.py
+│   ├── cv_checks.py
+│   ├── jd_overlap.py
+│   ├── render_cv.py
+│   ├── render_exploration.py
+│   ├── render_sample.py
+│   ├── render_template_gallery.py
+│   └── voice_corpus.py
+├── templates/
+│   └── structured.html
+├── tests/
+├── AGENTS.md
+├── SKILL.md
+├── index.html
+├── render.sh
+└── template.html
 ```
+
+| Location | Purpose |
+| --- | --- |
+| `SKILL.md`, `AGENTS.md` | Agent workflow and contributor guidance. |
+| `scripts/`, `templates/` | CV building, validation, rendering, voice references and regeneration tools. |
+| `docs/`, `examples/` | Usage guides, contracts and fictional inputs. |
+| `assets/explore/` | Interactive maps and the fictional PDF gallery. |
+| `tests/` | Synthetic contracts and actual PDF export regressions. |
+| `.github/`, `.claude-plugin/` | CI, deployment, branch-policy settings and plugin manifests. |
+| `index.html`, `render.sh`, `template.html` | Website entrypoint, checked-render command and legacy manual CV layout. |
 
 README, contribution guidance, changelog and license stay at the root. The small static site needs no framework, package install or generated bundle.
 
@@ -195,7 +232,7 @@ The helper fills the canonical template, runs the existing renderer, checks one-
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review. Run `CV_WITNESS_REQUIRE_PDF_TESTS=1 python3 -m unittest discover -s tests -q` with Chromium and Poppler to include actual export checks. All fixtures are synthetic; no personal corpus or connected account is needed.
 
-[Releases](https://github.com/Mihai-Codes/cv-witness/releases) describe shipped versions, [CHANGELOG.md](CHANGELOG.md) records changes, and [roadmap issue #1](https://github.com/Mihai-Codes/cv-witness/issues/1) links the planned work. Implementation issues hold their own scope and acceptance criteria.
+[Releases](https://github.com/Mihai-Codes/cv-witness/releases) and [CHANGELOG.md](CHANGELOG.md) record shipped changes. The [initial roadmap](https://github.com/Mihai-Codes/cv-witness/issues/1) is complete; its closed sub-issues retain implementation and verification notes. Propose future work in a new, focused issue.
 
 ## License
 

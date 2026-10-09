@@ -8,6 +8,16 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced the README's flat file listing with a directory tree and purpose table; clarified prerequisites, configuration, delivery checks and completed-roadmap status.
+- Retired completed implementation plans while retaining the user guides, test coverage and regeneration inputs.
+
+### Fixed
+
+- The README workflow preview now has an opaque light background and explicit dark labels, independent of the surrounding theme. Added standalone preview regeneration and rendering regressions.
+- The CI browser smoke check uses the renderer's bounded startup deadline instead of a shorter cold-start limit; PDF validation remains required.
+
 ## [0.6.0] - 2026-10-09
 
 ### Added

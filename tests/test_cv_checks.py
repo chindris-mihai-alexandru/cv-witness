@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts import cv_checks as checks
 from scripts import jd_overlap
 from scripts import render_cv
+from scripts import ci_pdf_smoke
 
 
 class PhraseTests(unittest.TestCase):
@@ -211,6 +212,39 @@ class RendererContractTests(unittest.TestCase):
             code = "import pathlib,sys; pathlib.Path(sys.argv[1]).write_bytes(b'%PDF-synthetic\\n%%EOF\\n'); sys.exit(1)"
             with self.assertRaises(checks.CheckError):
                 render_cv.run_browser([sys.executable, "-c", code, str(output)], output, timeout=3)
+
+
+class SmokeCheckTests(unittest.TestCase):
+    def test_startup_uses_the_shared_renderer_deadline_and_validates_pdf(self):
+        with patch.dict("os.environ", {"CI": "true"}), \
+                patch.object(ci_pdf_smoke, "browser_path", return_value="synthetic-browser"), \
+                patch.object(ci_pdf_smoke, "run_browser") as browser, \
+                patch.object(ci_pdf_smoke, "validate_pdf", return_value={"passed": True}) as validator, \
+                contextlib.redirect_stdout(io.StringIO()) as output:
+            ci_pdf_smoke.main()
+        browser.assert_called_once()
+        self.assertNotIn("timeout", browser.call_args.kwargs)
+        validator.assert_called_once()
+        self.assertEqual(validator.call_args.kwargs["expected_text"], ["Synthetic export smoke"])
+        self.assertIn("PDF validation passed", output.getvalue())
+
+    def test_invalid_candidate_still_fails_the_smoke_check(self):
+        with patch.dict("os.environ", {"CI": "true"}), \
+                patch.object(ci_pdf_smoke, "browser_path", return_value="synthetic-browser"), \
+                patch.object(ci_pdf_smoke, "run_browser"), \
+                patch.object(ci_pdf_smoke, "validate_pdf", return_value={"passed": False}), \
+                contextlib.redirect_stdout(io.StringIO()) as output:
+            with self.assertRaises(SystemExit) as failure:
+                ci_pdf_smoke.main()
+        self.assertEqual(failure.exception.code, 1)
+        self.assertNotIn("Synthetic export ready", output.getvalue())
+
+    def test_non_ci_invocation_never_launches_a_browser(self):
+        with patch.dict("os.environ", {"CI": "false"}), \
+                patch.object(ci_pdf_smoke, "browser_path") as browser:
+            with self.assertRaises(SystemExit):
+                ci_pdf_smoke.main()
+            browser.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -169,6 +169,107 @@ class ExplorationTests(unittest.TestCase):
         code = re.search(r"code\s*\{([^}]+)\}", source)
         self.assertIn("hyphens:none", code[1])
 
+    def test_readme_preview_is_fixed_light_static_and_preserves_geometry(self):
+        import xml.etree.ElementTree as ET
+        source = (ROOT / "assets/explore/workflow.html").read_text(encoding="utf-8")
+        original = ET.fromstring(re.search(r'(<svg id="flowsvg".*?</svg>)', source, re.DOTALL)[1])
+        preview_source = diagrams.workflow_preview(source)
+        preview = ET.fromstring(preview_source)
+        tag = lambda element: element.tag.rsplit("}", 1)[-1]
+        background = next(element for element in preview.iter()
+                          if element.get("id") == "preview-background")
+        self.assertEqual(background.get("fill"), "#f8fafc")
+        self.assertEqual(preview.get("viewBox"), original.get("viewBox"))
+        self.assertEqual(preview.get("width"), "600")
+        self.assertGreater(int(preview.get("height")), 600)
+        self.assertNotIn("var(", preview_source)
+        self.assertNotIn("context-stroke", preview_source)
+        self.assertFalse(any(tag(element) in {"style", "script", "animate", "animateMotion", "filter"}
+                             for element in preview.iter()))
+        original_labels = ["".join(element.itertext()) for element in original.iter()
+                           if tag(element) == "text"]
+        preview_labels = ["".join(element.itertext()) for element in preview.iter()
+                          if tag(element) == "text"]
+        self.assertEqual(preview_labels, original_labels)
+        original_paths = [element.get("d") for element in original.iter()
+                          if element.get("class") in {"flow", "flow-async"}]
+        preview_paths = [element.get("d") for element in preview.iter()
+                         if element.get("class") in {"flow", "flow-async"}]
+        self.assertEqual(preview_paths, original_paths)
+        self.assertTrue(all(element.get("fill") in {"#0f172a", "#475569"}
+                            for element in preview.iter() if tag(element) == "text"))
+
+    def test_published_readme_preview_has_an_opaque_light_background(self):
+        import xml.etree.ElementTree as ET
+        source = (ROOT / "assets/explore/workflow-preview.svg").read_text(encoding="utf-8")
+        preview = ET.fromstring(source)
+        background = next((element for element in preview.iter()
+                           if element.get("id") == "preview-background"), None)
+        self.assertIsNotNone(background)
+        self.assertEqual(background.get("fill"), "#f8fafc")
+        self.assertNotIn("var(", source)
+        self.assertTrue(all(not value or value.startswith("#")
+                            for element in preview.iter()
+                            for key, value in element.attrib.items()
+                            if key.rsplit("}", 1)[-1] == "href"))
+
+    def test_preview_only_needs_no_plugins_and_leaves_other_artifacts_unchanged(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            output = root / "assets/explore"
+            output.mkdir(parents=True)
+            workflow = (ROOT / "assets/explore/workflow.html").read_bytes()
+            (output / "workflow.html").write_bytes(workflow)
+            (output / "codegraph.html").write_text("Keep the public source map.")
+            (output / "workflow-preview.svg").write_text("Previous preview.")
+            with patch.object(diagrams, "ROOT", root), patch.object(diagrams.subprocess, "run") as command:
+                diagrams.main(["--preview-only"])
+                command.assert_not_called()
+            self.assertIn('fill="#f8fafc"', (output / "workflow-preview.svg").read_text())
+            self.assertEqual((output / "workflow.html").read_bytes(), workflow)
+            self.assertEqual((output / "codegraph.html").read_text(), "Keep the public source map.")
+            self.assertEqual(list(output.glob(".workflow-preview-*")), [])
+
+    def test_failed_preview_conversion_preserves_previous_image(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            output = root / "assets/explore"
+            output.mkdir(parents=True)
+            (output / "workflow.html").write_text("Malformed synthetic workflow.")
+            preview = output / "workflow-preview.svg"
+            preview.write_text("Keep previous image.")
+            with patch.object(diagrams, "ROOT", root), patch.object(diagrams, "workflow_preview", side_effect=ValueError("Synthetic conversion failure")):
+                with self.assertRaises(ValueError):
+                    diagrams.main(["--preview-only"])
+            self.assertEqual(preview.read_text(), "Keep previous image.")
+            self.assertEqual(list(output.glob(".workflow-preview-*")), [])
+
+    def test_preview_only_rejects_symlinked_directories_before_reading_source(self):
+        for linked_part in ("assets", "explore"):
+            with self.subTest(linked_part=linked_part), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary).resolve()
+                outside = root / "outside"
+                outside.mkdir()
+                (outside / "workflow.html").write_text("Synthetic source must not be read.")
+                previous = outside / "workflow-preview.svg"
+                previous.write_text("Preserve outside preview.")
+                if linked_part == "assets":
+                    clone = root / "clone"
+                    clone.mkdir()
+                    (clone / "assets").symlink_to(outside, target_is_directory=True)
+                else:
+                    clone = root / "clone"
+                    (clone / "assets").mkdir(parents=True)
+                    (clone / "assets/explore").symlink_to(outside, target_is_directory=True)
+                with patch.object(diagrams, "ROOT", clone), \
+                        patch.object(Path, "read_text", side_effect=AssertionError("Source read preceded path validation")), \
+                        patch.object(diagrams, "workflow_preview") as convert:
+                    with self.assertRaises(ValueError):
+                        diagrams.main(["--preview-only"])
+                    convert.assert_not_called()
+                self.assertEqual(previous.read_text(), "Preserve outside preview.")
+                self.assertEqual(list(outside.glob(".workflow-preview-*")), [])
+
 
 if __name__ == "__main__":
     unittest.main()

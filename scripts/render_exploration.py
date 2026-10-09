@@ -247,13 +247,17 @@ def public_snapshot(root, destination, revision="HEAD"):
             target.write_bytes(content.extractfile(member).read())
 
 
+def validate_output_directory(output):
+    if any(path.is_symlink() for path in (output,) + tuple(output.parents)):
+        raise ValueError("Diagram output must not follow symlinked directories.")
+
+
 def publish_artifacts(staged, output):
     """Publish only a complete validated set; roll back ordinary I/O failures."""
     names = ("codegraph.html", "workflow.html", "workflow-preview.svg")
     if any(not (staged / name).is_file() or not (staged / name).stat().st_size for name in names):
         raise ValueError("The validated diagram set is incomplete.")
-    if any(path.is_symlink() for path in (output,) + tuple(output.parents)):
-        raise ValueError("Diagram output must not follow symlinked directories.")
+    validate_output_directory(output)
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix=".explore-publish-", dir=output) as temporary:
         temporary = Path(temporary)
@@ -289,25 +293,74 @@ def public_metadata(graph, revision):
 
 
 def workflow_preview(source):
+    """Preserve generated geometry in an opaque, fixed-light README image."""
     svg = ET.fromstring(re.search(r'(<svg id="flowsvg".*?</svg>)', source, flags=re.DOTALL)[1])
-    palette = re.search(r':root\[data-theme="light"\]\s*\{([^}]+)\}', source)[1]
+    palette_source = re.search(r':root\[data-theme="light"\]\s*\{([^}]+)\}', source)[1]
+    palette = dict(re.findall(r"--([\w-]+)\s*:\s*([^;]+)", palette_source))
+    palette = {key: value.strip() for key, value in palette.items()}
+    palette.update({
+        "text": "#0f172a", "subtext": "#475569",
+        "flow-node-fill": "#ffffff", "flow-pill-fill": "#e6f4ef",
+        "flow-node-stroke": "#047857", "flow-pill-stroke": "#047857",
+        "flow-conn": "#047857",
+    })
+    tag = lambda element: element.tag.rsplit("}", 1)[-1]
     for parent in svg.iter():
         for child in list(parent):
-            if child.tag in {"animate", "animateMotion"} or set(child.get("class", "").split()) & {"dot", "trail", "halo"}:
+            if tag(child) in {"style", "script", "animate", "animateMotion", "filter"} or set(child.get("class", "").split()) & {"dot", "trail", "halo"}:
                 parent.remove(child)
+    font = "ui-monospace, Menlo, Consolas, monospace"
+    for element in svg.iter():
+        for declaration in element.attrib.pop("style", "").split(";"):
+            if ":" not in declaration:
+                continue
+            key, value = declaration.split(":", 1)
+            element.set(key.strip(), value.strip())
+        for key, value in list(element.attrib.items()):
+            value = re.sub(r"var\(--([\w-]+)\)", lambda match: palette[match[1]], value)
+            element.set(key, value.replace("context-stroke", "#047857"))
+        element.attrib.pop("filter", None)
+        if "font-family" in element.attrib or tag(element) == "text":
+            element.set("font-family", font)
+        if element.get("class") == "flow-async":
+            element.set("stroke-dasharray", "3 4")
+        if element.get("id") == "flowsvg-title":
+            element.text = "Checked CV export workflow"
+        elif element.get("id") == "flowsvg-desc":
+            element.text = "Approved wording enters the shared layout and delivery checks. Failure preserves prior output; checked output still needs visual and factual review."
+    x, y, width, height = map(float, svg.get("viewBox").split())
     svg.set("xmlns", "http://www.w3.org/2000/svg")
     svg.set("width", "600")
-    style = ET.Element("style")
-    style.text = ":root{" + palette + "}text{font-family:ui-monospace,Menlo,monospace}"
-    svg.insert(0, style)
-    return ET.tostring(svg, encoding="unicode")
+    svg.set("height", str(round(600 * height / width)))
+    svg.set("font-family", font)
+    background = ET.Element("rect", {
+        "id": "preview-background", "x": f"{x:g}", "y": f"{y:g}",
+        "width": f"{width:g}", "height": f"{height:g}", "rx": "12",
+        "fill": "#f8fafc",
+    })
+    svg.insert(0, background)
+    return ET.tostring(svg, encoding="unicode") + "\n"
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--codegraph-skill", required=True, type=Path)
-    parser.add_argument("--glowmotion-skill", required=True, type=Path)
+    parser.add_argument("--codegraph-skill", type=Path)
+    parser.add_argument("--glowmotion-skill", type=Path)
+    parser.add_argument("--preview-only", action="store_true",
+                        help="Refresh the fixed-light README image from the existing checked workflow")
     args = parser.parse_args(argv)
+    if args.preview_only:
+        output = ROOT / "assets/explore"
+        validate_output_directory(output)
+        preview = workflow_preview((output / "workflow.html").read_text(encoding="utf-8"))
+        with tempfile.TemporaryDirectory(prefix=".workflow-preview-", dir=output) as temporary:
+            staged = Path(temporary) / "workflow-preview.svg"
+            staged.write_text(preview, encoding="utf-8")
+            os.replace(staged, output / "workflow-preview.svg")
+        print("Updated the fixed-light README workflow preview.")
+        return
+    if args.codegraph_skill is None or args.glowmotion_skill is None:
+        parser.error("Full regeneration needs --codegraph-skill and --glowmotion-skill.")
     codegraph = args.codegraph_skill.expanduser().resolve()
     glowmotion = args.glowmotion_skill.expanduser().resolve()
     output = ROOT / "assets" / "explore"

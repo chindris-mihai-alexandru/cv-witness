@@ -16,14 +16,14 @@ Changes to `main` go through a pull request. The `Voice corpus tests` gate must 
 
 No second reviewer is required for this solo-maintained project; that does not bypass the PR, test or conversation checks. The policy snapshot is `.github/branch-protection.json`. It records the settings but does not apply them by itself.
 
-The test workflow runs on every PR to `main`, including documentation-only changes, so a skipped path-filtered workflow cannot leave a required check pending. Run `python3 -m unittest discover -s tests -q` locally; tests use synthetic prose only.
+The test workflow runs on every PR to `main`, including documentation-only changes, so a skipped path-filtered workflow cannot leave a required check pending. Run `CV_WITNESS_REQUIRE_PDF_TESTS=1 python3 -m unittest discover -s tests -q` with Chromium and Poppler to include actual exports. All inputs are synthetic; missing export tools must not silently pass in CI.
 
 ## Good first contributions
 
-- Template variants (different type scales, a Letter-size path)
-- Render support for more browsers/platforms
-- Stronger checks in `render.sh` (e.g., detect empty output pages)
-- Docs: clearer wording, more examples of good vs. inflated bullets
+- Synthetic regression cases for unusual input, wrapping or pagination.
+- Tested improvements to browser discovery and export portability.
+- Clearer usage examples and review guidance.
+- Small layout improvements that preserve legibility, supplied content and the shared checks.
 
 ## Reporting bugs
 

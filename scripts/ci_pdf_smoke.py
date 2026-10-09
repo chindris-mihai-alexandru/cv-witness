@@ -6,8 +6,12 @@ from pathlib import Path
 import tempfile
 import time
 
-from cv_checks import CheckError, validate_pdf
-from render_cv import browser_path, browser_command, run_browser
+if __package__:
+    from .cv_checks import CheckError, validate_pdf
+    from .render_cv import browser_path, browser_command, run_browser
+else:
+    from cv_checks import CheckError, validate_pdf
+    from render_cv import browser_path, browser_command, run_browser
 
 
 def main():
@@ -26,7 +30,7 @@ def main():
         diagnostics = root / "browser-stderr.txt"
         try:
             with diagnostics.open("wb") as log:
-                run_browser(command, pdf, timeout=20, stderr=log)
+                run_browser(command, pdf, stderr=log)
             report = validate_pdf(pdf, expected_text=["Synthetic export smoke"])
             if not report["passed"]:
                 raise CheckError("Synthetic candidate failed PDF checks.")
