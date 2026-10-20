@@ -132,6 +132,15 @@ class ExplorationTests(unittest.TestCase):
         self.assertEqual(len(graph["tour"]), 3)
         self.assertFalse(any(edge["type"] == "calls" for edge in graph["edges"]))
 
+    def test_skill_requires_approved_design_baseline_and_parse_order_review(self):
+        skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("latest candidate-approved CV", skill)
+        self.assertIn("Quick and local authoring paths", skill)
+        self.assertIn("get approval", skill)
+        self.assertIn("before switching", skill)
+        self.assertIn("ordered-text", skill)
+        self.assertIn("not a simulation of a particular ATS", skill)
+
     def test_workflow_is_self_contained_with_reduced_motion_and_pause(self):
         source = (ROOT / "assets/explore/workflow.html").read_text()
         self.assertIn("prefers-reduced-motion", source)

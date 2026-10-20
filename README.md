@@ -105,7 +105,7 @@ Ask your agent:
 
 > "Draft a CV from my verified experience for this role: [paste the posting URL or text here]. Keep my voice and show me the wording before exporting."
 
-Provide a master resume and any verification notes privately. Review the selected facts, resolve unanswered questions, and approve the draft before rendering. The agent workflow defaults to `~/Downloads/`; standalone build and render commands require an explicit output path.
+Provide a master resume, the latest candidate-approved CV (or a specific design reference), and verification notes privately. The approved CV is the default design baseline across authoring tools; ask before changing its layout or section order. Review the selected facts and approve the draft before rendering. The agent workflow defaults to `~/Downloads/`; standalone build and render commands require an explicit output path.
 
 For phrase review:
 
@@ -122,11 +122,14 @@ For a PDF exported from another authoring tool:
 ```sh
 python3 scripts/check_cv.py exported.pdf \
   --paper a4 --max-pages 1 \
-  --expected-text "Professional Experience" \
+  --expected-text "Alex Morgan" \
+  --ordered-text "Professional Summary" \
+  --ordered-text "Skills" \
+  --ordered-text "Professional Experience" \
   --posting posting.txt
 ```
 
-Add the candidate's name and other critical text as further `--expected-text` arguments. Exit codes are `0` for a policy pass, `1` for failed checks and `2` for input or tool errors. See [delivery checks](docs/delivery-checks.md) for Letter, page limits and privacy-safe diagnostics.
+Add critical text as `--expected-text` arguments and section headings in approved order as repeated `--ordered-text` flags. This checks extracted landmarks, not every ATS's reading order or field parsing. Compare the export visually with the approved CV and review any employer autofill before submission. Parsing varies by platform: [Greenhouse documents reasons parsing can fail](https://support.greenhouse.io/hc/en-us/articles/200989175-Unsuccessful-resume-parse), while [Rezi describes its score as guidance, not a particular ATS result](https://www.rezi.ai/rezi-docs/the-rezi-score-explained). Exit codes are `0` for a policy pass, `1` for failed checks and `2` for input or tool errors. See [delivery checks](docs/delivery-checks.md) for limits and privacy-safe diagnostics.
 
 ## Repeatable career-lane templates
 
@@ -138,7 +141,7 @@ python3 scripts/build_cv.py approved-cv.json output.pdf \
   --posting selected-posting.txt
 ```
 
-Engineering, Operations/Support, Research and Management are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
+Engineering, Operations/Support, Research and Management are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. The builder checks that its selected section headings extract in the chosen order. These are product layouts, not replacements for a candidate's existing design; obtain approval before switching. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
 
 ## Explore the repository
 

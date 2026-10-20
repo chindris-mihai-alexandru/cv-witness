@@ -28,12 +28,19 @@ The renderer uses a fresh temporary browser profile and a percent-encoded local 
 
 A passing PDF is published atomically with owner-only file permissions. An existing output is preserved unless `--replace` is explicitly requested. Even with `--replace`, a failed render or validation cannot replace the previous PDF. Symlinked output paths and directories are rejected; use a canonical destination.
 
+## Preserve an approved design
+
+Before tailoring, choose the latest candidate-approved CV as the visual baseline, or ask which reference/template is approved. Keep its section order and visual hierarchy by default across Quick and local authoring. Present redesigns or section-order changes as optional choices and get approval first. If there is no readable baseline, state that clearly and ask before selecting a default. Compare exported pages with the reference; report any differences or unverified details.
+
 ## Check a PDF from another authoring tool
 
 ```sh
 python3 scripts/check_cv.py exported.pdf \
   --paper a4 --max-pages 1 \
-  --expected-text "Professional Experience" \
+  --expected-text "Alex Morgan" \
+  --ordered-text "Professional Summary" \
+  --ordered-text "Skills" \
+  --ordered-text "Professional Experience" \
   --posting selected-posting.txt
 ```
 
@@ -43,9 +50,10 @@ The report checks:
 - Every page's A4/Letter geometry and the chosen page limit.
 - Live extracted text on every page, encryption, unresolved fill/template markers and replacement glyphs.
 - Expected text supplied by the caller. Failure reports use item numbers rather than printing private claims.
+- Optional `--ordered-text` landmarks, checked in the sequence supplied; reports never echo the private text.
 - Posting phrase overlap when a posting is selected.
 
-Expected text should include the candidate's name, actual headings and any details that must survive export. A PDF may have readable text and still contain poor wrapping or clipping; inspect every page visually and verify facts against the selected resume sources before delivery.
+Use `--expected-text` for the candidate's name and details that must survive export. Use repeated `--ordered-text` flags for important section headings in the approved order; the check detects missing or misordered landmarks in extracted text, not complete reading order or field-level ATS parsing. Compare the export visually with the latest candidate-approved CV, preserve its design unless a change was approved, and inspect each page for wrapping or clipping. Verify facts against the selected sources. If an application offers resume autofill, review and correct the fields before submitting.
 
 ## Phrase diagnostics
 
@@ -57,7 +65,7 @@ Reports contain shared-run counts, maximum length and word offsets in both docum
 
 Passages are omitted by default. `--show-phrases` explicitly allows shared wording in the standalone check report; do not use it in public logs with real documents. All checks are local and make no model or account calls.
 
-Exit codes are consistent: **0** passes the selected policy, **1** reports failed checks, and **2** reports an invalid input, missing tool or local operation failure. A non-strict phrase report can contain matches and return 0 because it asks for review. A pass does not establish originality or ATS compatibility.
+Exit codes are consistent: **0** passes the selected policy, **1** reports failed checks, and **2** reports an invalid input, missing tool or local operation failure. A non-strict phrase report can contain matches and return 0 because it asks for review. A pass does not establish originality, successful parsing by a particular ATS, or ATS compatibility. For example, Greenhouse documents file-size and format-related parse failures, and Workday describes parsing as a configured process whose output recruiters review. Use the employer's accepted file type, inspect extracted text and section landmarks, and correct any employer autofill fields before submission.
 
 ## Public CI and failure cases
 

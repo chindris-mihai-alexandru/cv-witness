@@ -125,11 +125,14 @@ def normalized_text(text):
 
 
 def validate_pdf(path, paper="a4", max_pages=1, expected_text=(), posting=None,
-                 overlap_policy="strict", show_phrases=False, source_html=None):
+                 overlap_policy="strict", show_phrases=False, source_html=None,
+                 ordered_text=()):
     if paper not in PAPER_POINTS or type(max_pages) is not int or not 1 <= max_pages <= 30:
         raise CheckError("Use A4 or Letter and an explicit page limit between 1 and 30.")
     if overlap_policy not in {"strict", "review"}:
         raise CheckError("Overlap policy must be strict or review.")
+    if not isinstance(ordered_text, (list, tuple)) or any(not isinstance(item, str) or not item.strip() for item in ordered_text):
+        raise CheckError("Ordered-text contract must contain nonempty strings.")
     path = Path(path).expanduser().absolute()
     if path.suffix.lower() != ".pdf" or not path.is_file() or not 0 < path.stat().st_size <= MAX_BYTES:
         raise CheckError("Select a nonempty PDF within the 16 MiB input limit.")
@@ -180,6 +183,18 @@ def validate_pdf(path, paper="a4", max_pages=1, expected_text=(), posting=None,
             present = re.sub(r"\s+", "", needle) in re.sub(r"\s+", "", normalized)
         if not present:
             problems.append({"code": "missing_expected_text", "item": number})
+    if ordered_text:
+        positions = []
+        cursor = 0
+        for expected in ordered_text:
+            needle = normalized_text(expected)
+            position = normalized.find(needle, cursor)
+            positions.append(position)
+            if position < 0:
+                break
+            cursor = position + len(needle)
+        if len(positions) != len(ordered_text) or any(position < 0 for position in positions):
+            problems.append({"code": "ordered_text_missing_or_out_of_order", "items": len(positions)})
     overlap = None
     if posting is not None:
         overlap = overlap_report(text, read_text(posting, pdf_allowed=False), show_phrases)
@@ -187,7 +202,7 @@ def validate_pdf(path, paper="a4", max_pages=1, expected_text=(), posting=None,
             problems.append({"code": "posting_phrase_overlap", "runs": overlap["shared_runs"]})
     report = {"passed": not problems, "paper": paper, "pages": page_count,
               "max_pages": max_pages, "text_words": len(words(text)),
-              "expected_text_items": len(expected_text), "problems": problems,
+              "expected_text_items": len(expected_text), "ordered_text_items": len(ordered_text), "problems": problems,
               "posting_review": overlap,
               "review_required": ["Verify every CV fact with the selected sources.",
                                   "Inspect the rendered pages for clipping, reading order and legibility.",

@@ -224,6 +224,7 @@ def main(argv=None):
     parser.add_argument("--paper", choices=("a4", "letter"), default="a4")
     parser.add_argument("--max-pages", type=int, default=1)
     parser.add_argument("--section-order", help="Comma-separated keys; must include every nonempty section")
+    parser.add_argument("--ordered-text", action="append", default=[], help="PDF text landmarks that must extract in this order")
     parser.add_argument("--posting")
     parser.add_argument("--overlap-policy", choices=("strict", "review"), default="strict")
     parser.add_argument("--browser")
@@ -233,8 +234,10 @@ def main(argv=None):
     try:
         source, expected, order = build_html(load_document(args.input), args.lane,
                                             args.section_order.split(",") if args.section_order is not None else None)
+        ordered_text = args.ordered_text or [HEADINGS[section] for section in order]
         report = render_html(source, args.output, args.paper, args.max_pages, expected,
-                             args.posting, args.overlap_policy, args.browser, args.replace, args.no_sandbox)
+                             args.posting, args.overlap_policy, args.browser, args.replace,
+                             args.no_sandbox, ordered_text)
         report["lane"] = args.lane
         report["section_order"] = order
         print(json.dumps(report, ensure_ascii=False, indent=2))

@@ -10,6 +10,7 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ### Changed
 
+- CV tailoring now uses the latest candidate-approved CV as the default design baseline across authoring paths; redesigns require approval. PDF checking can assert private section landmarks in extracted order without logging their text.
 - Replaced the README's flat file listing with a directory tree and purpose table; clarified prerequisites, configuration, delivery checks and completed-roadmap status.
 - Retired completed implementation plans while retaining the user guides, test coverage and regeneration inputs.
 
