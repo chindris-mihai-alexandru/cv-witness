@@ -120,6 +120,25 @@ class PDFCheckTests(unittest.TestCase):
         self.assertNotIn("PRIVATE_MISSING_CREDENTIAL", json.dumps(report))
         self.assertIn({"code": "missing_expected_text", "item": 1}, report["problems"])
 
+    def test_ordered_text_supports_substrings_or_strict_standalone_lines(self):
+        self.text = "Alex Morgan\nProfessional Summary\nProfessional Experience\nBuilt a small garden planner.\n\f"
+        landmarks = ["Professional Summary", "Professional Experience"]
+        self.assertTrue(self.validate(ordered_text=landmarks)["passed"])
+        strict_report = self.validate(ordered_text=landmarks, strict_ordered_text=True)
+        self.assertTrue(strict_report["passed"], strict_report)
+        self.text = "Professional Summary mentions Professional Experience\nProfessional Experience\nProfessional Summary\n\f"
+        self.assertTrue(self.validate(ordered_text=landmarks)["passed"])
+        report = self.validate(ordered_text=landmarks, strict_ordered_text=True)
+        self.assertIn({"code": "ordered_text_missing_or_out_of_order", "items": 1}, report["problems"])
+        self.assertNotIn("Professional Summary", json.dumps(report))
+
+    def test_ordered_text_rejects_empty_or_non_string_landmarks_before_tool_calls(self):
+        for landmarks in (["Section", "  "], ["Section", None], "Section"):
+            with self.subTest(landmarks=landmarks), patch.object(checks, "run_tool") as tool:
+                with self.assertRaises(checks.CheckError):
+                    checks.validate_pdf(self.pdf, ordered_text=landmarks)
+                tool.assert_not_called()
+
     def test_wrong_paper_fails(self):
         report = self.validate(paper="letter")
         self.assertIn("paper_geometry", [item["code"] for item in report["problems"]])

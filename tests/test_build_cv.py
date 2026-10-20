@@ -1,5 +1,7 @@
 """Repeatable template contracts and real, fictional lane/paper exports."""
+import contextlib
 import copy
+import io
 import json
 import os
 from pathlib import Path
@@ -9,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts import build_cv as builder
@@ -51,6 +54,23 @@ class BuilderTests(unittest.TestCase):
             self.assertEqual(headings, order)
             content.append(set(expected))
         self.assertTrue(all(values == content[0] for values in content))
+
+    def test_builder_cli_passes_default_section_landmarks_in_order(self):
+        data = fixture()
+        expected_order = [builder.HEADINGS[key] for key in builder.LANES["research"] if data.get(key)]
+        with patch.object(builder, "load_document", return_value=data), \
+                patch.object(builder, "render_html", return_value={"passed": True}) as render:
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(builder.main(["input.json", "output.pdf", "--lane", "research"]), 0)
+        self.assertEqual(render.call_args.args[-1], expected_order)
+
+    def test_ordered_landmarks_default_to_selected_builder_section_order(self):
+        data = fixture()
+        source, _, order = builder.build_html(data, "research")
+        expected_headings = [builder.HEADINGS[section] for section in order]
+        self.assertEqual(expected_headings[0], "Professional Summary")
+        self.assertLess(expected_headings.index("Education"), expected_headings.index("Professional Experience"))
+        self.assertEqual(re.findall(r'<h2>(.*?)</h2>', source), expected_headings)
 
     def test_every_optional_section_can_be_omitted(self):
         for omitted in builder.SECTIONS:
@@ -159,11 +179,14 @@ class LanePDFTests(unittest.TestCase):
                 with self.subTest(lane=lane, paper=paper):
                     source, expected, order = builder.build_html(fixture(), lane)
                     output = self.root / (lane + "-" + paper + ".pdf")
-                    report = render_cv.render_html(source, output, paper, max_pages=2, expected_text=expected, **self.options)
+                    report = render_cv.render_html(
+                        source, output, paper, max_pages=2, expected_text=expected,
+                        ordered_text=[builder.HEADINGS[key] for key in order], **self.options)
                     self.assertTrue(report["passed"])
                     extracted = checks.normalized_text(checks.read_text(output))
                     offsets = [extracted.index(checks.normalized_text(builder.HEADINGS[key])) for key in order]
                     self.assertEqual(offsets, sorted(offsets))
+                    self.assertEqual(report["ordered_text_items"], len(order))
 
     def test_six_roles_long_content_crosses_pages_without_trimming(self):
         data = fixture()
