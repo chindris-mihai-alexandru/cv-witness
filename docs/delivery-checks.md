@@ -10,7 +10,7 @@ Use Python 3.11+, a Chromium-family browser and Poppler (`pdfinfo`, `pdftotext`)
 
 The renderer discovers macOS browser applications and common Linux executable names. Set `CV_WITNESS_BROWSER` or pass `--browser` for a different executable. An explicit invalid setting fails instead of silently falling back.
 
-Render only approved, self-contained HTML with one `@page` rule and an explicit size declaration. Scripts, embedded documents and resource-loading attributes/styles are rejected. This preflight supports the bundled templates; it is not a general-purpose hostile-HTML sandbox.
+Render only approved, self-contained HTML with one `@page` rule and an explicit size declaration. Scripts, embedded documents and resource-loading attributes/styles are rejected, including CSS resource tokens written with escapes. This preflight supports the bundled templates; it is not a general-purpose hostile-HTML sandbox. Review the HTML yourself and use trusted source files.
 
 ## Render and check before publication
 

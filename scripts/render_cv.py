@@ -106,6 +106,19 @@ class SourcePreflight(HTMLParser):
             self.styles.append(data)
 
 
+def _decode_css_escapes(value):
+    """Decode CSS escapes before checking resource-loading tokens."""
+    escape = re.compile(r"\\([0-9a-fA-F]{1,6})(?:\r\n|[\t\n\r\f ])?|\\([^\n\r\f0-9a-fA-F])|\\(?:\r\n|[\t\n\r\f])")
+
+    def replace(match):
+        if match[1]:
+            codepoint = int(match[1], 16)
+            return "\ufffd" if codepoint == 0 or codepoint > 0x10FFFF or 0xD800 <= codepoint <= 0xDFFF else chr(codepoint)
+        return match[2] or ""
+
+    return escape.sub(replace, value)
+
+
 def validate_source(source, paper):
     if not isinstance(source, str) or not source.strip() or len(source.encode("utf-8")) > MAX_BYTES:
         raise CheckError("Source HTML must be nonempty UTF-8 text within 16 MiB.")
@@ -115,7 +128,7 @@ def validate_source(source, paper):
     preflight = SourcePreflight()
     preflight.feed(source)
     preflight.close()
-    if any(re.search(r"@import\b|url\s*\(", style, re.I) for style in preflight.styles):
+    if any(re.search(r"@import\b|url\s*\(", _decode_css_escapes(style), re.I) for style in preflight.styles):
         raise CheckError("Source styles must not load external or relative resources.")
     return page_css(source, paper)
 

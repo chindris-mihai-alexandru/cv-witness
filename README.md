@@ -115,7 +115,7 @@ python3 scripts/jd_overlap.py CV.pdf posting.txt
 
 The script compares literal word sequences. `--strict` fails on any shared run of four or more words, including ordinary industry phrases. Reports give counts and positions, including repeated occurrences; `--show-phrases` is an explicit opt-in for private wording. A pass is not an ATS or originality certification.
 
-For checked output, use `sh render.sh approved.html output.pdf a4 --posting posting.txt`. The renderer validates a temporary PDF before publishing and preserves previous output if any check fails. Selecting a posting uses strict overlap checks by default; choose `--overlap-policy review` explicitly when shared generic wording should be reviewed rather than blocked.
+For checked output, use `sh render.sh approved.html output.pdf a4 --posting posting.txt`. The renderer validates a temporary PDF before publishing and preserves previous output if any check fails. It rejects external/resource-loading content in the HTML, including CSS escapes that disguise `@import` or `url()`. This narrow preflight is not a general-purpose hostile-HTML sandbox. Selecting a posting uses strict overlap checks by default; choose `--overlap-policy review` explicitly when shared generic wording should be reviewed rather than blocked.
 
 For a PDF exported from another authoring tool:
 

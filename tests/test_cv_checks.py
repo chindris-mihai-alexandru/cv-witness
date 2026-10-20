@@ -170,10 +170,26 @@ class RendererContractTests(unittest.TestCase):
                     with self.assertRaises(checks.CheckError):
                         render_cv.checked_source(source, "a4")
 
+    def test_css_escaped_resource_loaders_are_rejected(self):
+        styles = (
+            r"@im\70 ort url(file:///tmp/private.css)",
+            r"body { background-image: u\72l(file:///tmp/private.svg) }",
+            r"body { background-image: url\(file:///tmp/private.png) }",
+        )
+        for style in styles:
+            with self.subTest(style=style):
+                source = "<style>@page{size:A4;}" + style + "</style>Fictional prose"
+                with self.assertRaises(checks.CheckError):
+                    render_cv.validate_source(source, "a4")
+
+    def test_css_escape_decoder_handles_hex_terminators_and_invalid_codepoints(self):
+        self.assertEqual(render_cv._decode_css_escapes(r"u\72l @im\70 ort"), "url @import")
+        self.assertEqual(render_cv._decode_css_escapes(r"a\000000b"), "a�b")
+
     def test_direct_renderer_cannot_bypass_self_contained_source_check(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary).resolve() / "candidate.pdf"
-            for content in ('@page{size:A4}<script>fake()</script>', '@page{size:A4}<img src="https://example.com/private">'):
+            for content in ('@page{size:A4}<script>fake()</script>', '@page{size:A4}<img src="https://example.com/private">', '<style>@page{size:A4;} @im\\70 ort url(file:///tmp/private.css)</style>'):
                 with self.subTest(content=content), patch.object(render_cv, "browser_path") as browser:
                     with self.assertRaises(checks.CheckError):
                         render_cv.render_html(content, output)

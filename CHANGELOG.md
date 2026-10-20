@@ -15,6 +15,7 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ### Fixed
 
+- CSS escape sequences could disguise `@import` and `url()` from the renderer's resource preflight. The checker now decodes CSS escapes before rejecting resource-loading tokens, with regression coverage for escaped identifiers, functions and local-file imports.
 - The README workflow preview now has an opaque light background and explicit dark labels, independent of the surrounding theme. Added standalone preview regeneration and rendering regressions.
 - The CI browser smoke check uses the renderer's bounded startup deadline instead of a shorter cold-start limit; PDF validation remains required.
 
