@@ -120,12 +120,16 @@ class PDFCheckTests(unittest.TestCase):
         self.assertNotIn("PRIVATE_MISSING_CREDENTIAL", json.dumps(report))
         self.assertIn({"code": "missing_expected_text", "item": 1}, report["problems"])
 
-    def test_ordered_text_landmarks_pass_and_fail_without_leaking_values(self):
-        self.text = "Alex Morgan\\nProfessional Summary\\nProfessional Experience\\nBuilt a small garden planner.\\n\\f"
-        self.assertTrue(self.validate(ordered_text=["Professional Summary", "Professional Experience"])["passed"])
-        self.text = "Professional Experience\\nProfessional Summary\\n\\f"
-        report = self.validate(ordered_text=["Professional Summary", "Professional Experience"])
-        self.assertIn({"code": "ordered_text_missing_or_out_of_order", "items": 2}, report["problems"])
+    def test_ordered_text_supports_substrings_or_strict_standalone_lines(self):
+        self.text = "Alex Morgan\nProfessional Summary\nProfessional Experience\nBuilt a small garden planner.\n\f"
+        landmarks = ["Professional Summary", "Professional Experience"]
+        self.assertTrue(self.validate(ordered_text=landmarks)["passed"])
+        strict_report = self.validate(ordered_text=landmarks, strict_ordered_text=True)
+        self.assertTrue(strict_report["passed"], strict_report)
+        self.text = "Professional Summary mentions Professional Experience\nProfessional Experience\nProfessional Summary\n\f"
+        self.assertTrue(self.validate(ordered_text=landmarks)["passed"])
+        report = self.validate(ordered_text=landmarks, strict_ordered_text=True)
+        self.assertIn({"code": "ordered_text_missing_or_out_of_order", "items": 1}, report["problems"])
         self.assertNotIn("Professional Summary", json.dumps(report))
 
     def test_ordered_text_rejects_empty_or_non_string_landmarks_before_tool_calls(self):

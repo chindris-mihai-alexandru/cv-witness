@@ -41,6 +41,7 @@ python3 scripts/check_cv.py exported.pdf \
   --ordered-text "Professional Summary" \
   --ordered-text "Skills" \
   --ordered-text "Professional Experience" \
+  --strict-ordered-text \
   --posting selected-posting.txt
 ```
 
@@ -53,7 +54,7 @@ The report checks:
 - Optional `--ordered-text` landmarks, checked in the sequence supplied; reports never echo the private text.
 - Posting phrase overlap when a posting is selected.
 
-Use `--expected-text` for the candidate's name and details that must survive export. Use repeated `--ordered-text` flags for important section headings in the approved order; the check detects missing or misordered landmarks in extracted text, not complete reading order or field-level ATS parsing. Compare the export visually with the latest candidate-approved CV, preserve its design unless a change was approved, and inspect each page for wrapping or clipping. Verify facts against the selected sources. If an application offers resume autofill, review and correct the fields before submitting.
+Use `--expected-text` for the candidate's name and details that must survive export. Use repeated `--ordered-text` flags for important section headings in the approved order. Add `--strict-ordered-text` when each heading should match a standalone extracted line; this catches body-text mentions that could otherwise satisfy the landmark. The check still does not establish complete reading order or field-level ATS parsing. Compare the export visually with the latest candidate-approved CV, preserve its design unless a change was approved, and inspect each page for wrapping or clipping. Verify facts against the selected sources. If an application offers resume autofill, review and correct the fields before submitting.
 
 ## Phrase diagnostics
 

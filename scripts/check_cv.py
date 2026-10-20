@@ -18,6 +18,7 @@ def main(argv=None):
     parser.add_argument("--max-pages", type=int, default=1)
     parser.add_argument("--expected-text", action="append", default=[], help="Exact text that must extract; not printed in diagnostics")
     parser.add_argument("--ordered-text", action="append", default=[], help="Text landmarks that must extract in the supplied order; values are not printed")
+    parser.add_argument("--strict-ordered-text", action="store_true", help="Require each landmark to be a standalone extracted line")
     parser.add_argument("--posting", help="Selected local .txt/.md posting; never fetched automatically")
     parser.add_argument("--overlap-policy", choices=("strict", "review"), default="strict")
     parser.add_argument("--show-phrases", action="store_true", help="Opt in to private wording in diagnostics")
@@ -25,7 +26,8 @@ def main(argv=None):
     try:
         report = validate_pdf(args.pdf, args.paper, args.max_pages, args.expected_text,
                               args.posting, args.overlap_policy, args.show_phrases,
-                              ordered_text=args.ordered_text)
+                              ordered_text=args.ordered_text,
+                              strict_ordered_text=args.strict_ordered_text)
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return 0 if report["passed"] else 1
     except (CheckError, OSError) as error:

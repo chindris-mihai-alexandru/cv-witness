@@ -126,13 +126,15 @@ def normalized_text(text):
 
 def validate_pdf(path, paper="a4", max_pages=1, expected_text=(), posting=None,
                  overlap_policy="strict", show_phrases=False, source_html=None,
-                 ordered_text=()):
+                 ordered_text=(), strict_ordered_text=False):
     if paper not in PAPER_POINTS or type(max_pages) is not int or not 1 <= max_pages <= 30:
         raise CheckError("Use A4 or Letter and an explicit page limit between 1 and 30.")
     if overlap_policy not in {"strict", "review"}:
         raise CheckError("Overlap policy must be strict or review.")
     if not isinstance(ordered_text, (list, tuple)) or any(not isinstance(item, str) or not item.strip() for item in ordered_text):
         raise CheckError("Ordered-text contract must contain nonempty strings.")
+    if type(strict_ordered_text) is not bool:
+        raise CheckError("Strict ordered-text mode must be a boolean.")
     path = Path(path).expanduser().absolute()
     if path.suffix.lower() != ".pdf" or not path.is_file() or not 0 < path.stat().st_size <= MAX_BYTES:
         raise CheckError("Select a nonempty PDF within the 16 MiB input limit.")
@@ -184,17 +186,25 @@ def validate_pdf(path, paper="a4", max_pages=1, expected_text=(), posting=None,
         if not present:
             problems.append({"code": "missing_expected_text", "item": number})
     if ordered_text:
-        positions = []
-        cursor = 0
+        extracted_lines = [normalized_text(line) for line in text.splitlines()]
+        line_cursor = 0
+        matched = 0
         for expected in ordered_text:
             needle = normalized_text(expected)
-            position = normalized.find(needle, cursor)
-            positions.append(position)
-            if position < 0:
-                break
-            cursor = position + len(needle)
-        if len(positions) != len(ordered_text) or any(position < 0 for position in positions):
-            problems.append({"code": "ordered_text_missing_or_out_of_order", "items": len(positions)})
+            if strict_ordered_text:
+                line_position = next((index for index in range(line_cursor, len(extracted_lines))
+                                      if extracted_lines[index] == needle), None)
+                if line_position is None:
+                    break
+                line_cursor = line_position + 1
+            else:
+                position = normalized.find(needle, line_cursor)
+                if position < 0:
+                    break
+                line_cursor = position + len(needle)
+            matched += 1
+        if matched != len(ordered_text):
+            problems.append({"code": "ordered_text_missing_or_out_of_order", "items": matched})
     overlap = None
     if posting is not None:
         overlap = overlap_report(text, read_text(posting, pdf_allowed=False), show_phrases)

@@ -126,10 +126,11 @@ python3 scripts/check_cv.py exported.pdf \
   --ordered-text "Professional Summary" \
   --ordered-text "Skills" \
   --ordered-text "Professional Experience" \
+  --strict-ordered-text \
   --posting posting.txt
 ```
 
-Add critical text as `--expected-text` arguments and section headings in approved order as repeated `--ordered-text` flags. This checks extracted landmarks, not every ATS's reading order or field parsing. Compare the export visually with the approved CV and review any employer autofill before submission. Parsing varies by platform: [Greenhouse documents reasons parsing can fail](https://support.greenhouse.io/hc/en-us/articles/200989175-Unsuccessful-resume-parse), while [Rezi describes its score as guidance, not a particular ATS result](https://www.rezi.ai/rezi-docs/the-rezi-score-explained). Exit codes are `0` for a policy pass, `1` for failed checks and `2` for input or tool errors. See [delivery checks](docs/delivery-checks.md) for limits and privacy-safe diagnostics.
+Add critical text as `--expected-text` arguments and section headings in approved order as repeated `--ordered-text` flags. Add `--strict-ordered-text` for standalone heading lines in generated CVs. This checks extracted landmarks, not every ATS's reading order or field parsing. Compare the export visually with the approved CV and review any employer autofill before submission. Parsing varies by platform: [Greenhouse documents reasons parsing can fail](https://support.greenhouse.io/hc/en-us/articles/200989175-Unsuccessful-resume-parse), while [Rezi describes its score as guidance, not a particular ATS result](https://www.rezi.ai/rezi-docs/the-rezi-score-explained). Exit codes are `0` for a policy pass, `1` for failed checks and `2` for input or tool errors. See [delivery checks](docs/delivery-checks.md) for limits and privacy-safe diagnostics.
 
 ## Repeatable career-lane templates
 
@@ -141,7 +142,7 @@ python3 scripts/build_cv.py approved-cv.json output.pdf \
   --posting selected-posting.txt
 ```
 
-Engineering, Operations/Support, Research and Management are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. The builder checks that its selected section headings extract in the chosen order. These are product layouts, not replacements for a candidate's existing design; obtain approval before switching. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
+Engineering, Operations/Support, Research and Management are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. The builder checks that its selected section headings extract in the chosen order. These are product layouts, not replacements for a candidate's existing design; obtain approval before switching. The single-column preset is a parsing-risk recommendation, not a requirement to redesign an approved two-column CV. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
 
 ## Explore the repository
 

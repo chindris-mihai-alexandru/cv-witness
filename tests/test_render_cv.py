@@ -121,7 +121,8 @@ class RealPDFTests(unittest.TestCase):
             ("jd_overlap.py", [str(self.root / "candidate.pdf"), str(posting), "--strict", "--json"]),
             ("check_cv.py", [str(self.root / "candidate.pdf"), "--posting", str(posting),
                               "--ordered-text", "Professional Summary",
-                              "--ordered-text", "Professional Experience"]),
+                              "--ordered-text", "Professional Experience",
+                              "--strict-ordered-text"]),
         ):
             with self.subTest(script=script):
                 result = subprocess.run([sys.executable, str(ROOT / "scripts" / script), *arguments], capture_output=True, text=True, timeout=20)

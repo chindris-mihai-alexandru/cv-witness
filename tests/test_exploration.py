@@ -135,11 +135,14 @@ class ExplorationTests(unittest.TestCase):
     def test_skill_requires_approved_design_baseline_and_parse_order_review(self):
         skill = (ROOT / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("latest candidate-approved CV", skill)
+        self.assertIn("do not change section order without approval", skill)
         self.assertIn("Quick and local authoring paths", skill)
         self.assertIn("get approval", skill)
         self.assertIn("before switching", skill)
         self.assertIn("ordered-text", skill)
         self.assertIn("not a simulation of a particular ATS", skill)
+        self.assertIn("If a baseline exists, provide content in its approved section order", skill)
+        self.assertIn("If the approved CV is multi-column, preserve it unless the candidate approves a switch", skill)
 
     def test_workflow_is_self_contained_with_reduced_motion_and_pause(self):
         source = (ROOT / "assets/explore/workflow.html").read_text()

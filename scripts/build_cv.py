@@ -237,7 +237,7 @@ def main(argv=None):
         ordered_text = args.ordered_text or [HEADINGS[section] for section in order]
         report = render_html(source, args.output, args.paper, args.max_pages, expected,
                              args.posting, args.overlap_policy, args.browser, args.replace,
-                             args.no_sandbox, ordered_text)
+                             args.no_sandbox, ordered_text, strict_ordered_text=True)
         report["lane"] = args.lane
         report["section_order"] = order
         print(json.dumps(report, ensure_ascii=False, indent=2))
