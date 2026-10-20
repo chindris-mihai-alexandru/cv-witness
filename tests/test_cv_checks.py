@@ -23,6 +23,16 @@ class PhraseTests(unittest.TestCase):
         self.assertEqual(len(runs), 1)
         self.assertEqual(runs[0]["words"], 10)
 
+    def test_repeated_phrase_reports_each_cv_location(self):
+        phrase = "build reliable tools for users"
+        runs = checks.shared_runs(f"{phrase}; then {phrase}", phrase)
+        self.assertEqual([(run["cv_word"], run["posting_word"]) for run in runs], [(1, 1), (7, 1)])
+
+    def test_repeated_phrase_reports_each_posting_location(self):
+        phrase = "build reliable tools for users"
+        runs = checks.shared_runs(phrase, f"{phrase}; then {phrase}")
+        self.assertEqual([(run["cv_word"], run["posting_word"]) for run in runs], [(1, 1), (1, 7)])
+
     def test_three_words_do_not_fail_strict_threshold(self):
         self.assertEqual(checks.shared_runs("build tools with care", "build tools with patience"), [])
 
