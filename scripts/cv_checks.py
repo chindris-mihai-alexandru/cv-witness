@@ -93,7 +93,7 @@ def shared_runs(cv_text, posting_text, minimum=4):
     index = defaultdict(list)
     for position in range(len(posting) - minimum + 1):
         index[tuple(posting[position:position + minimum])].append(position)
-    matches = {}
+    matches = []
     pairs = 0
     for position in range(len(cv) - minimum + 1):
         for target in index.get(tuple(cv[position:position + minimum]), ()):
@@ -106,9 +106,9 @@ def shared_runs(cv_text, posting_text, minimum=4):
             while position + length < len(cv) and target + length < len(posting) and cv[position + length] == posting[target + length]:
                 length += 1
             phrase = tuple(cv[position:position + length])
-            matches.setdefault(phrase, {"words": length, "cv_word": position + 1,
-                                         "posting_word": target + 1, "phrase": " ".join(phrase)})
-    return sorted(matches.values(), key=lambda item: (-item["words"], item["cv_word"], item["posting_word"]))
+            matches.append({"words": length, "cv_word": position + 1,
+                            "posting_word": target + 1, "phrase": " ".join(phrase)})
+    return sorted(matches, key=lambda item: (-item["words"], item["cv_word"], item["posting_word"]))
 
 
 def overlap_report(cv_text, posting_text, show_phrases=False):

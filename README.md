@@ -113,7 +113,7 @@ For phrase review:
 python3 scripts/jd_overlap.py CV.pdf posting.txt
 ```
 
-The script compares literal word sequences. `--strict` fails on any shared run of four or more words, including ordinary industry phrases. Reports give counts and positions; `--show-phrases` is an explicit opt-in for private wording. A pass is not an ATS or originality certification.
+The script compares literal word sequences. `--strict` fails on any shared run of four or more words, including ordinary industry phrases. Reports give counts and positions, including repeated occurrences; `--show-phrases` is an explicit opt-in for private wording. A pass is not an ATS or originality certification.
 
 For checked output, use `sh render.sh approved.html output.pdf a4 --posting posting.txt`. The renderer validates a temporary PDF before publishing and preserves previous output if any check fails. Selecting a posting uses strict overlap checks by default; choose `--overlap-policy review` explicitly when shared generic wording should be reviewed rather than blocked.
 
