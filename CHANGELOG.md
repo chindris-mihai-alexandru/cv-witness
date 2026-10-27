@@ -8,6 +8,10 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+### Added
+
+- Number fact gate (`scripts/check_cv_numbers.py`): after rendering, fail delivery when a CV number is backed by none of the approved source files (foundation.md, provenance.md, or per-application sources via repeatable `--source`). Years, single digits and alphanumeric-identifier fragments are skipped; wiring documented in SKILL.md step 6. Inspired by career-ops' generate-pdf fact gate.
+
 ### Changed
 
 - CV tailoring now uses the latest candidate-approved CV as the default design baseline across authoring paths; redesigns require approval. PDF checking can assert private section landmarks in extracted order without logging their text. Builder headings use strict line matching to avoid body-text false positives.
