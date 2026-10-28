@@ -10,11 +10,13 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ### Added
 
+- Grounded fit scorer (`scripts/fit_score.py`, `docs/fit-scoring.md`, `examples/fit/`): per-requirement judgments on described levels are combined in code into a fit band with an uncertainty range. Evidence quotes are verified against approved sources and unverified high claims are capped; hard gates, coverage limits and experience arithmetic (overlapping roles counted once) never go to the judge. The judge is pluggable and no service is called.
 - Number fact gate (`scripts/check_cv_numbers.py`): after rendering, fail delivery when a CV number is backed by none of the approved source files (foundation.md, provenance.md, or per-application sources via repeatable `--source`). Years, single digits and alphanumeric-identifier fragments are skipped; wiring documented in SKILL.md step 6. Inspired by career-ops' generate-pdf fact gate.
 - Posting liveness gate (`scripts/check_posting_liveness.py`): before tailoring, classify a posting URL as live, dead or suspicious from the HTTP status, closure phrases, expected role title and redirect behavior; wiring documented in SKILL.md step 1 and `docs/delivery-checks.md`. Suspicious results require browser verification; the script cannot render JavaScript.
 
 ### Changed
 
+- The bounded JSON loader moved into `scripts/cv_checks.py` and is shared by the structured builder and the fit scorer. Structured input now also rejects `NaN` and `Infinity`, and its error messages are worded generically.
 - CV tailoring now uses the latest candidate-approved CV as the default design baseline across authoring paths; redesigns require approval. PDF checking can assert private section landmarks in extracted order without logging their text. Builder headings use strict line matching to avoid body-text false positives.
 - Replaced the README's flat file listing with a directory tree and purpose table; clarified prerequisites, configuration, delivery checks and completed-roadmap status.
 - Retired completed implementation plans while retaining the user guides, test coverage and regeneration inputs.

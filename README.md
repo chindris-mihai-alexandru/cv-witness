@@ -26,6 +26,7 @@ The skill asks your agent to:
 
 - Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged. Before delivery, run `scripts/check_cv_numbers.py` against the approved source files; this lexical check flags unsupported numbers but does not validate their context or meaning.
 - Before tailoring from a job URL, run `scripts/check_posting_liveness.py <url> --expect "Role Title"`. It returns live, dead or suspicious; verify suspicious or client-side-rendered postings in a browser rather than treating uncertainty as closure.
+- Optionally triage a role first: judge each posting requirement against your verified facts, then let `scripts/fit_score.py` verify the quoted evidence and return a fit band with an uncertainty range. See [grounded fit scoring](docs/fit-scoring.md); it is not an ATS score.
 - Use `[FILL: ...]` markers in a draft when information is missing, then resolve or remove them before delivery.
 - Run the phrase-overlap script and review shared wording in context. A common technical phrase is not proof of copying and need not be changed just to avoid a match.
 - Inspect the exported text, page count, placeholders and layout before sending the CV.
@@ -184,6 +185,7 @@ cv-witness/
 │   └── explore/
 ├── docs/
 ├── examples/
+│   ├── fit/
 │   ├── sample-cv.json
 │   └── structured-cv.json
 ├── scripts/
@@ -193,6 +195,7 @@ cv-witness/
 │   ├── check_posting_liveness.py
 │   ├── ci_pdf_smoke.py
 │   ├── cv_checks.py
+│   ├── fit_score.py
 │   ├── jd_overlap.py
 │   ├── render_cv.py
 │   ├── render_exploration.py
