@@ -98,7 +98,7 @@ The builder supplies an expected-text contract derived from emitted wording and 
 
 No local export can promise “100% ATS parsability” across hiring platforms. These checks reduce formatting risk; they do not certify parsing, ranking, originality or an interview.
 
-All eight [fictional lane/paper samples](https://mihai-codes.github.io/cv-witness/assets/explore/) demonstrate the same approved example. Reproduce them with:
+All eight [fictional lane/paper samples](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/) demonstrate the same approved example. Reproduce them with:
 
 ```sh
 python3 scripts/render_template_gallery.py
