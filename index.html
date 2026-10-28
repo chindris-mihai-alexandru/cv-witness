@@ -291,7 +291,7 @@
         <a href="#install">Install</a>
       </nav>
       <div class="header-actions">
-        <a class="button small header-github" href="https://github.com/Mihai-Codes/cv-witness">GitHub
+        <a class="button small header-github" href="https://github.com/chindris-mihai-alexandru/cv-witness">GitHub
           <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
         </a>
       </div>
@@ -303,7 +303,7 @@
       <div class="ambient" aria-hidden="true"><canvas id="ambient-canvas" hidden></canvas></div>
       <div class="wrap">
         <div class="hero-copy">
-          <a class="release-link" href="https://github.com/Mihai-Codes/cv-witness/releases/latest">Open-source agent skill</a>
+          <a class="release-link" href="https://github.com/chindris-mihai-alexandru/cv-witness/releases/latest">Open-source agent skill</a>
           <h1 id="hero-title">Tailored CVs.<span>Nothing invented.</span></h1>
           <p class="intro">A clear CV built from your real work, in your own words.</p>
           <div class="hero-actions">
@@ -336,7 +336,7 @@
               <img src="assets/sample-cv.png" width="1414" height="2000" loading="lazy" decoding="async" alt="Actual screenshot of a one-page CV produced by cv-witness's template and renderer. Alex Morgan and all experience are fictional. Open the linked PDF to read its selectable text.">
             </a>
           </div>
-          <figcaption class="document-caption">Real rendered output using fictional source data. Text extraction and page count were checked; this is not an ATS certification. <a href="https://github.com/Mihai-Codes/cv-witness/blob/main/examples/sample-cv.json">Inspect the sample source</a>.</figcaption>
+          <figcaption class="document-caption">Real rendered output using fictional source data. Text extraction and page count were checked; this is not an ATS certification. <a href="https://github.com/chindris-mihai-alexandru/cv-witness/blob/main/examples/sample-cv.json">Inspect the sample source</a>.</figcaption>
         </figure>
         <p class="document-help" id="document-help">Scroll inside the preview to read the page. Fit page shows the full layout; Open PDF provides selectable text and your browser's zoom controls.</p>
       </div>
@@ -444,28 +444,28 @@ in this short example.</pre>
             </div>
             <div class="tab-panel" id="install-adal" role="tabpanel" aria-labelledby="install-tab-adal" tabindex="0">
               <h3 class="install-heading">Add a personal AdaL skill</h3>
-              <pre class="command"><code data-command><span class="cmd-name">git</span> clone <span class="cmd-source">https://github.com/Mihai-Codes/cv-witness.git</span> <span class="cmd-path">~/.adal/skills/cv-witness</span></code></pre>
+              <pre class="command"><code data-command><span class="cmd-name">git</span> clone <span class="cmd-source">https://github.com/chindris-mihai-alexandru/cv-witness.git</span> <span class="cmd-path">~/.adal/skills/cv-witness</span></code></pre>
               <p class="where">Run in your terminal. Private resume files are not included in the clone.</p>
             </div>
             <div class="tab-panel" id="install-claude" role="tabpanel" aria-labelledby="install-tab-claude" tabindex="0">
               <h3 class="install-heading">Add the marketplace, then install the plugin</h3>
-              <pre class="command"><code data-command><span class="cmd-name">/plugin</span> marketplace add <span class="cmd-source">Mihai-Codes/cv-witness</span>
+              <pre class="command"><code data-command><span class="cmd-name">/plugin</span> marketplace add <span class="cmd-source">chindris-mihai-alexandru/cv-witness</span>
 <span class="cmd-name">/plugin</span> install <span class="cmd-source">cv-witness@cv-witness</span></code></pre>
               <p class="where">Send these as two separate commands inside Claude Code, not in your shell.</p>
             </div>
             <div class="tab-panel" id="install-codex" role="tabpanel" aria-labelledby="install-tab-codex" tabindex="0">
               <h3 class="install-heading">Add a personal Codex skill</h3>
-              <pre class="command"><code data-command><span class="cmd-name">git</span> clone <span class="cmd-source">https://github.com/Mihai-Codes/cv-witness.git</span> <span class="cmd-path">~/.agents/skills/cv-witness</span></code></pre>
+              <pre class="command"><code data-command><span class="cmd-name">git</span> clone <span class="cmd-source">https://github.com/chindris-mihai-alexandru/cv-witness.git</span> <span class="cmd-path">~/.agents/skills/cv-witness</span></code></pre>
               <p class="where">Run in your terminal. Codex discovers personal skills in this directory.</p>
             </div>
             <div class="tab-panel" id="install-git" role="tabpanel" aria-labelledby="install-tab-git" tabindex="0">
               <h3 class="install-heading">Get the skill and its supporting files</h3>
-              <pre class="command"><code data-command><span class="cmd-name">git</span> clone <span class="cmd-source">https://github.com/Mihai-Codes/cv-witness.git</span></code></pre>
+              <pre class="command"><code data-command><span class="cmd-name">git</span> clone <span class="cmd-source">https://github.com/chindris-mihai-alexandru/cv-witness.git</span></code></pre>
               <p class="where">Ask your agent to read the root SKILL.md. Discovery paths depend on the host.</p>
             </div>
             <p class="copy-feedback" id="copy-feedback" role="status" aria-live="polite" aria-atomic="true"></p>
           </div>
-          <p class="install-note">Already have a clone at that path? Update it rather than overwriting it. See the <a href="https://github.com/Mihai-Codes/cv-witness#install">setup notes</a> for requirements and private sources.</p>
+          <p class="install-note">Already have a clone at that path? Update it rather than overwriting it. See the <a href="https://github.com/chindris-mihai-alexandru/cv-witness#install">setup notes</a> for requirements and private sources.</p>
         </div>
       </div>
     </section>
@@ -484,7 +484,7 @@ in this short example.</pre>
           </details>
           <details>
             <summary>Can it sound exactly like me?</summary>
-            <p>You can now build a private style reference from selected original Markdown, Cabinet pages, Obsidian notes, Sanity exports, or normalized original-text records. It describes writing habits rather than training a model. Generated memories and assistant prose are excluded when labelled; you still confirm authorship and review the draft. Exact voice matching is not promised. Read the <a href="https://github.com/Mihai-Codes/cv-witness/blob/main/docs/voice-corpus.md">voice corpus guide</a>.</p>
+            <p>You can now build a private style reference from selected original Markdown, Cabinet pages, Obsidian notes, Sanity exports, or normalized original-text records. It describes writing habits rather than training a model. Generated memories and assistant prose are excluded when labelled; you still confirm authorship and review the draft. Exact voice matching is not promised. Read the <a href="https://github.com/chindris-mihai-alexandru/cv-witness/blob/main/docs/voice-corpus.md">voice corpus guide</a>.</p>
           </details>
           <details>
             <summary>Can I change the layout or paper size?</summary>
@@ -504,10 +504,10 @@ in this short example.</pre>
       <div class="footer-inner">
         <a class="brand" href="#top"><img src="assets/mark.svg" width="30" height="30" alt=""><span>cv-witness</span></a>
         <nav class="footer-links" aria-label="Project links">
-          <a href="https://github.com/Mihai-Codes/cv-witness">Repository</a>
-          <a href="https://github.com/Mihai-Codes/cv-witness/releases">Releases</a>
-          <a href="https://github.com/Mihai-Codes/cv-witness/issues/1">Roadmap</a>
-          <a href="https://github.com/Mihai-Codes/cv-witness/blob/main/LICENSE">MIT license</a>
+          <a href="https://github.com/chindris-mihai-alexandru/cv-witness">Repository</a>
+          <a href="https://github.com/chindris-mihai-alexandru/cv-witness/releases">Releases</a>
+          <a href="https://github.com/chindris-mihai-alexandru/cv-witness/issues/1">Roadmap</a>
+          <a href="https://github.com/chindris-mihai-alexandru/cv-witness/blob/main/LICENSE">MIT license</a>
         </nav>
       </div>
       <p class="credit">Personal project by <a href="https://mihaichindris.me">Mihai-Alexandru Chindriș</a>.</p>

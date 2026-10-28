@@ -5,15 +5,15 @@
 <h1 align="center">cv-witness</h1>
 
 <p align="center">
-  <a href="https://github.com/Mihai-Codes/cv-witness/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Mihai-Codes/cv-witness?color=FF5898&labelColor=1b222c"></a>
+  <a href="https://github.com/chindris-mihai-alexandru/cv-witness/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/chindris-mihai-alexandru/cv-witness?color=FF5898&labelColor=1b222c"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2b3542?labelColor=1b222c"></a>
-  <a href="https://github.com/Mihai-Codes/cv-witness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2b3542?labelColor=1b222c"></a>
+  <a href="https://github.com/chindris-mihai-alexandru/cv-witness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2b3542?labelColor=1b222c"></a>
 </p>
 
 <p align="center">
   <a href="https://chindris-mihai-alexandru.github.io/cv-witness/">Website</a> ·
   <a href="#install">Install</a> ·
-  <a href="https://github.com/Mihai-Codes/cv-witness/issues/1">Roadmap</a>
+  <a href="https://github.com/chindris-mihai-alexandru/cv-witness/issues/1">Roadmap</a>
 </p>
 
 An open-source agent skill for drafting and reviewing a CV from your real experience. It helps you select relevant work, trace claims to a source and inspect the exported document. You review the facts and wording before applying.
@@ -39,7 +39,7 @@ One root `SKILL.md` is shared by every installation. The template and scripts li
 ### AdaL
 
 ```sh
-git clone https://github.com/Mihai-Codes/cv-witness.git ~/.adal/skills/cv-witness
+git clone https://github.com/chindris-mihai-alexandru/cv-witness.git ~/.adal/skills/cv-witness
 ```
 
 ### Claude Code
@@ -47,20 +47,20 @@ git clone https://github.com/Mihai-Codes/cv-witness.git ~/.adal/skills/cv-witnes
 Send these as two separate commands inside Claude Code:
 
 ```text
-/plugin marketplace add Mihai-Codes/cv-witness
+/plugin marketplace add chindris-mihai-alexandru/cv-witness
 /plugin install cv-witness@cv-witness
 ```
 
 The plugin manifest points to the root skill. Alternatively, install a personal skill:
 
 ```sh
-git clone https://github.com/Mihai-Codes/cv-witness.git ~/.claude/skills/cv-witness
+git clone https://github.com/chindris-mihai-alexandru/cv-witness.git ~/.claude/skills/cv-witness
 ```
 
 ### Codex
 
 ```sh
-git clone https://github.com/Mihai-Codes/cv-witness.git ~/.agents/skills/cv-witness
+git clone https://github.com/chindris-mihai-alexandru/cv-witness.git ~/.agents/skills/cv-witness
 ```
 
 For other hosts, follow their skill-discovery instructions or ask the agent to read the root `SKILL.md`. If the destination already contains a clone, update it instead of overwriting your private sources.
@@ -239,7 +239,7 @@ The helper fills the canonical template, runs the existing renderer, checks one-
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review. Run `CV_WITNESS_REQUIRE_PDF_TESTS=1 python3 -m unittest discover -s tests -q` with Chromium and Poppler to include actual export checks. All fixtures are synthetic; no personal corpus or connected account is needed.
 
-[Releases](https://github.com/Mihai-Codes/cv-witness/releases) and [CHANGELOG.md](CHANGELOG.md) record shipped changes. The [initial roadmap](https://github.com/Mihai-Codes/cv-witness/issues/1) is complete; its closed sub-issues retain implementation and verification notes. Propose future work in a new, focused issue.
+[Releases](https://github.com/chindris-mihai-alexandru/cv-witness/releases) and [CHANGELOG.md](CHANGELOG.md) record shipped changes. The [initial roadmap](https://github.com/chindris-mihai-alexandru/cv-witness/issues/1) is complete; its closed sub-issues retain implementation and verification notes. Propose future work in a new, focused issue.
 
 ## License
 
