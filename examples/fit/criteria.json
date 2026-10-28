@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "role": "Application Support Engineer (fictional posting)",
+  "criteria": [
+    {
+      "id": "incident_management",
+      "weight": 30,
+      "question": "How much hands-on incident management does the evidence show?",
+      "levels": [
+        "No incident handling is shown",
+        "Supported users but did not own incidents",
+        "Owned triage and escalation for a production service",
+        "Owned incident response and drove recurring-issue fixes across teams"
+      ]
+    },
+    {
+      "id": "monitoring",
+      "weight": 20,
+      "question": "How much monitoring and alerting work does the evidence show?",
+      "levels": [
+        "No monitoring work is shown",
+        "Used dashboards someone else built",
+        "Watched service health and acted on alerts",
+        "Designed alerts and reports that changed how the team worked"
+      ]
+    },
+    {
+      "id": "scripting_ci",
+      "weight": 20,
+      "question": "How much scripting and CI/CD automation does the evidence show?",
+      "levels": [
+        "No automation is shown",
+        "Ran existing scripts or pipelines",
+        "Wrote scripts or pipeline steps for a team",
+        "Built and maintained deployment and test automation"
+      ]
+    },
+    {"id": "seniority", "weight": 20, "min_years": 5},
+    {
+      "id": "work_authorization",
+      "weight": 0,
+      "gate_min": 0.5,
+      "question": "Is the candidate eligible to work in the role's country without sponsorship?",
+      "levels": ["Not eligible, or the evidence does not say", "Eligible"]
+    }
+  ]
+}

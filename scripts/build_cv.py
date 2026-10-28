@@ -12,10 +12,10 @@ import unicodedata
 from urllib.parse import urlsplit
 
 if __package__:
-    from .cv_checks import CheckError, CheckFailure, MARKER, MAX_BYTES
+    from .cv_checks import CheckError, CheckFailure, MARKER, load_json
     from .render_cv import render_html
 else:
-    from cv_checks import CheckError, CheckFailure, MARKER, MAX_BYTES
+    from cv_checks import CheckError, CheckFailure, MARKER, load_json
     from render_cv import render_html
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -131,24 +131,8 @@ def validate_document(data):
     return result
 
 
-def unique_object(pairs):
-    result = {}
-    for key, value in pairs:
-        if key in result:
-            raise CheckError("Duplicate JSON key in the structured input.")
-        result[key] = value
-    return result
-
-
 def load_document(path):
-    path = Path(path).expanduser()
-    if path.suffix.lower() != ".json" or not path.is_file() or not 0 < path.stat().st_size <= MAX_BYTES:
-        raise CheckError("Select a structured JSON document within 16 MiB.")
-    try:
-        data = json.loads(path.read_text(encoding="utf-8-sig"), object_pairs_hook=unique_object)
-    except (json.JSONDecodeError, UnicodeError, RecursionError) as error:
-        raise CheckError("Structured CV input must be valid UTF-8 JSON.") from error
-    return validate_document(data)
+    return validate_document(load_json(path, "structured CV"))
 
 
 def build_html(data, lane="engineering", section_order=None):

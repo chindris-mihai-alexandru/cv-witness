@@ -1,6 +1,7 @@
 """Shared, local CV export checks. These are not an ATS certification."""
 
 from collections import defaultdict
+import json
 import os
 from pathlib import Path
 import re
@@ -75,6 +76,31 @@ def read_text(path, pdf_allowed=True):
         return path.read_text(encoding="utf-8-sig", errors="strict")
     except (OSError, UnicodeError) as error:
         raise CheckError("Text input must be readable UTF-8.") from error
+
+
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise CheckError("Duplicate JSON key in the input.")
+        result[key] = value
+    return result
+
+
+def reject_constant(_name):
+    raise CheckError("JSON input must not contain NaN or Infinity.")
+
+
+def load_json(path, kind="structured", max_bytes=MAX_BYTES):
+    """Bounded strict-UTF-8 JSON loader that rejects duplicate keys and NaN/Infinity."""
+    path = Path(path).expanduser()
+    if path.suffix.lower() != ".json" or not path.is_file() or not 0 < path.stat().st_size <= max_bytes:
+        raise CheckError(f"Select a {kind} JSON document within {max_bytes // (1024 * 1024)} MiB.")
+    try:
+        return json.loads(path.read_text(encoding="utf-8-sig"), object_pairs_hook=unique_object,
+                          parse_constant=reject_constant)
+    except (json.JSONDecodeError, UnicodeError, RecursionError, OSError) as error:
+        raise CheckError(f"The {kind} input must be valid UTF-8 JSON.") from error
 
 
 def words(text):
