@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://mihai-codes.github.io/cv-witness/">Website</a> ·
+  <a href="https://chindris-mihai-alexandru.github.io/cv-witness/">Website</a> ·
   <a href="#install">Install</a> ·
   <a href="https://github.com/Mihai-Codes/cv-witness/issues/1">Roadmap</a>
 </p>
@@ -24,7 +24,8 @@ The job posting guides emphasis and ordering. It should not become a script for 
 
 The skill asks your agent to:
 
-- Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged.
+- Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged. Before delivery, run `scripts/check_cv_numbers.py` against the approved source files; this lexical check flags unsupported numbers but does not validate their context or meaning.
+- Before tailoring from a job URL, run `scripts/check_posting_liveness.py <url> --expect "Role Title"`. It returns live, dead or suspicious; verify suspicious or client-side-rendered postings in a browser rather than treating uncertainty as closure.
 - Use `[FILL: ...]` markers in a draft when information is missing, then resolve or remove them before delivery.
 - Run the phrase-overlap script and review shared wording in context. A common technical phrase is not proof of copying and need not be changed just to avoid a match.
 - Inspect the exported text, page count, placeholders and layout before sending the CV.
@@ -105,7 +106,7 @@ Ask your agent:
 
 > "Draft a CV from my verified experience for this role: [paste the posting URL or text here]. Keep my voice and show me the wording before exporting."
 
-Provide a master resume, the latest candidate-approved CV (or a specific design reference), and verification notes privately. The approved CV is the default design baseline across authoring tools; ask before changing its layout or section order. Review the selected facts and approve the draft before rendering. The agent workflow defaults to `~/Downloads/`; standalone build and render commands require an explicit output path.
+Provide a master resume, the latest candidate-approved CV (or a specific design reference), and verification notes privately. The approved CV is the default design baseline across authoring tools; ask before changing its layout or section order. Review the selected facts and approve the draft before rendering. The agent workflow uses the output directory configured in `SKILL.md`; standalone build and render commands require an explicit output path.
 
 For phrase review:
 
@@ -146,13 +147,13 @@ Engineering, Operations/Support, Research and Management are section-order prese
 
 ## Explore the repository
 
-[Open the interactive project guide](https://mihai-codes.github.io/cv-witness/assets/explore/) for the animated workflow, searchable source map, three guided reading tours and eight fictional template PDFs.
+[Open the interactive project guide](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/) for the animated workflow, searchable source map, three guided reading tours and eight fictional template PDFs.
 
 <p align="center">
-  <a href="https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html"><img src="assets/explore/workflow-preview.svg" alt="Approved wording passes through the shared layout, temporary PDF and delivery checks. Failure preserves prior output; passing output still needs visual and factual review." width="520"></a>
+  <a href="https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/workflow.html"><img src="assets/explore/workflow-preview.svg" alt="Approved wording passes through the shared layout, temporary PDF and delivery checks. Failure preserves prior output; passing output still needs visual and factual review." width="520"></a>
 </p>
 
-[Workflow](https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html) · [Source map](https://mihai-codes.github.io/cv-witness/assets/explore/codegraph.html) · [Regeneration and limits](docs/exploration.md)
+[Workflow](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/workflow.html) · [Source map](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/codegraph.html) · [Regeneration and limits](docs/exploration.md)
 
 The README preview has a fixed light background and dark labels in either GitHub theme. Open it for the interactive workflow, whose theme and pause controls remain available. The full maps work offline and respect reduced motion. They describe verified workflow and public source structure, not live telemetry; private resumes and writing corpora are excluded.
 
@@ -188,6 +189,8 @@ cv-witness/
 ├── scripts/
 │   ├── build_cv.py
 │   ├── check_cv.py
+│   ├── check_cv_numbers.py
+│   ├── check_posting_liveness.py
 │   ├── ci_pdf_smoke.py
 │   ├── cv_checks.py
 │   ├── jd_overlap.py

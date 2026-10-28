@@ -11,7 +11,7 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 ### Added
 
 - Number fact gate (`scripts/check_cv_numbers.py`): after rendering, fail delivery when a CV number is backed by none of the approved source files (foundation.md, provenance.md, or per-application sources via repeatable `--source`). Years, single digits and alphanumeric-identifier fragments are skipped; wiring documented in SKILL.md step 6. Inspired by career-ops' generate-pdf fact gate.
-- Posting liveness gate (`scripts/check_posting_liveness.py`): before tailoring, classify a posting URL as live, dead or suspicious from the HTTP status, closure phrases, expected role title and redirect behavior; wiring documented in SKILL.md step 1. Inspired by career-ops' liveness gate.
+- Posting liveness gate (`scripts/check_posting_liveness.py`): before tailoring, classify a posting URL as live, dead or suspicious from the HTTP status, closure phrases, expected role title and redirect behavior; wiring documented in SKILL.md step 1 and `docs/delivery-checks.md`. Suspicious results require browser verification; the script cannot render JavaScript.
 
 ### Changed
 

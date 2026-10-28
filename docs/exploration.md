@@ -6,7 +6,7 @@ TL;DR: Use the animated workflow for approval and export boundaries, and the int
 
 ## Two views with different jobs
 
-[Open project exploration](https://mihai-codes.github.io/cv-witness/assets/explore/).
+[Open project exploration](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/).
 
 - **Checked-export workflow:** follows approved wording through the shared layout, temporary PDF, delivery checks and publication. Failure preserves the prior output. Animation shows direction, not live activity.
 - **Interactive source map:** searches public files and symbols and provides three guided reading tours. Import, containment and external-dependency edges come from a deterministic scan. Inferred call edges are disabled; dynamic or subprocess relationships may not appear.
