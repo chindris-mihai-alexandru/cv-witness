@@ -251,12 +251,6 @@
       .footer-inner { align-items: flex-start; gap: 12px; }
       .footer-links { gap: 18px; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .ambient canvas { opacity: .7; }
-      .chalk-icon { animation: none !important; }
-      *, *::before, *::after, .faq details::details-content { transition: none !important; }
-    }
     html[data-glass="solid"] .glass { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
     @media (prefers-reduced-transparency: reduce) {
       html:not([data-glass="glass"]) .glass { background: var(--surface); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
@@ -655,7 +649,7 @@ in this short example.</pre>
               ? 'Glass is on by your choice, overriding reduced transparency for this site.'
               : 'Glass is on for navigation and controls. Reading panels stay solid.';
         const motionAvailable = !!ambient && !!chalkObserver;
-        const blocked = reducedMotion.matches || forcedColors.matches || !motionAvailable;
+        const blocked = forcedColors.matches || !motionAvailable;
         if (blocked) motionEnabled = false;
         const enabled = motionEnabled && !blocked;
         root.classList.toggle('motion-running', enabled && !document.hidden);
@@ -664,7 +658,7 @@ in this short example.</pre>
         motionToggle.textContent = enabled ? 'Pause page motion' : 'Resume page motion';
         motionStatus.textContent = !motionAvailable
           ? 'Your browser uses a still background.'
-          : blocked ? 'Motion is off to respect your system preference.'
+          : blocked ? 'Motion is off for accessibility.'
           : enabled ? 'Ambient flow and icon levitation are on.' : 'Ambient flow and icon levitation are paused.';
       };
       finishSelect.addEventListener('change', () => {
