@@ -4,26 +4,47 @@
 <meta charset="utf-8">
 <title>{{TITLE}}</title>
 <style>
+/* One spacing scale, in pt only. Every vertical gap is a margin between
+   siblings (never a trailing margin), so each section boundary is identical
+   by construction; scripts/cv_layout.py verifies that from the rendered PDF.
+   The "classic" design changes token values only, never the structure. */
+:root { --fs: 10.5pt; --lh: 1.35; --small: 9.5pt; --line: 2pt; --block: 6pt; --section: 12pt; --indent: 14pt; --rule: .6pt solid #707070; --ink: #171717; --accent: #171717; }
 @page { size: A4; margin: 16mm 14mm; }
 * { box-sizing: border-box; }
-body { margin: 0; color: #171717; font: 10.5pt/1.35 Arial, Helvetica, sans-serif; overflow-wrap: anywhere; }
-header { margin-bottom: 10pt; }
-h1 { font-size: 20pt; line-height: 1.15; margin: 0 0 4pt; }
-.role { font-size: 11pt; margin: 0 0 4pt; }
-.contact { font-size: 9.5pt; line-height: 1.4; margin: 0; }
+body { margin: 0; color: var(--ink); font: var(--fs)/var(--lh) Arial, Helvetica, sans-serif; overflow-wrap: anywhere; }
+body.classic { --fs: 9.3pt; --lh: 1.2; --small: 9pt; --line: 1pt; --block: 3.5pt; --section: 7pt; --rule: .75pt solid #3f3f46; --ink: #111; --accent: #3f3f46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
 a { color: inherit; text-decoration: underline; }
-h2 { font-size: 11pt; margin: 9pt 0 4pt; padding-bottom: 2pt; border-bottom: .6pt solid #707070; break-after: avoid; }
-h3 { font-size: 10.5pt; margin: 6pt 0 2pt; break-after: avoid; }
-p { margin: 0 0 3pt; orphans: 3; widows: 3; }
-.entry { margin-bottom: 5pt; }
-.metadata { margin-bottom: 3pt; }
-ul { margin: 2pt 0 5pt; padding-left: 18px; list-style-position: outside; }
-li { padding-left: 0; margin: 0 0 3pt; orphans: 2; widows: 2; }
-section { break-inside: auto; }
+p, h1, h2, h3, ul { margin: 0; }
+header { margin-bottom: var(--section); }
+h1 { font-size: 20pt; line-height: 1.15; }
+.role, .contact { font-size: var(--small); }
+h1 + p { margin-top: var(--line); }
+.contact { line-height: 1.4; }
+.classic header { text-align: center; }
+.classic h1 { font-size: 17.5pt; letter-spacing: .4pt; }
+section + section { margin-top: var(--section); }
+h2 { font-size: 11pt; line-height: var(--lh); padding-bottom: 1pt; margin-bottom: var(--block); border-bottom: var(--rule); color: var(--accent); break-after: avoid; }
+.classic h2 { font-size: 10.2pt; text-transform: uppercase; letter-spacing: .9pt; }
+h3 { font-size: inherit; font-weight: 700; }
+.entry + .entry, .group + .group { margin-top: var(--block); }
+.group > .entry { margin-top: var(--line); }
+section > p + p { margin-top: var(--line); }
+.row { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; break-after: avoid; }
+.row > :first-child { min-width: 0; }
+.row h3 { font-weight: 600; }
+.group > .row:first-child h3 { font-weight: 700; }
+.when { flex: none; white-space: nowrap; font-size: var(--small); }
+.sub { font-size: var(--small); break-after: avoid; }
+ul { padding-left: var(--indent); list-style-position: outside; }
+.row + ul, .sub + ul { margin-top: var(--line); }
+li + li { margin-top: var(--line); }
+li, p { orphans: 2; widows: 2; }
+.classic p, .classic li { text-align: justify; }
+.entry { break-inside: avoid; }
 .compact { break-inside: avoid; }
 </style>
 </head>
-<body>
+<body{{BODY_CLASS}}>
 {{CONTENT}}
 </body>
 </html>

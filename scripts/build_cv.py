@@ -135,8 +135,13 @@ def load_document(path):
     return validate_document(load_json(path, "structured CV"))
 
 
-def build_html(data, lane="engineering", section_order=None):
+DESIGNS = {"default": "", "classic": ' class="classic"'}
+
+
+def build_html(data, lane="engineering", section_order=None, design="default"):
     data = validate_document(data)
+    if design not in DESIGNS:
+        raise CheckError("Choose the default or classic design.")
     if lane not in LANES:
         raise CheckError("Choose engineering, operations, research or management.")
     active = {section for section in SECTIONS if data.get(section)}
@@ -149,6 +154,13 @@ def build_html(data, lane="engineering", section_order=None):
         expected.append(value)
         return html.escape(value, quote=True)
 
+    def row(title, dates=""):
+        """Title left, dates flush right on the same baseline (flex row, no float)."""
+        return '<div class="row"><h3>' + escaped(title) + "</h3>" + ('<span class="when">' + escaped(dates) + "</span>" if dates else "") + "</div>"
+
+    def bullets(items):
+        return "<ul>" + "".join("<li>" + escaped(item) + "</li>" for item in items) + "</ul>"
+
     def anchor(value, url=None):
         visible = escaped(value)
         return '<a href="' + html.escape(url, quote=True) + '">' + visible + '</a>' if url else visible
@@ -159,7 +171,7 @@ def build_html(data, lane="engineering", section_order=None):
         content.append('<p class="role">' + escaped(header["role"]) + "</p>")
     if header["contacts"]:
         values = [escaped(entry["label"]) + ": " + anchor(entry["value"], entry.get("url")) for entry in header["contacts"]]
-        content.append('<p class="contact">' + " · ".join(values) + "</p>")
+        content.append('<p class="contact">' + " · ".join('<span class="c">' + value + "</span>" for value in values) + "</p>")
     content.append("</header>")
     for section in order:
         content.append('<section id="' + section + '"><h2>' + escaped(HEADINGS[section]) + "</h2>")
@@ -171,32 +183,27 @@ def build_html(data, lane="engineering", section_order=None):
                 content.append("<p><strong>" + escaped(entry["category"]) + ":</strong> " + escaped(entry["text"]) + "</p>")
         elif section == "experience":
             for entry in entries:
-                label = escaped(entry["employer"]) + (" · " + escaped(entry["location"]) if entry["location"] else "")
-                for index, role in enumerate(entry["roles"]):
-                    content.append('<div class="entry"><h3>' + (label + "<br>" if index == 0 else "") + escaped(role["title"]) + "</h3>")
-                    content.append('<p class="metadata">' + escaped(role["dates"]) + "</p><ul>")
-                    content.extend("<li>" + escaped(bullet) + "</li>" for bullet in role["bullets"])
-                    content.append("</ul></div>")
+                place = ' <span class="sub">· ' + escaped(entry["location"]) + "</span>" if entry["location"] else ""
+                content.append('<div class="group"><div class="row"><h3>' + escaped(entry["employer"]) + place + "</h3></div>")
+                content.extend('<div class="entry">' + row(role["title"], role["dates"]) + bullets(role["bullets"]) + "</div>" for role in entry["roles"])
+                content.append("</div>")
         elif section == "projects":
             for entry in entries:
-                content.append('<div class="entry"><h3>' + escaped(entry["name"]) + "</h3>")
-                for field in ("description", "dates"):
-                    if entry[field]:
-                        content.append("<p>" + escaped(entry[field]) + "</p>")
+                content.append('<div class="entry">' + row(entry["name"], entry["dates"]))
+                if entry["description"]:
+                    content.append('<p class="sub">' + escaped(entry["description"]) + "</p>")
                 if entry.get("url"):
-                    content.append("<p>" + anchor(entry["url"], entry["url"]) + "</p>")
-                content.append("<ul>")
-                content.extend("<li>" + escaped(bullet) + "</li>" for bullet in entry["bullets"])
-                content.append("</ul></div>")
+                    content.append('<p class="sub">' + anchor(entry["url"], entry["url"]) + "</p>")
+                content.append(bullets(entry["bullets"]) + "</div>")
         elif section == "publications":
             content.extend('<p class="compact">' + anchor(entry["citation"], entry.get("url")) + "</p>" for entry in entries)
         else:
             content.extend("<p>" + escaped(entry) + "</p>" for entry in entries)
         content.append("</section>")
     shell = (ROOT / "templates" / "structured.html").read_text(encoding="utf-8")
-    if set(re.findall(r"\{\{([A-Z_]+)\}\}", shell)) != {"TITLE", "CONTENT"}:
+    if set(re.findall(r"\{\{([A-Z_]+)\}\}", shell)) != {"TITLE", "BODY_CLASS", "CONTENT"}:
         raise CheckError("Structured shell has an invalid placeholder contract.")
-    source = shell.replace("{{TITLE}}", html.escape(header["name"] + " - CV", quote=True)).replace("{{CONTENT}}", "\n".join(content))
+    source = shell.replace("{{TITLE}}", html.escape(header["name"] + " - CV", quote=True)).replace("{{BODY_CLASS}}", DESIGNS[design]).replace("{{CONTENT}}", "\n".join(content))
     return source, list(dict.fromkeys(expected)), order
 
 
@@ -207,6 +214,7 @@ def main(argv=None):
     parser.add_argument("--lane", choices=tuple(LANES), default="engineering")
     parser.add_argument("--paper", choices=("a4", "letter"), default="a4")
     parser.add_argument("--max-pages", type=int, default=1)
+    parser.add_argument("--design", choices=tuple(DESIGNS), default="default", help="classic: centred header, ruled uppercase headings, justified text")
     parser.add_argument("--section-order", help="Comma-separated keys; must include every nonempty section")
     parser.add_argument("--ordered-text", action="append", default=[], help="PDF text landmarks that must extract in this order")
     parser.add_argument("--posting")
@@ -217,7 +225,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         source, expected, order = build_html(load_document(args.input), args.lane,
-                                            args.section_order.split(",") if args.section_order is not None else None)
+                                            args.section_order.split(",") if args.section_order is not None else None, args.design)
         ordered_text = args.ordered_text or [HEADINGS[section] for section in order]
         report = render_html(source, args.output, args.paper, args.max_pages, expected,
                              args.posting, args.overlap_policy, args.browser, args.replace,
