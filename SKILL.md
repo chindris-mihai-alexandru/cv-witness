@@ -25,7 +25,7 @@ This is the user's main job-application workflow. Rezi is an optional source for
 - `provenance.md` in this skill folder holds verification notes, external PR merge states, and the metrics bank. Cross-check it when mapping requirements; it is private and gitignored.
 - The user's guidance is at the CV guide path in Personal configuration. Read it before tailoring and follow its private-sector or federal track as applicable.
 - The user prefers Amazon Quick Desktop's CV creation feature for the final document. Prepare and review accurate source content for that workflow; do not claim to operate Quick or produce its output unless an available integration actually did so.
-- The structured `scripts/build_cv.py` workflow and legacy `template.html`/`render.sh` path are optional local fallbacks. Use them only if the user asks for local output or Quick is unavailable and the user agrees. Structured templates share one layout and support repeatable roles, eight career-lane ordering presets (engineering, operations, research, management, security, customer-success), and A4/Letter.
+- The structured `scripts/build_cv.py` workflow and legacy `template.html`/`render.sh` path are optional local fallbacks. Use them only if the user asks for local output or Quick is unavailable and the user agrees. Structured templates share one layout and support repeatable roles, six career-lane ordering presets (engineering, operations, research, management, security, customer-success), and A4/Letter.
 - Rezi is a separate, remote source. Read only the specific Rezi resume the user selects or asks you to consult. Do not assume it matches `foundation.md` or silently merge differences.
 
 ## Workflow
