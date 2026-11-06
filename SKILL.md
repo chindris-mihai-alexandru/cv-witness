@@ -71,9 +71,15 @@ When driving Quick Desktop's CV creation, follow the pattern its own sessions us
 5. Known edge case: Romanian diacritics (`ș`, `ț`) need a Unicode font registered in the document (Arial worked; Helvetica lacks the glyph).
 6. Never tell the user a Quick document exists unless a Quick tool call actually created it.
 
-## ATS parsing rules (verify on every rendered CV)
+## Layout preservation (local PDF path)
 
-Use a live-text document with clear headings. Parsing behavior differs across platforms; the checks below reduce known risks but do not certify ATS parsing or ranking. Follow the employer's accepted file-type instructions. Before delivering:
+The structured template uses one spacing scale in `pt` only. Every vertical gap is a margin between siblings (never a trailing margin), so each section boundary is identical by construction. Title and date share a flex row (`justify-content: space-between`) so dates sit flush right on the same baseline — never on a separate line below the title.
+
+- `--design classic` reproduces the approved centred-header, ruled-uppercase-heading, justified-text look. `--design default` is the plain single-column preset. Pick the one that matches the approved CV baseline; switching designs needs approval.
+- `scripts/cv_layout.py` checks layout geometry from `pdftotext -bbox-layout` output: date right-alignment, heading-gap consistency, bullet left edges. Run it after rendering to catch regressions. It reports codes, indices and point measurements only (no CV text).
+- Run `scripts/cv_layout.py < bbox-file` as a post-render gate; any failure means the build's layout drifted.
+
+## ATS parsing rules (verify on every rendered CV)
 
 1. Run `pdftotext` on the output and confirm every section extracts cleanly - no missing content, no `{{placeholders}}`, no `[FILL: ...]` markers left.
 2. Use clear section headings such as Professional Summary, Skills, Professional Experience, Projects, Education, Languages, Certifications and Publications. Omit empty sections and never fabricate content to fill a slot. Keep the approved CV's section order; if no approved baseline exists, propose a suitable ordering preset for approval.
