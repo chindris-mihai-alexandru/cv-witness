@@ -80,6 +80,7 @@ The structured template uses one spacing scale in `pt` only. Every vertical gap 
 - `--design classic` reproduces the approved centred-header, ruled-uppercase-heading, justified-text look. `--design default` is the plain single-column preset. Pick the one that matches the approved CV baseline; switching designs needs approval.
 - `scripts/cv_layout.py` checks layout geometry from `pdftotext -bbox-layout` output: date right-alignment, heading-gap consistency, bullet left edges. Run it after rendering to catch regressions. It reports codes, indices and point measurements only (no CV text).
 - Run `scripts/cv_layout.py < bbox-file` as a post-render gate; any failure means the build's layout drifted.
+- Justified paragraphs need `class="just"` (or equivalent `text-align: justify`). A bare `<p>` renders ragged-right, which looks uneven on long summaries. Check the extracted text: lines ending at varying x positions indicate justified text; ragged lines indicate a missing class.
 
 ## ATS parsing rules (verify on every rendered CV)
 
