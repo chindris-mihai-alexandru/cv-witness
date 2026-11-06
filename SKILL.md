@@ -73,6 +73,8 @@ When driving Quick Desktop's CV creation, follow the pattern its own sessions us
 
 ## Layout preservation (local PDF path)
 
+The approved CV (`template.html`) is the design gold standard: Helvetica Neue, cool-grey accent (#3f3f46), centred header with inline-SVG contact icons, float-right dates, justified body text, 9.3pt/1.2 line height, 18/13/14mm margins. The structured builder's `--design classic` approximates this but does not reproduce it exactly (no contact icons, different spacing tokens). When the user says "preserve the original look and feel," use `template.html` directly with the tailored content — do not substitute the structured builder's approximation.
+
 The structured template uses one spacing scale in `pt` only. Every vertical gap is a margin between siblings (never a trailing margin), so each section boundary is identical by construction. Title and date share a flex row (`justify-content: space-between`) so dates sit flush right on the same baseline — never on a separate line below the title.
 
 - `--design classic` reproduces the approved centred-header, ruled-uppercase-heading, justified-text look. `--design default` is the plain single-column preset. Pick the one that matches the approved CV baseline; switching designs needs approval.
