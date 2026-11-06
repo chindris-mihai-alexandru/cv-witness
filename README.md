@@ -144,7 +144,7 @@ python3 scripts/build_cv.py approved-cv.json output.pdf \
   --posting selected-posting.txt
 ```
 
-Engineering, Operations/Support, Research and Management are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. The builder checks that its selected section headings extract in the chosen order. These are product layouts, not replacements for a candidate's existing design; obtain approval before switching. The single-column preset is a parsing-risk recommendation, not a requirement to redesign an approved two-column CV. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
+Engineering, Operations/Support, Research, Management, Security and Customer-Success are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. The builder checks that its selected section headings extract in the chosen order. These are product layouts, not replacements for a candidate's existing design; obtain approval before switching. The single-column preset is a parsing-risk recommendation, not a requirement to redesign an approved two-column CV. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
 
 ## Explore the repository
 
