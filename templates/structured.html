@@ -9,10 +9,10 @@
    by construction; scripts/cv_layout.py verifies that from the rendered PDF.
    The "classic" design changes token values only, never the structure. */
 :root { --fs: 10.5pt; --lh: 1.35; --small: 9.5pt; --line: 2pt; --block: 6pt; --section: 12pt; --indent: 14pt; --rule: .6pt solid #707070; --ink: #171717; --accent: #171717; }
-@page { size: A4; margin: 16mm 14mm; }
+@page { size: A4; margin: 18mm 13mm 14mm; }
 * { box-sizing: border-box; }
 body { margin: 0; color: var(--ink); font: var(--fs)/var(--lh) Arial, Helvetica, sans-serif; overflow-wrap: anywhere; }
-body.classic { --fs: 9.3pt; --lh: 1.2; --small: 9pt; --line: 1pt; --block: 3.5pt; --section: 7pt; --rule: .75pt solid #3f3f46; --ink: #111; --accent: #3f3f46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+body.classic { --fs: 9.3pt; --lh: 1.2; --small: 9pt; --line: 2.5pt; --block: 3pt; --section: 9pt; --indent: 17pt; --rule: 1px solid #3f3f46; --ink: #111; --accent: #3f3f46; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
 a { color: inherit; text-decoration: underline; }
 p, h1, h2, h3, ul { margin: 0; }
 header { margin-bottom: var(--section); }
