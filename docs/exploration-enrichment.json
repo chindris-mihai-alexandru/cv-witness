@@ -56,7 +56,7 @@
       ]
     },
     {
-      "title": "One layout, four career lanes",
+      "title": "One layout, six career lanes",
       "description": "Understand repeatable records and honest pagination.",
       "steps": [
         {"nodeId": "file:examples/structured-cv.json", "note": "The fictional fixture has repeated roles and optional content instead of fixed numbered slots."},
