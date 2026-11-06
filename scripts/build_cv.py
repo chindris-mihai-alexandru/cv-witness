@@ -26,6 +26,8 @@ LANES = {
     "operations": ("summary", "experience", "skills", "certifications", "projects", "education", "publications", "languages"),
     "research": ("summary", "education", "experience", "publications", "projects", "skills", "certifications", "languages"),
     "management": ("summary", "experience", "projects", "skills", "education", "certifications", "publications", "languages"),
+    "security": ("summary", "skills", "certifications", "experience", "projects", "education", "publications", "languages"),
+    "customer-success": ("summary", "experience", "skills", "certifications", "projects", "education", "publications", "languages"),
 }
 
 
