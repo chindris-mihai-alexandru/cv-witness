@@ -13,7 +13,7 @@ This is the user's main job-application workflow. Rezi is an optional source for
 
 - CV guide: `~/Documents/Cabinet/job-hunting/CV guide.md`
 - Applications log: `~/Documents/Cabinet/job-hunting/Applications.csv`
-- Output directory: `~/Downloads/Career` (owner decision, 2026-10-20: the tailored CV replaces `CV.pdf` in that folder, and a role-named copy is kept alongside it)
+- Output directory: `~/Downloads/Career` (tailored CVs are saved to `~/Downloads` with role/company filenames; they do NOT replace `CV.pdf` in the Career folder)
 - Master resume: `foundation.md` in this skill folder
 - Verification notes: `provenance.md` in this skill folder
 - Optional voice store: `~/.cv-witness/voice` (private, outside this checkout)
