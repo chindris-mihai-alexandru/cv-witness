@@ -106,7 +106,14 @@ class RealPDFTests(unittest.TestCase):
     def test_existing_synthetic_template_remains_usable(self):
         template = (ROOT / "template.html").read_text(encoding="utf-8")
         fields = json.loads((ROOT / "examples/sample-cv.json").read_text())["fields"]
-        filled = re.sub(r"\{\{([A-Z0-9_]+)\}\}", lambda m: html.escape(fields[m[1]], quote=True), template)
+        block_fields = {"SUMMARY_2", "SKILLS_BLOCK", "CERTS_BLOCK", "ROLES_BLOCK", "PROJECTS_BLOCK", "EDUCATION_BLOCK"}
+
+        def fill(match):
+            name = match[1]
+            value = fields[name]
+            return value if name in block_fields else html.escape(value, quote=True)
+
+        filled = re.sub(r"\{\{([A-Z0-9_]+)\}\}", fill, template)
         for paper in ("a4", "letter"):
             with self.subTest(paper=paper):
                 report = self.render(filled, name="legacy-" + paper + ".pdf", paper=paper, max_pages=2,
