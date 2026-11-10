@@ -14,6 +14,14 @@ Codex, and any agent that reads AGENTS.md.
 - The posting informs emphasis and ordering, not invented facts or copied
   sentences. Run the shared posting checks; generic industry wording needs
   context review rather than automatic rewriting.
+- **Format baseline rule (enforced, not advisory):** The user's approved CV at
+  `~/Downloads/Career/CV.pdf` is the format baseline for every tailored output.
+  The local template `template.html` is the only rendering format the skill
+  produces unless the user explicitly approves a redesign. Never generate a
+  new CV layout, switch column structure, change section order, or substitute
+  a different design baseline without explicit written approval. The
+  deliverable must match the approved baseline's typography, spacing,
+  color treatment, bullet treatment, date alignment, and section order.
 - Use the latest candidate-approved CV as the design baseline. Ask before
   changing its layout/order or switching to a product template; verify design
   continuity and extracted text/order after export. Use `scripts/build_cv.py`
