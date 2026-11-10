@@ -105,7 +105,23 @@ The structured template uses one spacing scale in `pt` only. Every vertical gap 
 - After changing layout or spacing tokens, regenerate the public sample with `scripts/render_sample.py` and commit the updated `assets/sample-cv.pdf` and `assets/sample-cv.png`. The GitHub Pages preview shows this sample; a stale file misrepresents the current layout.
 - Justified paragraphs need `class="just"` (or equivalent `text-align: justify`). A bare `<p>` renders ragged-right, which looks uneven on long summaries. Check the extracted text: lines ending at varying x positions indicate justified text; ragged lines indicate a missing class.
 
-## ATS parsing rules (verify on every rendered CV)
+## ATS parsing rules
+
+## Template lint rules
+
+Manual template checks (verify before delivery):
+
+1. **No nested tables or columns** — single-column layout only.
+2. **No hidden text** — no white-on-white keyword stuffing, no `display:none` content.
+3. **Standard section headings** — "Professional Summary", "Work Experience", "Education", "Skills", "Certifications", "Projects".
+4. **Real text present** — extract with `pdftotext` and confirm all sections extract cleanly.
+5. **No placeholder leaks** — no `{{PLACEHOLDER}}`, `[FILL: ...]`, or `[TODO: ...]` markers remain.
+6. **PDF text extractable** — `pdftotext -layout <exported.pdf>` returns structured text, not rasterized glyphs.
+7. **Font embedding** — check `pdffonts <exported.pdf>` shows embedded fonts.
+8. **File name** — `Your Name, Role Title, Resume.pdf` (or equivalent with role title).
+9. **File size** — PDF is a reasonable size (< 500KB for a 1-2 page CV).
+10. **No external links** — all URLs are functional, no `javascript:` or `data:` protocols.
+ (verify on every rendered CV)
 
 1. Run `pdftotext` on the output and confirm every section extracts cleanly - no missing content, no `{{placeholders}}`, no `[FILL: ...]` markers left.
 2. Use clear section headings such as Professional Summary, Skills, Professional Experience, Projects, Education, Languages, Certifications and Publications. Omit empty sections and never fabricate content to fill a slot. Keep the approved CV's section order; if no approved baseline exists, propose a suitable ordering preset for approval.
