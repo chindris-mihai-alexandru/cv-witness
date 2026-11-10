@@ -237,6 +237,21 @@ def render_html(source, output, paper="a4", max_pages=1, expected_text=(),
                               strict_ordered_text=strict_ordered_text)
         if not report["passed"]:
             raise CheckFailure(report)
+        # Layout gate: verify date right-alignment, heading-gap consistency and
+        # bullet left edges from the rendered PDF's bbox output.
+        import subprocess as _sp
+        bbox = _sp.run(["pdftotext", "-bbox-layout", str(pdf_path), "-"],
+                       capture_output=True, text=True)
+        if bbox.returncode == 0 and bbox.stdout:
+            try:
+                from cv_layout import parse_pages, check_layout
+            except ImportError:
+                from scripts.cv_layout import parse_pages, check_layout
+            pages = parse_pages(bbox.stdout)
+            layout_problems = check_layout(pages)
+            if layout_problems:
+                report["layout_problems"] = layout_problems
+                raise CheckFailure(report)
         descriptor, staging = tempfile.mkstemp(prefix=".cv-witness-", suffix=".pdf", dir=output.parent)
         try:
             with os.fdopen(descriptor, "wb") as destination, pdf_path.open("rb") as candidate:

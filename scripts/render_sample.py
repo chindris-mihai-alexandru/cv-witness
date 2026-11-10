@@ -35,10 +35,15 @@ def main(argv=None):
     args = parser.parse_args(argv)
     template = (ROOT / "template.html").read_text(encoding="utf-8")
     fields = json.loads((ROOT / "examples/sample-cv.json").read_text(encoding="utf-8"))["fields"]
+    BLOCK_FIELDS = {"SUMMARY_2", "SKILLS_BLOCK", "CERTS_BLOCK", "ROLES_BLOCK", "PROJECTS_BLOCK", "EDUCATION_BLOCK"}
     required = set(re.findall(r"\{\{([A-Z0-9_]+)\}\}", template))
     if set(fields) != required:
         raise ValueError(f"Sample fields differ from template: missing={required - set(fields)}, extra={set(fields) - required}")
-    filled = re.sub(r"\{\{([A-Z0-9_]+)\}\}", lambda match: html.escape(fields[match[1]], quote=True), template)
+    def fill(match):
+        name = match[1]
+        value = fields[name]
+        return value if name in BLOCK_FIELDS else html.escape(value, quote=True)
+    filled = re.sub(r"\{\{([A-Z0-9_]+)\}\}", fill, template)
     with tempfile.TemporaryDirectory(prefix="cv-witness-sample-") as temporary:
         directory = Path(temporary).resolve()
         pdf = directory / "sample.pdf"

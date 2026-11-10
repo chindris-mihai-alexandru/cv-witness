@@ -23,7 +23,7 @@
     "file:render.sh": {"summary": "Portable compatibility entrypoint that delegates to the checked Python renderer.", "layer": "entry", "tags": ["compatibility"]},
     "file:examples/structured-cv.json": {"summary": "Fictional four-role input used by every lane and paper variant. It is not an applicant's resume.", "layer": "data", "tags": ["fixture"]},
     "file:examples/sample-cv.json": {"summary": "Fictional flat-field input retained for the legacy template sample.", "layer": "data", "tags": ["fixture", "legacy"]},
-    "file:tests/test_build_cv.py": {"summary": "Repeatable-input contracts and real A4/Letter exports for all four lanes, including long roles, technical prose and wrapped links.", "layer": "test", "tags": ["templates"]},
+    "file:tests/test_build_cv.py": {"summary": "Repeatable-input contracts and real A4/Letter exports for all six lanes, including long roles, technical prose and wrapped links.", "layer": "test", "tags": ["templates"]},
     "file:tests/test_cv_checks.py": {"summary": "Deliberately failing PDF, overlap, private-output and browser-completion regressions.", "layer": "test", "tags": ["failures"]},
     "file:tests/test_render_cv.py": {"summary": "Actual Chromium/Poppler checks for Unicode, page limits, posting failures and preservation of an existing PDF.", "layer": "test", "tags": ["real-export"]},
     "file:tests/test_voice_corpus.py": {"summary": "Synthetic authorship, Cabinet/Obsidian formatting, import, revision, privacy and deletion regressions. No personal vault is read.", "layer": "test", "tags": ["privacy"]},
@@ -56,7 +56,7 @@
       ]
     },
     {
-      "title": "One layout, four career lanes",
+      "title": "One layout, six career lanes",
       "description": "Understand repeatable records and honest pagination.",
       "steps": [
         {"nodeId": "file:examples/structured-cv.json", "note": "The fictional fixture has repeated roles and optional content instead of fixed numbered slots."},

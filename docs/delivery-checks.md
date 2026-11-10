@@ -12,6 +12,17 @@ The renderer discovers macOS browser applications and common Linux executable na
 
 Render only approved, self-contained HTML with one `@page` rule and an explicit size declaration. Scripts, embedded documents and resource-loading attributes/styles are rejected, including CSS resource tokens written with escapes. This preflight supports the bundled templates; it is not a general-purpose hostile-HTML sandbox. Review the HTML yourself and use trusted source files.
 
+## Check a posting before tailoring
+
+For a job supplied as a URL, check the listing before spending time tailoring:
+
+```sh
+python3 scripts/check_posting_liveness.py 'https://jobs.example.com/role' \
+  --expect "Application Support Engineer"
+```
+
+The script reports `dead` for HTTP 404/410 or a closure phrase on a non-200 response. A closure phrase on a 200 page, a missing expected title, an unexpected redirect or a network error is `suspicious`; verify it in a browser before treating it as live or closed. A `live` result is only a basic HTTP/content check. The script does not render JavaScript and does not fetch or store the candidate's CV.
+
 ## Render and check before publication
 
 ```sh
@@ -55,6 +66,17 @@ The report checks:
 - Posting phrase overlap when a posting is selected.
 
 Use `--expected-text` for the candidate's name and details that must survive export. Use repeated `--ordered-text` flags for important section headings in the approved order. Add `--strict-ordered-text` when each heading should match a standalone extracted line; this catches body-text mentions that could otherwise satisfy the landmark. The check still does not establish complete reading order or field-level ATS parsing. Compare the export visually with the latest candidate-approved CV, preserve its design unless a change was approved, and inspect each page for wrapping or clipping. Verify facts against the selected sources. If an application offers resume autofill, review and correct the fields before submitting.
+
+## Number fact gate
+
+After PDF checks, run the number gate against the private, approved fact sources:
+
+```sh
+python3 scripts/check_cv_numbers.py exported.pdf \
+  --source foundation.md --source provenance.md
+```
+
+Repeat `--source` for any approved per-application evidence file. The gate flags numeric claims it cannot find in any selected source, normalizing grouping commas and respecting digit boundaries. It intentionally skips years from 1900 to 2099, single-digit values and numbers embedded in alphanumeric identifiers. This is a lexical safeguard, not a fact checker: a matching number can still be used in the wrong context, and skipped values still need human review. Keep source files private and out of logs or public artifacts.
 
 ## Phrase diagnostics
 
