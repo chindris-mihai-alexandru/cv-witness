@@ -10,11 +10,13 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ### Changed
 
+- CV tailoring now uses the latest candidate-approved CV as the default design baseline across authoring paths; redesigns require approval. PDF checking can assert private section landmarks in extracted order without logging their text. Builder headings use strict line matching to avoid body-text false positives.
 - Replaced the README's flat file listing with a directory tree and purpose table; clarified prerequisites, configuration, delivery checks and completed-roadmap status.
 - Retired completed implementation plans while retaining the user guides, test coverage and regeneration inputs.
 
 ### Fixed
 
+- CSS escape sequences could disguise `@import` and `url()` from the renderer's resource preflight. The checker now decodes CSS escapes before rejecting resource-loading tokens, with regression coverage for escaped identifiers, functions and local-file imports.
 - The README workflow preview now has an opaque light background and explicit dark labels, independent of the surrounding theme. Added standalone preview regeneration and rendering regressions.
 - The CI browser smoke check uses the renderer's bounded startup deadline instead of a shorter cold-start limit; PDF validation remains required.
 

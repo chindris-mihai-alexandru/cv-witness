@@ -120,6 +120,25 @@ class PDFCheckTests(unittest.TestCase):
         self.assertNotIn("PRIVATE_MISSING_CREDENTIAL", json.dumps(report))
         self.assertIn({"code": "missing_expected_text", "item": 1}, report["problems"])
 
+    def test_ordered_text_supports_substrings_or_strict_standalone_lines(self):
+        self.text = "Alex Morgan\nProfessional Summary\nProfessional Experience\nBuilt a small garden planner.\n\f"
+        landmarks = ["Professional Summary", "Professional Experience"]
+        self.assertTrue(self.validate(ordered_text=landmarks)["passed"])
+        strict_report = self.validate(ordered_text=landmarks, strict_ordered_text=True)
+        self.assertTrue(strict_report["passed"], strict_report)
+        self.text = "Professional Summary mentions Professional Experience\nProfessional Experience\nProfessional Summary\n\f"
+        self.assertTrue(self.validate(ordered_text=landmarks)["passed"])
+        report = self.validate(ordered_text=landmarks, strict_ordered_text=True)
+        self.assertIn({"code": "ordered_text_missing_or_out_of_order", "items": 1}, report["problems"])
+        self.assertNotIn("Professional Summary", json.dumps(report))
+
+    def test_ordered_text_rejects_empty_or_non_string_landmarks_before_tool_calls(self):
+        for landmarks in (["Section", "  "], ["Section", None], "Section"):
+            with self.subTest(landmarks=landmarks), patch.object(checks, "run_tool") as tool:
+                with self.assertRaises(checks.CheckError):
+                    checks.validate_pdf(self.pdf, ordered_text=landmarks)
+                tool.assert_not_called()
+
     def test_wrong_paper_fails(self):
         report = self.validate(paper="letter")
         self.assertIn("paper_geometry", [item["code"] for item in report["problems"]])
@@ -170,10 +189,26 @@ class RendererContractTests(unittest.TestCase):
                     with self.assertRaises(checks.CheckError):
                         render_cv.checked_source(source, "a4")
 
+    def test_css_escaped_resource_loaders_are_rejected(self):
+        styles = (
+            r"@im\70 ort url(file:///tmp/private.css)",
+            r"body { background-image: u\72l(file:///tmp/private.svg) }",
+            r"body { background-image: url\(file:///tmp/private.png) }",
+        )
+        for style in styles:
+            with self.subTest(style=style):
+                source = "<style>@page{size:A4;}" + style + "</style>Fictional prose"
+                with self.assertRaises(checks.CheckError):
+                    render_cv.validate_source(source, "a4")
+
+    def test_css_escape_decoder_handles_hex_terminators_and_invalid_codepoints(self):
+        self.assertEqual(render_cv._decode_css_escapes(r"u\72l @im\70 ort"), "url @import")
+        self.assertEqual(render_cv._decode_css_escapes(r"a\000000b"), "a�b")
+
     def test_direct_renderer_cannot_bypass_self_contained_source_check(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary).resolve() / "candidate.pdf"
-            for content in ('@page{size:A4}<script>fake()</script>', '@page{size:A4}<img src="https://example.com/private">'):
+            for content in ('@page{size:A4}<script>fake()</script>', '@page{size:A4}<img src="https://example.com/private">', '<style>@page{size:A4;} @im\\70 ort url(file:///tmp/private.css)</style>'):
                 with self.subTest(content=content), patch.object(render_cv, "browser_path") as browser:
                     with self.assertRaises(checks.CheckError):
                         render_cv.render_html(content, output)
