@@ -7,3 +7,6 @@ provenance.md
 voice-corpus/
 __pycache__/
 *.py[cod]
+
+# Tailored CVs - personal data, never commit
+cvs/
