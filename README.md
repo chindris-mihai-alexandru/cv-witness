@@ -5,15 +5,15 @@
 <h1 align="center">cv-witness</h1>
 
 <p align="center">
-  <a href="https://github.com/Mihai-Codes/cv-witness/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Mihai-Codes/cv-witness?color=FF5898&labelColor=1b222c"></a>
+  <a href="https://github.com/chindris-mihai-alexandru/cv-witness/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/chindris-mihai-alexandru/cv-witness?color=FF5898&labelColor=1b222c"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2b3542?labelColor=1b222c"></a>
-  <a href="https://github.com/Mihai-Codes/cv-witness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2b3542?labelColor=1b222c"></a>
+  <a href="https://github.com/chindris-mihai-alexandru/cv-witness/pulls"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-2b3542?labelColor=1b222c"></a>
 </p>
 
 <p align="center">
-  <a href="https://mihai-codes.github.io/cv-witness/">Website</a> ·
+  <a href="https://chindris-mihai-alexandru.github.io/cv-witness/">Website</a> ·
   <a href="#install">Install</a> ·
-  <a href="https://github.com/Mihai-Codes/cv-witness/issues/1">Roadmap</a>
+  <a href="https://github.com/chindris-mihai-alexandru/cv-witness/issues/1">Roadmap</a>
 </p>
 
 An open-source agent skill for drafting and reviewing a CV from your real experience. It helps you select relevant work, trace claims to a source and inspect the exported document. You review the facts and wording before applying.
@@ -24,7 +24,9 @@ The job posting guides emphasis and ordering. It should not become a script for 
 
 The skill asks your agent to:
 
-- Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged.
+- Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged. Before delivery, run `scripts/check_cv_numbers.py` against the approved source files; this lexical check flags unsupported numbers but does not validate their context or meaning.
+- Before tailoring from a job URL, run `scripts/check_posting_liveness.py <url> --expect "Role Title"`. It returns live, dead or suspicious; verify suspicious or client-side-rendered postings in a browser rather than treating uncertainty as closure.
+- Optionally triage a role first: judge each posting requirement against your verified facts, then let `scripts/fit_score.py` verify the quoted evidence and return a fit band with an uncertainty range. See [grounded fit scoring](docs/fit-scoring.md); it is not an ATS score.
 - Use `[FILL: ...]` markers in a draft when information is missing, then resolve or remove them before delivery.
 - Run the phrase-overlap script and review shared wording in context. A common technical phrase is not proof of copying and need not be changed just to avoid a match.
 - Inspect the exported text, page count, placeholders and layout before sending the CV.
@@ -38,7 +40,7 @@ One root `SKILL.md` is shared by every installation. The template and scripts li
 ### AdaL
 
 ```sh
-git clone https://github.com/Mihai-Codes/cv-witness.git ~/.adal/skills/cv-witness
+git clone https://github.com/chindris-mihai-alexandru/cv-witness.git ~/.adal/skills/cv-witness
 ```
 
 ### Claude Code
@@ -46,20 +48,20 @@ git clone https://github.com/Mihai-Codes/cv-witness.git ~/.adal/skills/cv-witnes
 Send these as two separate commands inside Claude Code:
 
 ```text
-/plugin marketplace add Mihai-Codes/cv-witness
+/plugin marketplace add chindris-mihai-alexandru/cv-witness
 /plugin install cv-witness@cv-witness
 ```
 
 The plugin manifest points to the root skill. Alternatively, install a personal skill:
 
 ```sh
-git clone https://github.com/Mihai-Codes/cv-witness.git ~/.claude/skills/cv-witness
+git clone https://github.com/chindris-mihai-alexandru/cv-witness.git ~/.claude/skills/cv-witness
 ```
 
 ### Codex
 
 ```sh
-git clone https://github.com/Mihai-Codes/cv-witness.git ~/.agents/skills/cv-witness
+git clone https://github.com/chindris-mihai-alexandru/cv-witness.git ~/.agents/skills/cv-witness
 ```
 
 For other hosts, follow their skill-discovery instructions or ask the agent to read the root `SKILL.md`. If the destination already contains a clone, update it instead of overwriting your private sources.
@@ -105,7 +107,7 @@ Ask your agent:
 
 > "Draft a CV from my verified experience for this role: [paste the posting URL or text here]. Keep my voice and show me the wording before exporting."
 
-Provide a master resume, the latest candidate-approved CV (or a specific design reference), and verification notes privately. The approved CV is the default design baseline across authoring tools; ask before changing its layout or section order. Review the selected facts and approve the draft before rendering. The agent workflow defaults to `~/Downloads/`; standalone build and render commands require an explicit output path.
+Provide a master resume, the latest candidate-approved CV (or a specific design reference), and verification notes privately. The approved CV is the default design baseline across authoring tools; ask before changing its layout or section order. Review the selected facts and approve the draft before rendering. The agent workflow uses the output directory configured in `SKILL.md`; standalone build and render commands require an explicit output path.
 
 For phrase review:
 
@@ -142,17 +144,17 @@ python3 scripts/build_cv.py approved-cv.json output.pdf \
   --posting selected-posting.txt
 ```
 
-Engineering, Operations/Support, Research and Management are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. The builder checks that its selected section headings extract in the chosen order. These are product layouts, not replacements for a candidate's existing design; obtain approval before switching. The single-column preset is a parsing-risk recommendation, not a requirement to redesign an approved two-column CV. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
+Engineering, Operations/Support, Research, Management, Security and Customer-Success are section-order presets over one single-column layout. Roles repeat, empty optional sections are omitted, and A4/Letter exports use the same delivery checks. The builder checks that its selected section headings extract in the chosen order. These are product layouts, not replacements for a candidate's existing design; obtain approval before switching. The single-column preset is a parsing-risk recommendation, not a requirement to redesign an approved two-column CV. Longer CVs need an explicit approved page limit; text is never dropped or silently shrunk. See the [template contract](docs/template-contract.md) and [fictional structured example](examples/structured-cv.json).
 
 ## Explore the repository
 
-[Open the interactive project guide](https://mihai-codes.github.io/cv-witness/assets/explore/) for the animated workflow, searchable source map, three guided reading tours and eight fictional template PDFs.
+[Open the interactive project guide](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/) for the animated workflow, searchable source map, three guided reading tours and eight fictional template PDFs.
 
 <p align="center">
-  <a href="https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html"><img src="assets/explore/workflow-preview.svg" alt="Approved wording passes through the shared layout, temporary PDF and delivery checks. Failure preserves prior output; passing output still needs visual and factual review." width="520"></a>
+  <a href="https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/workflow.html"><img src="assets/explore/workflow-preview.svg" alt="Approved wording passes through the shared layout, temporary PDF and delivery checks. Failure preserves prior output; passing output still needs visual and factual review." width="520"></a>
 </p>
 
-[Workflow](https://mihai-codes.github.io/cv-witness/assets/explore/workflow.html) · [Source map](https://mihai-codes.github.io/cv-witness/assets/explore/codegraph.html) · [Regeneration and limits](docs/exploration.md)
+[Workflow](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/workflow.html) · [Source map](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/codegraph.html) · [Regeneration and limits](docs/exploration.md)
 
 The README preview has a fixed light background and dark labels in either GitHub theme. Open it for the interactive workflow, whose theme and pause controls remain available. The full maps work offline and respect reduced motion. They describe verified workflow and public source structure, not live telemetry; private resumes and writing corpora are excluded.
 
@@ -183,13 +185,17 @@ cv-witness/
 │   └── explore/
 ├── docs/
 ├── examples/
+│   ├── fit/
 │   ├── sample-cv.json
 │   └── structured-cv.json
 ├── scripts/
 │   ├── build_cv.py
 │   ├── check_cv.py
+│   ├── check_cv_numbers.py
+│   ├── check_posting_liveness.py
 │   ├── ci_pdf_smoke.py
 │   ├── cv_checks.py
+│   ├── fit_score.py
 │   ├── jd_overlap.py
 │   ├── render_cv.py
 │   ├── render_exploration.py
@@ -236,7 +242,7 @@ The helper fills the canonical template, runs the existing renderer, checks one-
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review. Run `CV_WITNESS_REQUIRE_PDF_TESTS=1 python3 -m unittest discover -s tests -q` with Chromium and Poppler to include actual export checks. All fixtures are synthetic; no personal corpus or connected account is needed.
 
-[Releases](https://github.com/Mihai-Codes/cv-witness/releases) and [CHANGELOG.md](CHANGELOG.md) record shipped changes. The [initial roadmap](https://github.com/Mihai-Codes/cv-witness/issues/1) is complete; its closed sub-issues retain implementation and verification notes. Propose future work in a new, focused issue.
+[Releases](https://github.com/chindris-mihai-alexandru/cv-witness/releases) and [CHANGELOG.md](CHANGELOG.md) record shipped changes. The [initial roadmap](https://github.com/chindris-mihai-alexandru/cv-witness/issues/1) is complete; its closed sub-issues retain implementation and verification notes. Propose future work in a new, focused issue.
 
 ## License
 
