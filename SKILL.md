@@ -120,6 +120,32 @@ Run `scripts/ats_validate.py <rendered-cv.pdf>` to check:
 This is a deterministic, read-only check. It does not validate the content's accuracy or meaning.
 
 
+
+## Bookface / WAAS MCP as an intel feed (requires a YC account)
+
+Bookface MCP (`https://api.ycombinator.com/v1/mcp`) is an OAuth-protected,
+streamable-HTTP server with no public frontend. An unauthenticated request
+returns `invalid_token` — that is the auth gate, not an error to work around.
+
+Worth doing **only when the user has a YC / Work-at-a-Startup account with MCP
+access enabled** (connect with `claude mcp add --transport http --scope user
+bookface https://api.ycombinator.com/v1/mcp` or `codex mcp login bookface`):
+
+1. Connect, authenticate, and call `tools/list`. The MCP protocol advertises
+   every tool's JSON Schema on each `tools/list`, so the response is a live
+   snapshot of Bookface's current field vocabulary.
+2. Diff the snapshot against the previous one to detect schema changes (new
+   tools, changed fields). This is the "keeps getting updated" feed: MCP
+   servers re-answer `tools/list` on every request.
+3. Useful tools for CV work: `hiring.get_job` / `hiring.list_jobs` (posting
+   field vocabulary), `hiring.get_job_applicants` (application questions and
+   resume links), `hiring.get_candidate` / `hiring.search_candidates` (the
+   profile fields a CV must expose), `hiring.prepare_resume_upload` (deliverable
+   constraints, e.g. 5 MiB PDF/DOC/DOCX).
+4. Record any changed vocabulary in the CV guide, not in this skill body.
+
+Without an account, there is no scraping path; do not use community MCP servers
+that read session cookies — they are unofficial and a credential risk.
 ## Knockout check (before tailoring)
 
 Recruiters apply hard filters before a human reads a resume: work authorization,
