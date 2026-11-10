@@ -4,19 +4,23 @@
 <meta charset="utf-8">
 <title>{{NAME}} - {{ROLE}}</title>
 <style>
-  /* ATS-safe house style (2026): single column, no tables, inline SVG
+  /* ATS-safe house style: single column, no tables, inline SVG
      contact icons (ignored by parsers, contact data stays real text),
-     cool-grey accent on section labels only, bold for structure only. */
-  @page { size: A4; margin: 18mm 13mm 14mm; }
+     cool-grey accent on section labels only, bold for structure only.
+     Spacing uses CSS variables for easy adjustment. */
+  :root { --m-top: 18mm; --m-side: 13mm; --m-bottom: 14mm;
+          --font: 9.3pt; --lh: 1.2; --small: 8.8pt; --gap: 2.5px;
+          --section: 10px; --role: 1px; }
+  @page { size: A4; margin: var(--m-top) var(--m-side) var(--m-bottom); }
   * { box-sizing: border-box; }
   body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 9.3pt; line-height: 1.2; color: #111;
+    font-size: var(--font); line-height: var(--lh); color: #111;
     margin: 0; padding: 0;
   }
   header { text-align: center; margin-bottom: 9px; }
   header h1 { font-size: 17.5pt; margin: 0; letter-spacing: 0.5px; color: #111; }
-  .contact { font-size: 8.8pt; color: #333; margin-top: 3px; }
+  .contact { font-size: var(--small); color: #333; margin-top: 3px; }
   .contact span { white-space: nowrap; }
   .contact a { color: #333; text-decoration: none; }
   .icon { width: 10.5px; height: 10.5px; vertical-align: -1.5px; }
@@ -24,10 +28,10 @@
     font-size: 10.2pt; text-transform: uppercase; letter-spacing: 1.2px;
     color: #3f3f46; /* cool grey accent - text only */
     border-bottom: 1px solid #3f3f46;
-    margin: 4px 0 3px; padding-bottom: 1px;
+    margin: var(--section) 0 3px; padding-bottom: 1px;
   }
   h2:first-of-type { margin-top: 2px; }
-  p { margin: 0 0 2.5px; }
+  p { margin: 0 0 var(--gap); }
   /* Body text justified: flush left AND right edges. */
   .just, .job li, .project li, .skills p { text-align: justify; }
   ul { margin: 0 0 2px; padding-left: 17px; list-style-position: outside; }
@@ -39,15 +43,18 @@
   .meta { font-size: 9pt; color: #333; }
   .employer .meta { font-weight: 400; }
   .employer .dates, .role-line .dates { float: right; font-size: 9pt; color: #333; }
-  .role-line { margin: 1px 0 1px; clear: both; }
+  .role-line { margin: var(--role) 0 var(--role); clear: both; }
   .role-line .title { font-weight: 600; }
   .role-sub { margin-left: 0; }
   .proj-name { font-weight: 600; }
-  .proj-line { margin: 1px 0 1px; clear: both; }
+  .proj-line { margin: var(--role) 0 var(--role); clear: both; }
   .proj-line .dates { float: right; font-size: 9pt; color: #333; }
   .live-line { font-size: 9pt; color: #333; margin: 0 0 1px; }
   .skills p em, em.cat { font-style: normal; font-weight: 600; }
   .live { color: #3f3f46; text-decoration: underline; }
+  .certs-list { margin: 0; padding-left: 17px; }
+  .certs-list li { margin-bottom: 1px; }
+  .summary p + p { margin-top: var(--gap); }
 </style>
 </head>
 <body>
@@ -65,74 +72,31 @@
 </header>
 
 <h2>Professional Summary</h2>
-<p>{{SUMMARY}}</p>
+<div class="summary">
+  <p>{{SUMMARY}}</p>
+  {{SUMMARY_2}}
+</div>
 
 <h2>Skills</h2>
 <div class="skills">
-<p>
-  <em>{{SKILLS_CAT_1}}:</em> {{SKILLS_1}}<br>
-  <em>{{SKILLS_CAT_2}}:</em> {{SKILLS_2}}<br>
-  <em>{{SKILLS_CAT_3}}:</em> {{SKILLS_3}}<br>
-  <em>{{SKILLS_CAT_4}}:</em> {{SKILLS_4}}
-</p>
+  {{SKILLS_BLOCK}}
 </div>
 
 <h2>Certifications</h2>
-<p>{{CERTS_ONE_LINE}}</p>
+{{CERTS_BLOCK}}
 
 <h2>Professional Experience</h2>
 
 <div class="job">
   <div class="employer">{{COMPANY}} <span class="meta">- {{COMPANY_LOCATION}}</span></div>
-  <div class="role-line"><span class="title">{{ROLE_1_TITLE}}</span><span class="dates">{{ROLE_1_DATES}}</span></div>
-  <div class="role-sub">
-    <ul>
-      <li>{{ROLE_1_BULLET_1}}</li>
-      <li>{{ROLE_1_BULLET_2}}</li>
-      <li>{{ROLE_1_BULLET_3}}</li>
-    </ul>
-  </div>
-  <div class="role-line"><span class="title">{{ROLE_2_TITLE}}</span><span class="dates">{{ROLE_2_DATES}}</span></div>
-  <div class="role-sub">
-    <ul>
-      <li>{{ROLE_2_BULLET_1}}</li>
-      <li>{{ROLE_2_BULLET_2}}</li>
-      <li>{{ROLE_2_BULLET_3}}</li>
-    </ul>
-  </div>
-  <div class="role-line"><span class="title">{{ROLE_3_TITLE}}</span><span class="dates">{{ROLE_3_DATES}}</span></div>
-  <div class="role-sub">
-    <ul>
-      <li>{{ROLE_3_BULLET_1}}</li>
-      <li>{{ROLE_3_BULLET_2}}</li>
-      <li>{{ROLE_3_BULLET_3}}</li>
-    </ul>
-  </div>
+  {{ROLES_BLOCK}}
 </div>
 
 <h2>Projects</h2>
-
-<div class="project">
-  <div class="proj-line"><span class="proj-name">{{PROJECT_1_NAME}}</span> <span class="meta">- {{PROJECT_1_TAGLINE}}</span><span class="dates">{{PROJECT_1_DATES}}</span></div>
-  <div class="live-line">Live: <a class="live" href="{{PROJECT_1_URL}}">{{PROJECT_1_URL_TEXT}}</a></div>
-  <ul>
-    <li>{{PROJECT_1_BULLET_1}}</li>
-    <li>{{PROJECT_1_BULLET_2}}</li>
-  </ul>
-</div>
-
-<div class="project">
-  <div class="proj-line"><span class="proj-name">{{PROJECT_2_NAME}}</span> <span class="meta">- {{PROJECT_2_TAGLINE}}</span><span class="dates">{{PROJECT_2_DATES}}</span></div>
-  <div class="live-line">Live: <a class="live" href="{{PROJECT_2_URL}}">{{PROJECT_2_URL_TEXT}}</a></div>
-  <ul>
-    <li>{{PROJECT_2_BULLET_1}}</li>
-    <li>{{PROJECT_2_BULLET_2}}</li>
-  </ul>
-</div>
+{{PROJECTS_BLOCK}}
 
 <h2>Education</h2>
-<p>{{EDUCATION_1}}</p>
-<p>{{EDUCATION_2}}</p>
+{{EDUCATION_BLOCK}}
 
 <h2>Languages</h2>
 <p>{{LANGUAGES_ONE_LINE}}</p>

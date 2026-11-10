@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "judge": "example",
+  "judgments": {
+    "incident_management": {
+      "level": 3,
+      "confidence": "high",
+      "evidence": ["Triaged and escalated production incidents for a customer portal used by partners"]
+    },
+    "monitoring": {
+      "level": 2,
+      "confidence": "medium",
+      "evidence": ["Monitored service health with dashboards and alerts"]
+    },
+    "scripting_ci": {
+      "probabilities": [0.0, 0.1, 0.6, 0.3],
+      "evidence": ["Automated deployment and regression checks with PowerShell and a CI pipeline"]
+    },
+    "work_authorization": {
+      "level": 1,
+      "confidence": "high",
+      "evidence": ["Citizen of an EU member state with the right to work in Romania"]
+    }
+  }
+}

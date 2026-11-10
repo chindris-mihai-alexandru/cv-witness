@@ -28,6 +28,19 @@ This is the user's main job-application workflow. Rezi is an optional source for
 - The structured `scripts/build_cv.py` workflow and legacy `template.html`/`render.sh` path are optional local fallbacks. Use them only if the user asks for local output or Quick is unavailable and the user agrees. Structured templates share one layout and support repeatable roles, six career-lane ordering presets (engineering, operations, research, management, security, customer-success), and A4/Letter.
 - Rezi is a separate, remote source. Read only the specific Rezi resume the user selects or asks you to consult. Do not assume it matches `foundation.md` or silently merge differences.
 
+
+## Format baseline rule (enforced, not advisory)
+
+- The user's approved CV at `~/Downloads/Career/CV.pdf` is the format baseline
+  for every tailored output. The local template `template.html` is the only
+  rendering format the skill produces unless the user explicitly approves a
+  redesign. Never generate a new CV layout, switch column structure, change
+  section order, or substitute a different design baseline without explicit
+  written approval. The deliverable must match the approved baseline's
+  typography, spacing, color treatment, bullet treatment, date alignment, and
+  section order. If a job posting or role requires a structural deviation
+  (e.g., a two-column layout for a specific employer), propose it explicitly
+  and wait for approval before applying it.
 ## Workflow
 
 1. **Establish the target.** Use the user's job posting if provided. When it arrives as a URL, run `scripts/check_posting_liveness.py <url> --expect "Role Title"` before tailoring. A confirmed dead or closed posting stops; a suspicious result, including a client-side-rendered board the script cannot read, needs browser verification before proceeding. The script is a conservative signal, not proof of liveness. If they want to find roles and Rezi MCP is available, use `search_jobs` with the requested role, location, and remote preference; ask for missing role/location or clarify an ambiguous remote requirement instead of inferring it. Search further pages or adjust terms when the user wants more results. Retrieve full details with `get_job_details` before evaluating a listing. If Rezi tools are unavailable, ask for a posting or use the source the user supplies.
@@ -153,4 +166,3 @@ Projects: EvidenceEU (open source, 60+ releases), Rosetta Alpha (AI translation)
 Certifications: AWS AI Practitioner (AIF-C01), MongoDB GenAI certs (GenAI Apps, RAG, Deploying & Evaluating GenAI, Memory).
 
 Education: M.S. in Software Engineering (2025).
-
