@@ -154,6 +154,31 @@ WAAS account. Do not expect candidate-scoped access to return applicant data.
    constraints, e.g. 5 MiB PDF/DOC/DOCX).
 4. Record any changed vocabulary in the CV guide, not in this skill body.
 
+**Verified 2026-11: the MCP tools exist but the job-search actions can be
+empty.** A candidate account authenticates (OAuth + PKCE works end-to-end,
+`tools/list` returns ~23 tools) yet `waas_candidate` may answer
+`Unknown or unavailable action: search_jobs. Available:` (empty). This is a
+server-side per-account grant, not a client bug and not a visible account
+setting; the same empty enum appears through YC's own `yc` CLI. Do not burn
+time trying to force it. Use the `yc` CLI route instead:
+
+- Install: `curl -fsSL https://bookface.ycombinator.com/cli/install.sh | bash`
+- Authenticate: `yc login` (one browser consent, same login as WAAS)
+- Verify: `python3 scripts/yc_network.py check`
+
+`yc search --type jobs` and `yc tools run search` (entity=jobs) are **not
+gated**: they return real WAAS postings with `min_experience`, `skills`,
+`description`, `role`, `remote`, `us_visa_required`, `locations_for_search` —
+the exact requirement vocabulary `scripts/knockout_check.py` consumes. Query it
+for live postings before tailoring:
+
+    python3 scripts/yc_network.py postings --query "backend engineer" \
+        --filters '{"remote":"yes","eng_type":"be"}' --limit 5
+
+`yc_network.py skills --query <role>` aggregates skill frequency and the
+min-experience distribution across postings — the honest market signal for
+which skills to lead with (never invent a skill; show what the market asks for).
+
 Without an account, there is no scraping path; do not use community MCP servers
 that read session cookies — they are unofficial and a credential risk.
 ## Knockout check (before tailoring)
