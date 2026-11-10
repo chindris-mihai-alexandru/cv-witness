@@ -129,7 +129,13 @@ returns `invalid_token` — that is the auth gate, not an error to work around.
 
 Worth doing **only when the user has a YC / Work-at-a-Startup account with MCP
 access enabled** (connect with `claude mcp add --transport http --scope user
-bookface https://api.ycombinator.com/v1/mcp` or `codex mcp login bookface`):
+bookface https://api.ycombinator.com/v1/mcp` or `codex mcp login bookface`).
+
+Candidate vs company scope matters: a **candidate** account (job seeking, the
+common case) exposes job search, candidate-profile management and apply tools
+only — it cannot see the company-side hiring tools (`hiring.list_applicants`,
+`hiring.move_candidates`, …). Those need a hiring-manager role on a company's
+WAAS account. Do not expect candidate-scoped access to return applicant data.
 
 1. Connect, authenticate, and call `tools/list`. The MCP protocol advertises
    every tool's JSON Schema on each `tools/list`, so the response is a live
