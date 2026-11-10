@@ -127,9 +127,13 @@ Bookface MCP (`https://api.ycombinator.com/v1/mcp`) is an OAuth-protected,
 streamable-HTTP server with no public frontend. An unauthenticated request
 returns `invalid_token` — that is the auth gate, not an error to work around.
 
-Worth doing **only when the user has a YC / Work-at-a-Startup account with MCP
-access enabled** (connect with `claude mcp add --transport http --scope user
-bookface https://api.ycombinator.com/v1/mcp` or `codex mcp login bookface`).
+Worth doing **only when the user has a YC / Work-at-a-Startup account** with
+the job-search actions granted. No Claude Code or Codex is needed: run
+`python3 scripts/bookface_mcp_auth.py` (registers a throwaway OAuth client
+via the auth server's DCR endpoint, prints a consent URL, captures the code
+on 127.0.0.1:8090, exchanges it with PKCE S256 + RFC 8707 resource, and
+stores a refreshable token in `~/.cv-witness/.bookface_token`, 0600). Then
+use `--list-actions` to call `tools/list`.
 
 Candidate vs company scope matters: a **candidate** account (job seeking, the
 common case) exposes job search, candidate-profile management and apply tools
