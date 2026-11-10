@@ -119,6 +119,52 @@ Run `scripts/ats_validate.py <rendered-cv.pdf>` to check:
 
 This is a deterministic, read-only check. It does not validate the content's accuracy or meaning.
 
+
+## Knockout check (before tailoring)
+
+Recruiters apply hard filters before a human reads a resume: work authorization,
+years of experience, location, education, required licences. A missing knockout
+is an automatic archive, so check it before investing in tailoring.
+
+Run `scripts/knockout_check.py --posting posting.txt --cv CV.pdf`. It extracts
+candidate knockout signals from the posting and reports PASS / FAIL / UNCLEAR per
+signal. It never returns a single verdict. When a signal is UNCLEAR, confirm it
+against the posting's exact wording rather than assuming a pass.
+
+Knockouts are objective. Do not editorialize them, do not soften a FAIL, and do
+not apply a posting's preferred qualifications as if they were required.
+
+## Bullet audit (before delivery)
+
+Recruiters and AI screeners read for evidence, not duties: what you did (action),
+at what scale (metric), with what (tool). Run
+`scripts/bullet_audit.py CV.pdf` to flag bullets missing any of the three.
+
+The audit is lexical. A flagged bullet is a candidate for review, not a
+confirmed defect — read it in context before rewriting. A bullet that is
+accurate and specific can legitimately lack a number; a bullet that is vague
+cannot be fixed by adding one.
+
+## Evidence, not keywords
+
+Read the posting for the work it describes, then look for evidence of that work
+in the CV. Do not mirror the posting's wording: shared technical names alone do
+not prove copying, and keyword stuffing is penalized. The posting informs
+emphasis and ordering; the CV describes the candidate's own verified work.
+
+## Present facts, not opinions on fit
+
+Tier and report observable signals only — dates, employers, titles, tools,
+scale, results. Do not state or imply a fit judgment the evidence does not
+support. When a requirement is unmet, say so plainly; when it is unclear, say
+that instead of guessing.
+
+## Growth in responsibility
+
+Where the CV shows progression — a larger scope, a promotion, a harder problem —
+keep it visible. Reviewers read it as a signal. Do not flatten distinct roles
+into one block unless the approved design requires it.
+
 ## Pre-flight checklist (MANDATORY before delivery)
 
 Before delivering a CV, verify ALL of:
