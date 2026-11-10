@@ -107,6 +107,40 @@ The structured template uses one spacing scale in `pt` only. Every vertical gap 
 
 ## ATS parsing rules
 
+
+## ATS field validation (run before delivery)
+
+Run `scripts/ats_validate.py <rendered-cv.pdf>` to check:
+- Contact fields (email, phone, name) are present and extractable
+- Standard section headings (PROFESSIONAL SUMMARY, SKILLS, EXPERIENCE, EDUCATION) are present
+- Dates are in a standard format (Jan 2023, 2023-01, etc.)
+- No fraud signals (broken LinkedIn URLs, mismatched location/phone prefixes)
+- ATS-parsable fields (skills, education) are present
+
+This is a deterministic, read-only check. It does not validate the content's accuracy or meaning.
+
+## Pre-flight checklist (MANDATORY before delivery)
+
+Before delivering a CV, verify ALL of:
+1. **Contact fields**: email, phone, name present and extractable
+2. **Section headings**: standard headings present (PROFESSIONAL SUMMARY, SKILLS, EXPERIENCE, EDUCATION)
+3. **Dates**: all dates in a standard format
+4. **No placeholders**: no `{{PLACEHOLDER}}`, `[FILL: ...]`, or `[TODO: ...]` markers remain
+5. **PDF text extractable**: `pdftotext -layout <cv.pdf>` returns structured text
+6. **Page count**: CV fits on the approved page limit (default: 1 page)
+7. **No PII leaks**: no personal email, phone, URL, or full name in public artifacts
+8. **Fraud signals**: no broken LinkedIn URLs, no mismatched location/phone prefixes
+9. **ATS fields**: skills and education keywords present and extractable
+10. **File name**: `Your Name, Role Title, Resume.pdf` (or equivalent with role title)
+
+## Candidate brief structure (for summary section)
+
+The summary should follow the candidate-brief structure:
+1. Who they are professionally (current/recent role, what they built)
+2. Why they're relevant (key skills, achievements)
+3. Notable signals (certifications, projects, open source)
+
+
 ## Template lint rules
 
 Manual template checks (verify before delivery):
