@@ -94,7 +94,7 @@ That command is valid only when those four sections are the complete nonempty se
 
 `templates/structured.html` supplies one single-column print layout. Body copy stays at 10.5pt, metadata remains inline, and contact links have visible text. Long experience blocks can split across pages; heading break controls reduce stranded headings without forcing an entire long section onto one page.
 
-The builder supplies an expected-text contract derived from the emitted wording. The shared checker verifies its presence after export, including wrapped URLs, plus page geometry, live text, markers and selected-posting overlap. Tests also inspect section order and long-role content. Presence checks cannot establish employer association, complete reading order or visual quality on every possible document; inspect every rendered page and verify the facts.
+The builder supplies an expected-text contract derived from emitted wording and checks selected section headings in the lane's order after export. The shared checker verifies expected text, ordered landmarks, page geometry, live text, markers and selected-posting overlap. Tests also inspect section order and long-role content. Landmark checks detect missing or misordered strings in extracted text; they do not establish semantic headings, complete reading order, visual fidelity to a candidate's baseline, or parsing by a particular ATS. Compare every rendered page with the approved CV and verify the facts.
 
 No local export can promise “100% ATS parsability” across hiring platforms. These checks reduce formatting risk; they do not certify parsing, ranking, originality or an interview.
 

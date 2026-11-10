@@ -59,6 +59,15 @@ class RealPDFTests(unittest.TestCase):
                 if os.name == "posix":
                     self.assertEqual((self.root / (paper + ".pdf")).stat().st_mode & 0o777, 0o600)
 
+    def test_render_checks_approved_section_landmark_order(self):
+        headings = ["Professional Summary", "Professional Experience"]
+        report = self.render(ordered_text=headings)
+        self.assertTrue(report["passed"])
+        self.assertEqual(report["ordered_text_items"], len(headings))
+        with self.assertRaises(checks.CheckFailure):
+            self.render(name="reversed.pdf", ordered_text=list(reversed(headings)))
+        self.assertFalse((self.root / "reversed.pdf").exists())
+
     def test_strict_posting_failure_never_publishes_candidate(self):
         posting = self.root / "posting.txt"
         posting.write_text("You will build small reporting tools and explain their tradeoffs.", encoding="utf-8")
@@ -110,7 +119,10 @@ class RealPDFTests(unittest.TestCase):
         posting.write_text("build small reporting tools and explain their tradeoffs", encoding="utf-8")
         for script, arguments in (
             ("jd_overlap.py", [str(self.root / "candidate.pdf"), str(posting), "--strict", "--json"]),
-            ("check_cv.py", [str(self.root / "candidate.pdf"), "--posting", str(posting)]),
+            ("check_cv.py", [str(self.root / "candidate.pdf"), "--posting", str(posting),
+                              "--ordered-text", "Professional Summary",
+                              "--ordered-text", "Professional Experience",
+                              "--strict-ordered-text"]),
         ):
             with self.subTest(script=script):
                 result = subprocess.run([sys.executable, str(ROOT / "scripts" / script), *arguments], capture_output=True, text=True, timeout=20)
@@ -118,6 +130,8 @@ class RealPDFTests(unittest.TestCase):
                 report = json.loads(result.stdout)
                 self.assertFalse(report["passed"])
                 self.assertNotIn("build small reporting tools", result.stdout + result.stderr)
+                if script == "check_cv.py":
+                    self.assertEqual(report["ordered_text_items"], 2)
 
     def test_shell_entrypoint_works_from_another_directory_with_spaced_paths(self):
         source = self.root / "fictional input.html"

@@ -106,6 +106,19 @@ class SourcePreflight(HTMLParser):
             self.styles.append(data)
 
 
+def _decode_css_escapes(value):
+    """Decode CSS escapes before checking resource-loading tokens."""
+    escape = re.compile(r"\\([0-9a-fA-F]{1,6})(?:\r\n|[\t\n\r\f ])?|\\([^\n\r\f0-9a-fA-F])|\\(?:\r\n|[\t\n\r\f])")
+
+    def replace(match):
+        if match[1]:
+            codepoint = int(match[1], 16)
+            return "\ufffd" if codepoint == 0 or codepoint > 0x10FFFF or 0xD800 <= codepoint <= 0xDFFF else chr(codepoint)
+        return match[2] or ""
+
+    return escape.sub(replace, value)
+
+
 def validate_source(source, paper):
     if not isinstance(source, str) or not source.strip() or len(source.encode("utf-8")) > MAX_BYTES:
         raise CheckError("Source HTML must be nonempty UTF-8 text within 16 MiB.")
@@ -115,7 +128,7 @@ def validate_source(source, paper):
     preflight = SourcePreflight()
     preflight.feed(source)
     preflight.close()
-    if any(re.search(r"@import\b|url\s*\(", style, re.I) for style in preflight.styles):
+    if any(re.search(r"@import\b|url\s*\(", _decode_css_escapes(style), re.I) for style in preflight.styles):
         raise CheckError("Source styles must not load external or relative resources.")
     return page_css(source, paper)
 
@@ -195,7 +208,7 @@ def run_browser(command, pdf, timeout=90, stderr=subprocess.DEVNULL):
 
 def render_html(source, output, paper="a4", max_pages=1, expected_text=(),
                 posting=None, overlap_policy="strict", explicit_browser=None,
-                replace=False, no_sandbox=False):
+                replace=False, no_sandbox=False, ordered_text=(), strict_ordered_text=False):
     output = Path(os.path.abspath(Path(output).expanduser()))
     if any(component.is_symlink() for component in (output,) + tuple(output.parents)):
         raise CheckError("Output paths must not follow symlinked files or directories; use a canonical destination.")
@@ -220,7 +233,8 @@ def render_html(source, output, paper="a4", max_pages=1, expected_text=(),
         command = browser_command(browser, html_path, pdf_path, directory / "browser-profile", no_sandbox)
         run_browser(command, pdf_path)
         report = validate_pdf(pdf_path, paper, max_pages, expected_text, posting,
-                              overlap_policy, source_html=source)
+                              overlap_policy, source_html=source, ordered_text=ordered_text,
+                              strict_ordered_text=strict_ordered_text)
         if not report["passed"]:
             raise CheckFailure(report)
         descriptor, staging = tempfile.mkstemp(prefix=".cv-witness-", suffix=".pdf", dir=output.parent)
@@ -247,6 +261,8 @@ def main(argv=None):
     parser.add_argument("paper", nargs="?", choices=("a4", "letter"), default="a4")
     parser.add_argument("--max-pages", type=int, default=1)
     parser.add_argument("--expected-text", action="append", default=[])
+    parser.add_argument("--ordered-text", action="append", default=[], help="Extracted text landmarks that must appear in the supplied order")
+    parser.add_argument("--strict-ordered-text", action="store_true", help="Require each landmark to be a standalone extracted line")
     parser.add_argument("--posting", help="Selected local posting; runs overlap checks automatically")
     parser.add_argument("--overlap-policy", choices=("strict", "review"), default="strict")
     parser.add_argument("--browser")
@@ -257,7 +273,8 @@ def main(argv=None):
         source = checked_source(args.input, args.paper)
         report = render_html(source, args.output, args.paper, args.max_pages, args.expected_text,
                              args.posting, args.overlap_policy, args.browser,
-                             args.replace, args.no_sandbox)
+                             args.replace, args.no_sandbox, args.ordered_text,
+                             args.strict_ordered_text)
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return 0
     except CheckFailure as error:
