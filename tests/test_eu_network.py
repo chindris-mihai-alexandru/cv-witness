@@ -193,6 +193,14 @@ class LocationFilterTests(unittest.TestCase):
         posting = "Software Engineer\nGeneva, Switzerland\nFull-time"
         self.assertEqual(knockout_check.extract_signals(posting).get("location"), "Geneva, Switzerland")
 
+    def test_hyphenated_job_descriptor_not_a_location(self):
+        # "Full-time, Non-Investment" is a job-type line, not a place; the real
+        # location on the previous line is what should survive.
+        posting = ("Infrastructure Engineer\nGeneva, Switzerland; GVA (Geneva) - Non-Investment\n"
+                   "Full-time, Non-Investment")
+        signals = knockout_check.extract_signals(posting)
+        self.assertEqual(signals.get("location"), "Geneva, Switzerland")
+
     def test_berlin_germany_detected(self):
         self.assertEqual(
             knockout_check.extract_signals("Backend Engineer Berlin, Germany (hybrid)").get("location"),

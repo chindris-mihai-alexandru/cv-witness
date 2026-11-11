@@ -40,6 +40,8 @@ MONTHS = r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*"
 YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
 
 EXPERIENCE_PATTERNS = [
+    re.compile(r"(\d+)\s*[-–]\s*(\d+)\s*years?", re.I),          # "4-6 years" (explicit range)
+    re.compile(r"(\d+)\s*to\s*(\d+)\s*years?", re.I),            # "2 to 6 years"
     re.compile(r"(\d+)\s*\+?\s*years?\s+(?:of\s+)?(?:professional\s+|relevant\s+|post[- ]?graduation\s+)?experience", re.I),
     re.compile(r"(\d+)\s*\+?\s*years?\s+(?:of\s+)?experience\s+(?:in|with)", re.I),
     re.compile(r"experience\s*(?:of\s*)?(?:at\s+least\s*)?(\d+)\s*\+?\s*years?", re.I),
@@ -105,6 +107,10 @@ def _first_place(posting: str) -> str | None:
     # Both halves starting with acronym-like tokens = department fragment.
     if has_acronym(w1) and has_acronym(w2):
         return None
+    # Hyphenated job descriptors ("Full-time, Non-Investment", "Part-time,
+    # Cofounder") are not places.
+    if any("-" in w for w in w1) or any("-" in w for w in w2):
+        return None
     # "City, Country and X" = a list continuation, not a location.
     if re.match(r"\s+(?:and|&)\s+[A-Za-z]", posting[m.end():]):
         return None
@@ -153,16 +159,39 @@ def extract_signals(posting: str) -> dict:
     """Extract candidate knockout signals from a posting. Conservative by design."""
     signals = {}
 
-    # Years of experience (take the largest stated minimum)
-    years = []
-    for pat in EXPERIENCE_PATTERNS:
+    # Years of experience. An explicit range ("4-6 years", "2 to 6 years") is a
+    # precise requirement statement and wins over lone numbers, which often
+    # come from the company's own tenure ("a firm with over 22 years of
+    # experience"). Within one class, take the largest stated minimum.
+    ranges = []
+    for pat in EXPERIENCE_PATTERNS[:2]:
         for m in pat.finditer(posting):
             try:
-                years.append(int(m.group(1)))
+                lo, hi = int(m.group(1)), int(m.group(2))
+                if 0 < lo <= hi <= 60:
+                    ranges.append(hi)
             except (ValueError, IndexError):
                 continue
-    if years:
-        signals["min_years"] = max(years)
+    if ranges:
+        signals["min_years"] = max(ranges)
+    else:
+        years = []
+        for pat in EXPERIENCE_PATTERNS[2:]:
+            for m in pat.finditer(posting):
+                try:
+                    years.append(int(m.group(1)))
+                except (ValueError, IndexError):
+                    continue
+        # A lone decade-spanning number is usually the COMPANY's tenure, not a
+        # candidate requirement ("a firm with over 22 years of experience").
+        # No mainstream role requires 15+ years literally; drop such frames
+        # unless the posting is explicitly senior-staff level.
+        plausible = [y for y in years if y <= 15]
+        if plausible:
+            signals["min_years"] = max(plausible)
+        elif years and re.search(r"\b(?:senior|staff|principal|lead|head)\b", posting, re.I):
+            # e.g. "requires 20+ years" for an explicitly stated senior-level role
+            signals["min_years"] = max(years)
 
     # Education floor. "Master's or PhD" means the floor is the lower degree;
     # "Master's and 5 years" still means Master's. Only take the highest when the

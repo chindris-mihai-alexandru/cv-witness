@@ -126,19 +126,22 @@ def check_fraud_signals(text: str) -> list[str]:
         if len(url) < 20 or '/in/c' in url or '/in/?' in url:
             issues.append(f"Potentially broken LinkedIn URL: {url}")
 
-    # Check for mismatched area codes vs claimed location
-    # This is a simple heuristic: if the CV claims a location but the phone area code
-    # doesn't match, flag it
+    # Check for mismatched area codes vs claimed location.
+    # Scope to the header/contact region only: the location claim that must
+    # match the phone prefix is the one in the contact line, not language
+    # mentions in the LANGUAGES section ("French and German (elementary)"
+    # describes languages, not a claimed residence).
+    header_region = text.split("PROFESSIONAL SUMMARY", 1)[0] if "PROFESSIONAL SUMMARY" in text else text[:400]
     location_patterns = {
         r'\b(Romania|Romanian)\b': ['+40', '0040'],
-        r'\b(United States|USA|US)\b': ['+1', '001'],
-        r'\b(United Kingdom|UK|GB)\b': ['+44', '0044'],
-        r'\b(Germany|German)\b': ['+49', '0049'],
-        r'\b(France|French)\b': ['+33', '0033'],
+        r'\b(United States|USA)\b': ['+1', '001'],
+        r'\b(United Kingdom|UK)\b': ['+44', '0044'],
+        r'\bGermany\b': ['+49', '0049'],
+        r'\bFrance\b': ['+33', '0033'],
     }
 
     for location_pattern, prefixes in location_patterns.items():
-        if re.search(location_pattern, text, re.IGNORECASE):
+        if re.search(location_pattern, header_region, re.IGNORECASE):
             # Check if any phone number has a matching prefix
             phone_pattern = r'[\+]\d{1,3}[\d\s().-]{7,}'
             phones = re.findall(phone_pattern, text)

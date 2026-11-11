@@ -19,6 +19,24 @@ class KnockoutSignalTests(unittest.TestCase):
         posting = "We need 4+ years of professional experience with Kubernetes."
         self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 4)
 
+    def test_explicit_range_beats_company_tenure(self):
+        # The "over 22 years of experience" is the FIRM's tenure, not the role floor.
+        posting = ("Garda is a multi-billion firm with over 22 years of experience. "
+                   "Requires 4-6 years of hands-on infrastructure operations experience.")
+        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 6)
+
+    def test_range_takes_upper_bound(self):
+        posting = "We need someone with 2 to 6 years of post-graduation experience."
+        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 6)
+
+    def test_company_tenure_alone_is_not_a_requirement(self):
+        posting = "Established with over 22 years of experience, our firm is hiring a junior engineer."
+        self.assertNotIn("min_years", knockout_check.extract_signals(posting))
+
+    def test_decade_numbers_kept_for_explicit_senior_roles(self):
+        posting = "A senior staff role for someone with 20+ years of experience."
+        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 20)
+
     def test_takes_the_largest_stated_minimum(self):
         posting = "2+ years of experience; senior roles need 6 years of experience."
         self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 6)
@@ -169,6 +187,23 @@ class FraudSignalTests(unittest.TestCase):
 
     def test_accepts_a_plausible_linkedin_url(self):
         self.assertEqual(ats_validate.check_fraud_signals("linkedin.com/in/jane-example"), [])
+
+    def test_language_names_are_not_location_claims(self):
+        # "French and German (elementary)" is a LANGUAGES section entry, not a
+        # claimed residence; must not trigger the phone-prefix mismatch flag.
+        cv = ("Jane Example\nRomania · +40 712 345 678\n\n"
+              "PROFESSIONAL SUMMARY\nExperience\n\n"
+              "LANGUAGES\nRomanian (native) · English (full professional)\n"
+              "French and German (elementary)")
+        issues = ats_validate.check_fraud_signals(cv)
+        self.assertFalse(any("Location claims" in i for i in issues))
+
+    def test_real_location_mismatch_still_flagged(self):
+        # A claimed residence that does not match the phone prefix is still caught.
+        cv = ("Jane Example\nFrance · +1 212 555 0178\n\n"
+              "PROFESSIONAL SUMMARY\nExperience")
+        issues = ats_validate.check_fraud_signals(cv)
+        self.assertTrue(any("Location claims" in i for i in issues))
 
 
 if __name__ == "__main__":
