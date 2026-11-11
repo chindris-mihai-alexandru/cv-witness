@@ -36,6 +36,7 @@ Usage:
   python3 scripts/eu_network.py bundesagentur --query "Python" --where "Berlin" --limit 5
   python3 scripts/eu_network.py adzuna --country de --query "backend engineer" --limit 5
   python3 scripts/eu_network.py ats --provider greenhouse --company n26 --limit 10
+  python3 scripts/eu_network.py ats --provider greenhouse --enterprise --query "engineer"
   python3 scripts/eu_network.py ats --provider lever --company zalando --limit 10
   python3 scripts/eu_network.py ats --provider ashby --company electric --limit 10
 
@@ -61,6 +62,15 @@ ATS_ENDPOINTS = {
     "greenhouse": "https://boards-api.greenhouse.io/v1/boards/{company}/jobs?content=true",
     "lever": "https://api.lever.co/v0/postings/{company}?mode=json",
     "ashby": "https://api.ashbyhq.com/posting-api/job-board/{company}?includeCompensation=true",
+}
+
+# Verified-this-session European enterprise boards (2026-11-11: each slug
+# returned live postings via its official feed). Startup intel comes from the
+# YC CLI / WAAS; these cover the big-co side of the EU market.
+ENTERPRISE_BOARDS = {
+    "greenhouse": ["celonis", "n26", "contentful", "trustpilot"],
+    "lever": ["spotify", "farfetch"],
+    "ashby": [],
 }
 
 
@@ -342,11 +352,25 @@ def cmd_ats(args: argparse.Namespace) -> int:
     if handler is None:
         print(f"unknown provider {args.provider!r}; choose greenhouse|lever|ashby", file=sys.stderr)
         return 2
+    if args.enterprise:
+        companies = ENTERPRISE_BOARDS.get(args.provider, [])
+        if not companies:
+            print(f"no verified enterprise boards for provider {args.provider!r} "
+                  f"(try --company <slug>)", file=sys.stderr)
+            return 2
+    else:
+        companies = _companies_arg(args.company)
+        if not companies:
+            print("provide --company <slug> (or --enterprise for the shortlist)", file=sys.stderr)
+            return 2
     all_rows = []
     errors = []
-    for c in _companies_arg(args.company):
+    for c in companies:
         try:
-            all_rows.extend(handler(c))
+            for row in handler(c):
+                if args.query and args.query.lower() not in row["title"].lower():
+                    continue
+                all_rows.append(row)
         except EuNetworkError as e:
             errors.append(f"{c}: {e}")
     out = {"source": args.provider, "count": len(all_rows), "jobs": all_rows}
@@ -388,7 +412,10 @@ def main() -> int:
 
     p = sub.add_parser("ats", help="official ATS public feed (no key): greenhouse|lever|ashby")
     p.add_argument("--provider", choices=["greenhouse", "lever", "ashby"], required=True)
-    p.add_argument("--company", required=True, help="board slug or comma-separated list")
+    p.add_argument("--company", default="", help="board slug or comma-separated list, or --enterprise")
+    p.add_argument("--enterprise", action="store_true",
+                   help="query the verified EU enterprise shortlist instead of --company")
+    p.add_argument("--query", default="", help="substring filter on title (case-insensitive)")
     p.add_argument("--limit", type=int, default=10)
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_ats)
