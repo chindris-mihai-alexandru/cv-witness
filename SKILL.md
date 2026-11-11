@@ -48,6 +48,26 @@ evidence of the user's actual, previously confirmed facts and wording choices.
 - The check is offline-friendly: the OAuth flow is the only network step, and
   `read_resume` content stays in the conversation, never written to public files.
 
+## Rezi write verification (verified 2026-11)
+
+Two behaviors of the live Rezi MCP that a write must verify:
+
+- **`write_resume` merges by key and never deletes a section entry.** Duplicating
+  a source resume then overwriting `data` keeps every stale entry the duplicate
+  also contained (a duplicate's old project or skill line can survive next to
+  your new one as a visible twin). After every write, `read_resume` back and
+  check for duplicates; hide the stale entry (`hide: true`, high `index`) in a
+  follow-up write. A reported `"action":"updated"` is not a verified target.
+- **`generate_keywords` is the coverage audit, not a to-do list.** Missing
+  keywords are a truth signal: some misses are matcher noise (token form:
+  "Mentored" vs "Mentoring", "escalated" vs "Escalation"), some are honest
+  wording gaps, and the rest are real skill gaps. Close the wording ones with
+  the same facts; never pad the resume to score keyword coverage. The resume
+  must stay verbatim-consistent with the approved baseline PDF - a keyword
+  wording divergence for score is hyper-tailoring.
+
+
+
 
 ## Format baseline rule (enforced, not advisory)
 
