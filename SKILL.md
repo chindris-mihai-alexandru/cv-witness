@@ -28,6 +28,26 @@ This is the user's main job-application workflow. Rezi is an optional source for
 - The structured `scripts/build_cv.py` workflow and legacy `template.html`/`render.sh` path are optional local fallbacks. Use them only if the user asks for local output or Quick is unavailable and the user agrees. Structured templates share one layout and support repeatable roles, six career-lane ordering presets (engineering, operations, research, management, security, customer-success), and A4/Letter.
 - Rezi is a separate, remote source. Read only the specific Rezi resume the user selects or asks you to consult. Do not assume it matches `foundation.md` or silently merge differences.
 
+## Rezi resume-consistency check (enforced when a Rezi account exists)
+
+The tailoring workflow must compare the draft against the user's own prior Rezi
+resumes when an account is available - past tailored versions are the strongest
+evidence of the user's actual, previously confirmed facts and wording choices.
+
+- **Trigger**: if the user has a Rezi account with MCP access (or an existing
+  OAuth token from `scripts/bookface_mcp_auth.py`-style bootstrap), this step is
+  **mandatory** before delivery. Run `list_resumes` and `read_resume` on the
+  most recent relevant resume, and confirm every fact used in the draft appears
+  in at least one Rezi resume or in the approved foundation source.
+- **Skip (not fail)**: users without a Rezi account are unaffected - the check
+  is skipped, never a blocker, and nothing about the workflow depends on Rezi
+  being present. No fake "no Rezi" pass is produced either; the gate simply does
+  not run.
+- **Outcome recording**: report which facts were confirmed against Rezi and any
+  that appear only in the posting (flagged as unsupported, not invented).
+- The check is offline-friendly: the OAuth flow is the only network step, and
+  `read_resume` content stays in the conversation, never written to public files.
+
 
 ## Format baseline rule (enforced, not advisory)
 
@@ -72,6 +92,19 @@ Keep corpus storage and generated references outside public artifacts. Originals
 - A useful separate use for `write_resume` is maintaining the user's reusable Rezi master when they confirm a durable factual update, such as a completed certification or a new verified achievement. Offer this only when relevant; do not automatically sync the local foundation file and Rezi because they are separate records.
 - Also use `write_resume` if the user explicitly asks to save or create a Rezi-hosted resume. Before writing, show the proposed changes and get explicit approval, call `get_resume_format`, target the selected existing `resume_id` for an update, and send only the requested fields. Do not store every job-specific PDF variant in Rezi by default.
 - Inspect the live MCP tool schema and follow its current field definitions. Preserve existing section IDs and omitted sections. After a successful write, read the resume back and verify it. If a write result is uncertain, check the existing record before considering a retry; do not blindly repeat a create or update.
+
+## Amazon Quick native flow (verified in the user's Wonsulting session, 2026-10-07)
+
+**As of 2026-11 and the installed desktop build (v1.1.3905), Amazon Quick has no
+bundled CV/resume creation feature.** Verified two ways: full REA static analysis
+of the extracted app.asar (every "resume"/"cv" string is session/stream resume,
+power-resume, audio-context resume or SQL reserved words) and the live AWS Quick
+features page (docs, decks, spreadsheets, research, automation, apps - no CV).
+Amazon's resume tooling lives in Resume Optimizer, a separate PartyRock/Bedrock
+Playground app that scores a resume against a job description; it is not part of
+Quick. The user's earlier CV was produced through an agent session (Wonsulting)
+inside Quick, not a Quick template. Treat the approved CV/template as the
+permanent design baseline and do not look for a Quick layout feature to sync to.
 
 ## Amazon Quick native flow (verified in the user's Wonsulting session, 2026-10-07)
 
@@ -225,10 +258,48 @@ Recruiters and AI screeners read for evidence, not duties: what you did (action)
 at what scale (metric), with what (tool). Run
 `scripts/bullet_audit.py CV.pdf` to flag bullets missing any of the three.
 
+## Stack-honesty audit (before delivery)
+
+Every named tool, library or framework on the CV must exist in the candidate's
+verified stack (foundation sources, confirmed GitHub/LinkedIn evidence). A
+"nice to have" from the posting is not a license to list it: posting lists a
+desired tool (e.g. Tailwind, Redux, RTL) and the CV claims it only because the
+posting mentions it - that is invented skill. Before delivery, run a final
+pass over every tool name in Skills and bullets and strike anything unverified:
+
+- Posting "nice to have" that is not in the real stack: remove, do not imply.
+  If the posting says "React, Vue or Angular" and only React is real, list React.
+- Never mislabel the real stack to approximate the posting (do not write
+  "Redux-style state" for hooks/context, or "React Testing Library-style tests"
+  for Playwright and Vitest). Name the actual tools.
+- Cheesy self-flattery ("empathetic communication", "passionate about X") is
+  weaker than a plain factual phrasing; strike it.
+
+Verified example: a posting asked for Tailwind + RTL, the candidate's real
+stack was React, TypeScript, Storybook, Playwright, Vitest. The passing CV
+listed the real stack only and said so.
+
 The audit is lexical. A flagged bullet is a candidate for review, not a
 confirmed defect — read it in context before rewriting. A bullet that is
 accurate and specific can legitimately lack a number; a bullet that is vague
 cannot be fixed by adding one.
+
+## English-level honesty rule
+
+A posted CEFR requirement (e.g. "English at C1") is a real gate, but the CV
+wording should not claim a level the candidate cannot back with a certificate:
+
+- Never write a CEFR level (C1, B2) on the CV unless the candidate holds a
+  certificate for it. A fresh IELTS/CAE sitting scheduled months ahead is not
+  a level.
+- The honest, filter-safe phrasing for a candidate who genuinely works in
+  English daily (English-taught degree, professional use, open source) is
+  "professional working proficiency" - no B2 label, no C1 claim.
+- If an application form asks the CEFR level directly, answer truthfully
+  (e.g. "B2, IELTS for C1 scheduled") - a truthful form answer is safe, an
+  unbacked "C1" on the form is a lie that can surface later.
+- The interview is where actual English is demonstrated; the CV only has to
+  be honest and not auto-filtered on a false claim.
 
 ## Evidence, not keywords
 
@@ -263,6 +334,13 @@ Before delivering a CV, verify ALL of:
 8. **Fraud signals**: no broken LinkedIn URLs, no mismatched location/phone prefixes
 9. **ATS fields**: skills and education keywords present and extractable
 10. **File name**: `Your Name, Role Title, Resume.pdf` (or equivalent with role title)
+11. **Layout gate (any authoring path)**: run `python3 scripts/verify_layout.py <cv.pdf>`
+    on the finished PDF - page count, paper size, all section headings extract in
+    order, no placeholder markers, date right-alignment, heading-gap consistency
+    and bullet left edges. This is the same check battery the structured pipeline
+    runs, verified over the final artifact; a Quick-exported, DOCX-converted or
+    template-filled CV must pass it just like a structured build. No manual
+    layout inspection substitutes for it.
 
 ## Candidate brief structure (for summary section)
 
