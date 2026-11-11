@@ -126,6 +126,61 @@ class AdzunaKeyTests(unittest.TestCase):
             self.assertEqual(eu_network._load_adzuna_keys(None), ("a", "k"))
 
 
+class AtsCliTests(unittest.TestCase):
+    """--enterprise mode: shortlist resolution and query filtering."""
+
+    def test_enterprise_uses_verified_shortlist(self):
+        row = {"source": "greenhouse", "company": "celonis", "title": "Backend Engineer",
+               "location": "Munich", "url": "x", "description": "d",
+               "salary_min": None, "salary_max": None, "contract_type": "", "category": ""}
+        args = mock.Mock(provider="greenhouse", company="", enterprise=True,
+                         query="", limit=10, json=False)
+        with mock.patch.object(eu_network, "_greenhouse_rows", return_value=[row]) as m, \
+             mock.patch("sys.stdout"):
+            code = eu_network.cmd_ats(args)
+        self.assertEqual(code, 0)
+        # one handler call per shortlist company, in order
+        called = [mc.args[0] for mc in m.call_args_list]
+        self.assertEqual(called, eu_network.ENTERPRISE_BOARDS["greenhouse"])
+
+    def test_enterprise_query_filters_titles(self):
+        rows = [
+            {"source": "greenhouse", "company": "n26", "title": "Backend Engineer",
+             "location": "", "url": "", "description": "", "salary_min": None,
+             "salary_max": None, "contract_type": "", "category": ""},
+            {"source": "greenhouse", "company": "n26", "title": "Sales Manager",
+             "location": "", "url": "", "description": "", "salary_min": None,
+             "salary_max": None, "contract_type": "", "category": ""},
+        ]
+        args = mock.Mock(provider="greenhouse", company="", enterprise=True,
+                         query="engineer", limit=10, json=False)
+        with mock.patch.object(eu_network, "_greenhouse_rows", return_value=rows), \
+             mock.patch("sys.stdout"):
+            eu_network.cmd_ats(args)
+            # capture stdout via a buf
+            import io
+            buf = io.StringIO()
+            with mock.patch("sys.stdout", buf):
+                eu_network.cmd_ats(args)
+            out = buf.getvalue()
+        self.assertIn("Backend Engineer", out)
+        self.assertNotIn("Sales Manager", out)
+
+    def test_enterprise_without_boards_errors(self):
+        args = mock.Mock(provider="ashby", company="", enterprise=True,
+                         query="", limit=10, json=False)
+        with mock.patch("sys.stderr"), mock.patch("sys.stdout"):
+            code = eu_network.cmd_ats(args)
+        self.assertEqual(code, 2)
+
+    def test_neither_company_nor_enterprise_errors(self):
+        args = mock.Mock(provider="greenhouse", company="", enterprise=False,
+                         query="", limit=10, json=False)
+        with mock.patch("sys.stderr"), mock.patch("sys.stdout"):
+            code = eu_network.cmd_ats(args)
+        self.assertEqual(code, 2)
+
+
 # --- knockout_check: location filtering ------------------------------------
 
 class LocationFilterTests(unittest.TestCase):
