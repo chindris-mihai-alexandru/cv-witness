@@ -258,6 +258,21 @@ Recruiters and AI screeners read for evidence, not duties: what you did (action)
 at what scale (metric), with what (tool). Run
 `scripts/bullet_audit.py CV.pdf` to flag bullets missing any of the three.
 
+## Three-bullet block contract (enforced)
+
+Every role under PROFESSIONAL EXPERIENCE and every project under PROJECTS
+carries EXACTLY three evidence bullets. The user's own approved CVs and their
+Wonsulting practice both use three per block, and the contract is the house
+rule for every tailored build:
+
+- Not two (thin) and not four (cluttered): exactly three.
+- The check is scripted, not eyeballed: run
+  `python3 scripts/bullet_audit.py CV.pdf --source-html cvs/<name>.html`
+  (or `--json`). It counts `<li>` inside every `<ul class="role-sub">` and
+  `<ul class="project">` of the HTML source - the PDF text layer cannot
+  reliably group bullets under their headings. Exit 1 lists every block
+  outside the contract; `--bullets N` / `--max-bullets M` relax it.
+
 ## Stack-honesty audit (before delivery)
 
 Every named tool, library or framework on the CV must exist in the candidate's

@@ -91,6 +91,47 @@ def read_text(path: str) -> str:
     return p.read_text(encoding="utf-8", errors="replace")
 
 
+# Block kinds whose bullets must follow the three-bullet contract.
+CONTRACT_BLOCK_KINDS = ("role-sub", "project")
+
+
+def count_block_bullets(source_html: str, kind: str) -> list[dict]:
+    """Count <li> bullets inside every <ul class="kind"> of an HTML CV source.
+
+    The rendered PDF text layer cannot reliably group bullets under their role
+    or project heading, so the HTML template (the authoring input) is the
+    deterministic ground truth for the bullet-count contract.
+    """
+    pattern = re.compile(
+        rf'<ul class="{re.escape(kind)}">(.*?)</ul>', re.DOTALL)
+    blocks = []
+    for i, m in enumerate(pattern.finditer(source_html), start=1):
+        li_count = len(re.findall(r"<li>", m.group(1)))
+        blocks.append({"kind": kind, "index": i, "bullets": li_count})
+    return blocks
+
+
+def check_three_bullet_contract(source_html: str, min_bullets: int = 3,
+                                max_bullets: int | None = None) -> list[dict]:
+    """Return contract violations (blocks not within [min_bullets, max]).
+
+    The house rule (verified with the user's own Wonsulting practice and the
+    REA of their approved CVs) is exactly three evidence bullets per role and
+    per project. min_bullets floors the count; max_bullets (default = min)
+    caps it. Reads only the template's own <ul class="role-sub"> and
+    <ul class="project"> blocks.
+    """
+    if max_bullets is None:
+        max_bullets = min_bullets
+    violations = []
+    for kind in CONTRACT_BLOCK_KINDS:
+        for block in count_block_bullets(source_html, kind):
+            n = block["bullets"]
+            if n < min_bullets or n > max_bullets:
+                violations.append({**block, "min": min_bullets, "max": max_bullets})
+    return violations
+
+
 def find_bullets(cv: str) -> list[str]:
     """Extract bullet lines from a CV text layer.
 
@@ -173,7 +214,29 @@ def main() -> int:
     ap.add_argument("--json", action="store_true", help="Emit JSON")
     ap.add_argument("--min-words", type=int, default=8,
                     help="Only audit bullets with at least this many words (default 8)")
+    ap.add_argument("--source-html", metavar="FILE",
+                    help="HTML source of the CV; enforces the exactly-N-bullets "
+                         "contract per role and per project (default min=max=3)")
+    ap.add_argument("--bullets", type=int, default=3,
+                    help="Bullets required per role/project block (default 3)")
+    ap.add_argument("--max-bullets", type=int, default=None,
+                    help="Upper bound per block (default: same as --bullets)")
     args = ap.parse_args()
+
+    violations: list[dict] = []
+    if args.source_html:
+        try:
+            src = read_text(args.source_html)
+        except BulletAuditError as e:
+            print(f"bullet-audit: {e}", file=sys.stderr)
+            return 2
+        violations = check_three_bullet_contract(src, args.bullets, args.max_bullets)
+        if not args.json:
+            print(f"=== BULLET CONTRACT: {len(violations)} block(s) outside "
+                  f"{args.bullets}" + ("" if args.max_bullets is None
+                                       else f"-{args.max_bullets}") + " bullets ===")
+            for v in violations:
+                print(f"  {v['kind']} block #{v['index']}: {v['bullets']} bullets")
 
     try:
         cv = read_text(args.cv)
@@ -182,30 +245,36 @@ def main() -> int:
         return 2
 
     bullets = [b for b in find_bullets(cv) if len(b.split()) >= args.min_words]
-    if not bullets:
-        msg = "No bullets found at the requested length."
-        if args.json:
-            print(json.dumps({"bullets": [], "summary": {"total": 0, "flagged": 0}}, indent=2))
-        else:
-            print(msg)
-        return 0
-
     audited = [audit_bullet(b) for b in bullets]
     flagged = [a for a in audited if a["missing"]]
 
     if args.json:
-        print(json.dumps({
-            "summary": {"total": len(audited), "flagged": len(flagged)},
-            "bullets": audited,
-        }, indent=2, ensure_ascii=False))
+        # One document, whatever combination of checks ran: contract +
+        # bullet audit, each key absent when that check could not apply.
+        report: dict = {}
+        if args.source_html:
+            report["contract"] = {"kind": "exact_per_block",
+                                  "min": args.bullets,
+                                  "max": args.max_bullets or args.bullets,
+                                  "violations": violations}
+        if bullets:
+            report["summary"] = {"total": len(audited), "flagged": len(flagged)}
+            report["bullets"] = audited
+        else:
+            report["summary"] = {"total": 0, "flagged": 0}
+            report["bullets"] = []
+        print(json.dumps(report, indent=2, ensure_ascii=False))
     else:
-        print(f"=== BULLET AUDIT: {len(flagged)} of {len(audited)} bullets flagged ===")
-        for a in flagged:
-            print(f"\n  missing: {', '.join(a['missing'])}")
-            print(f"    starts with: '{a['first_word']}'")
-            print(f"    {a['bullet'][:160]}")
+        if not bullets:
+            print("No bullets found at the requested length.")
+        else:
+            print(f"=== BULLET AUDIT: {len(flagged)} of {len(audited)} bullets flagged ===")
+            for a in flagged:
+                print(f"\n  missing: {', '.join(a['missing'])}")
+                print(f"    starts with: '{a['first_word']}'")
+                print(f"    {a['bullet'][:160]}")
 
-    return 1 if flagged else 0
+    return 1 if (flagged or violations) else 0
 
 
 if __name__ == "__main__":
