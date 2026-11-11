@@ -55,9 +55,13 @@ Two behaviors of the live Rezi MCP that a write must verify:
 - **`write_resume` merges by key and never deletes a section entry.** Duplicating
   a source resume then overwriting `data` keeps every stale entry the duplicate
   also contained (a duplicate's old project or skill line can survive next to
-  your new one as a visible twin). After every write, `read_resume` back and
-  check for duplicates; hide the stale entry (`hide: true`, high `index`) in a
-  follow-up write. A reported `"action":"updated"` is not a verified target.
+  your new one as a visible twin). Worse, **replacing a section dict with NEW
+  keys adds rows - the old keys stay active and render too** (a 2-row
+  certification rewrite became 6 rows when fresh keys were introduced). The only
+  reliable reduction is to reuse the EXISTING keys: rewrite the ones to keep and
+  set `hide: true, index: 9+` on every other key in that section. After every
+  write, `read_resume` back and verify row counts per section; a reported
+  `"action":"updated"` is not a verified target.
 - **`generate_keywords` is the coverage audit, not a to-do list.** Missing
   keywords are a truth signal: some misses are matcher noise (token form:
   "Mentored" vs "Mentoring", "escalated" vs "Escalation"), some are honest
