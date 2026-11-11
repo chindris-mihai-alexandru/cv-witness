@@ -53,10 +53,69 @@ EDUCATION_PATTERNS = [
 ]
 
 # "City, Country" / "City, State, Country" in a posting header. Spaces only —
-# never newlines, so a header line cannot swallow the next line.
+# never newlines, so a header line cannot swallow the next line. The match is
+# post-filtered in _first_place() to drop department-style fragments.
 PLACE_RE = re.compile(
     r"\b([A-Z][A-Za-z.'-]+(?:[ \t]+[A-Z][A-Za-z.'-]+)?,[ \t]*[A-Z][A-Za-z.'-]+(?:[ \t]+[A-Z][A-Za-z.'-]+)?)\b"
 )
+
+# Acronym-like first words that mark department fragments ("AFC Ops, KYC Ops",
+# "MLRO France, KYC France") rather than city names. Pure 1-4 cap words.
+_ACRONYM_TOKEN = re.compile(r"^[A-Z]{1,4}$")
+
+# Places whose official name includes an article; do not strip it.
+_ARTICLE_NAME_EXCEPTIONS = {"the hague"}
+
+# Job-title words that can precede a city in a header ("Backend Engineer
+# Berlin, Germany"): drop them when they lead the first token.
+_ROLE_PREFIX_WORDS = {
+    "backend", "frontend", "software", "senior", "junior", "lead", "head",
+    "principal", "staff", "engineer", "engineers", "developer", "developers",
+    "manager", "managers", "consultant", "consultants", "analyst", "analysts",
+    "specialist", "specialists", "director", "directors", "full", "stack",
+    "cloud", "devops", "data", "ml", "ai", "platform", "infrastructure",
+    "systems", "product", "project", "program", "programmer", "programmers",
+    "architect", "architects", "scientist", "scientists", "ops", "technical",
+    "intern", "trainee", "apprentice", "associate", "support", "test",
+    "testing", "qa", "security", "network", "site", "reliability",
+}
+
+
+def _first_place(posting: str) -> str | None:
+    """Return the best 'City, Country' signal, or None.
+
+    Filters PLACE_RE hits that are list fragments or acronym-pair department
+    names, so "SAR, RFI and STR reporting" or "AFC Ops, KYC Ops team" do not
+    masquerade as locations. Also strips job-title prefixes ("Backend
+    Engineer Berlin, Germany" -> "Berlin, Germany").
+    """
+    m = PLACE_RE.search(posting)
+    if not m:
+        return None
+    place = m.group(1).strip()
+    t1, _, t2 = place.partition(",")
+    w1 = t1.strip().split()
+    w2 = t2.strip().split()
+    if not w1 or not w2:
+        return None
+
+    def has_acronym(words, limit=3):
+        return any(_ACRONYM_TOKEN.match(w) for w in words[:limit])
+
+    # Both halves starting with acronym-like tokens = department fragment.
+    if has_acronym(w1) and has_acronym(w2):
+        return None
+    # "City, Country and X" = a list continuation, not a location.
+    if re.match(r"\s+(?:and|&)\s+[A-Za-z]", posting[m.end():]):
+        return None
+    # Drop job-title prefixes from the first token, keeping at least one word.
+    while len(w1) > 1 and w1[0].lower() in _ROLE_PREFIX_WORDS:
+        w1 = w1[1:]
+    place = " ".join(w1) + ", " + " ".join(w2)
+    # Strip a leading article unless the official name needs it ("The Hague").
+    if " ".join(w1).lower() not in _ARTICLE_NAME_EXCEPTIONS:
+        place = re.sub(r"^(?:The|A|An)\s+", "", place).strip()
+    return place or None
 
 LOCATION_PATTERNS = [
     re.compile(r"\b(?:located\s+in|based\s+in|location\s*[:=]?)\s+([A-Z][A-Za-z .'-]{2,40})"),
@@ -128,9 +187,9 @@ def extract_signals(posting: str) -> dict:
         signals["education"] = floor
 
     # Location: prefer a named place in the header over a work-mode word.
-    place = PLACE_RE.search(posting)
+    place = _first_place(posting)
     if place:
-        signals["location"] = place.group(1).strip()
+        signals["location"] = place
     else:
         for pat in LOCATION_PATTERNS:
             m = pat.search(posting)

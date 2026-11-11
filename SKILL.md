@@ -179,6 +179,30 @@ for live postings before tailoring:
 min-experience distribution across postings — the honest market signal for
 which skills to lead with (never invent a skill; show what the market asks for).
 
+**European coverage (YC/WAAS is US-heavy).** Top free sources as of 2026-11,
+verified live; dead/gated platforms are excluded on purpose (Honeypot shut
+down Jan 2025, EURES is partner-API-only, Indeed/Stepstone have no public
+API):
+- `scripts/eu_network.py arbeitnow --query ...` — keyless EU/Germany jobs
+  from ATS platforms; `remote` and `visa_sponsorship` fields in each row.
+- `scripts/eu_network.py bundesagentur --query ... --where Berlin` —
+  Germany's national job board, free JSON API, on-site roles the remote
+  boards miss.
+- `scripts/eu_network.py ats --provider greenhouse|lever|ashby --company <slug>`
+  — official public ATS feeds, no credentials, one employer per call.
+- `scripts/eu_network.py adzuna --country de --query ...` — optional tier-2
+  (needs ADZUNA_APP_ID/ADZUNA_API_KEY); 19 markets, truncated descriptions.
+
+**Automation: live pre-flight before tailoring (not after).** Run
+`scripts/preflight.py --cv <cv.pdf> --role "<role>"` and it pulls postings
+from every working source above and runs the existing knockout checker
+against each: any FAIL is a tailoring gate, UNCLEAR needs confirmation. Use
+it as the first step of the tailoring workflow — the live market replaces
+the single pasted posting as the knockout input:
+    python3 scripts/preflight.py --cv cv.pdf --role "backend engineer"
+    python3 scripts/preflight.py --cv cv.pdf --role "kubernetes" \
+        --ats greenhouse:n26,lever:zalando --where Berlin --max-postings 200
+
 Without an account, there is no scraping path; do not use community MCP servers
 that read session cookies — they are unofficial and a credential risk.
 ## Knockout check (before tailoring)
