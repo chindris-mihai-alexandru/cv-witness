@@ -169,7 +169,10 @@ def extract_signals(posting: str) -> dict:
             try:
                 lo, hi = int(m.group(1)), int(m.group(2))
                 if 0 < lo <= hi <= 60:
-                    ranges.append(hi)
+                    # "4-6 years" requires AT LEAST 4; the lower bound is the
+                    # floor. The upper bound is a ceiling ("no more than"),
+                    # not a minimum.
+                    ranges.append(lo)
             except (ValueError, IndexError):
                 continue
     if ranges:

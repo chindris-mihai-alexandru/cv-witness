@@ -23,11 +23,15 @@ class KnockoutSignalTests(unittest.TestCase):
         # The "over 22 years of experience" is the FIRM's tenure, not the role floor.
         posting = ("Garda is a multi-billion firm with over 22 years of experience. "
                    "Requires 4-6 years of hands-on infrastructure operations experience.")
-        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 6)
+        # A stated range means AT LEAST its lower bound (4), not its ceiling.
+        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 4)
 
-    def test_range_takes_upper_bound(self):
+    def test_range_takes_lower_bound(self):
+        # "2 to 6 years" requires at least 2; 6 is the ceiling, not the floor.
+        # Reporting the ceiling would overstate the requirement (honest gap
+        # analysis must report the posting's real floor).
         posting = "We need someone with 2 to 6 years of post-graduation experience."
-        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 6)
+        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 2)
 
     def test_company_tenure_alone_is_not_a_requirement(self):
         posting = "Established with over 22 years of experience, our firm is hiring a junior engineer."
@@ -139,6 +143,47 @@ class BulletElementTests(unittest.TestCase):
     def test_detects_duty_language(self):
         result = bullet_audit.audit_bullet("Assisted the team with daily duties")
         self.assertTrue(result["duty_language"])
+
+
+class BulletContractTests(unittest.TestCase):
+    """The house rule: exactly three bullets per role and per project block."""
+
+    def test_counts_bullets_per_kind(self):
+        html = ('<ul class="role-sub"><li>a</li><li>b</li><li>c</li></ul>'
+                '<ul class="project"><li>x</li><li>y</li><li>z</li></ul>')
+        self.assertEqual(bullet_audit.count_block_bullets(html, "role-sub"),
+                         [{"kind": "role-sub", "index": 1, "bullets": 3}])
+        self.assertEqual(bullet_audit.count_block_bullets(html, "project"),
+                         [{"kind": "project", "index": 1, "bullets": 3}])
+
+    def test_three_bullet_contract_passes_with_exactly_three(self):
+        html = ('<ul class="role-sub"><li>a</li><li>b</li><li>c</li></ul>'
+                '<ul class="project"><li>x</li><li>y</li><li>z</li></ul>')
+        self.assertEqual(bullet_audit.check_three_bullet_contract(html), [])
+
+    def test_contract_flags_a_two_bullet_role(self):
+        html = ('<ul class="role-sub"><li>a</li><li>b</li></ul>'
+                '<ul class="project"><li>x</li><li>y</li><li>z</li></ul>')
+        violations = bullet_audit.check_three_bullet_contract(html)
+        self.assertEqual(len(violations), 1)
+        self.assertEqual(violations[0]["kind"], "role-sub")
+        self.assertEqual(violations[0]["bullets"], 2)
+
+    def test_contract_flags_every_short_or_long_block(self):
+        html = ('<ul class="role-sub"><li>a</li></ul>'
+                '<ul class="role-sub"><li>a</li><li>b</li><li>c</li><li>d</li></ul>'
+                '<ul class="project"><li>x</li><li>y</li></ul>')
+        violations = bullet_audit.check_three_bullet_contract(html)
+        self.assertEqual(len(violations), 3)
+
+    def test_contract_ignores_unrelated_lists(self):
+        html = ('<ul class="skills"><li>Python</li></ul>'
+                '<ul class="role-sub"><li>a</li><li>b</li><li>c</li></ul>')
+        self.assertEqual(bullet_audit.check_three_bullet_contract(html), [])
+
+    def test_min_and_max_can_be_relaxed(self):
+        html = '<ul class="role-sub"><li>a</li><li>b</li></ul>'
+        self.assertEqual(bullet_audit.check_three_bullet_contract(html, 2, 3), [])
 
 
 # --- ats_validate ----------------------------------------------------------
