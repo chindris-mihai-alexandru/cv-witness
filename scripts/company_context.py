@@ -60,19 +60,22 @@ class ContextError(Exception):
 # --- curated lists ----------------------------------------------------------
 
 def load_european_remote() -> dict[str, dict]:
-    """Company name -> row from the EuropeanRemote EU hiring list."""
+    """Company name -> row from the EuropeanRemote EU hiring list (8 columns)."""
     path = LISTS_DIR / "european_remote.tsv"
     if not path.is_file():
         return {}
     rows: dict[str, dict] = {}
     for line in path.read_text(encoding="utf-8").splitlines():
         parts = line.split("\t")
-        if len(parts) < 5:
+        if len(parts) < 8:
             continue
-        name, hq, mode, stack, hiring = parts[0], parts[1], parts[2], parts[3], parts[4]
+        name, hq, domain, mode, stack, salary, global_salary, hiring = parts[:8]
         rows[name.strip().lower()] = {
-            "name": name.strip(), "hq": hq, "work_mode": mode,
-            "tech_stack": stack, "hiring_now": hiring.strip().lower() == "yes",
+            "name": name.strip(), "hq": hq, "domain": domain, "work_mode": mode,
+            "tech_stack": stack,
+            "salary_transparency": salary.strip().lower() == "yes",
+            "global_salary": global_salary.strip().lower() == "yes",
+            "hiring_now": hiring.strip().lower() == "yes",
         }
     return rows
 
