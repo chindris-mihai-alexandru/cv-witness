@@ -59,6 +59,15 @@ ENGLISH_WORKPLACE_COUNTRIES = {"GB", "IE", "NL", "SE", "DK", "NO", "FI", "MT", "
 
 FUNDING_MCP_URL = "https://funding.tech.eu/api/mcp"
 
+# The posting's own language requirement outranks the country heuristic above.
+ENGLISH_REQUIRED_RE = re.compile(
+    r"\b(?:fluent|proficient|excellent|strong|good)\s+(?:in\s+)?"
+    r"(?:written\s+(?:and|&)\s+spoken\s+|written\s+|spoken\s+)?English\b"
+    r"|\bEnglish\s+(?:is\s+)?(?:required|mandatory|the\s+working\s+language)\b"
+    r"|\bwork(?:ing)?\s+language\s+(?:is\s+)?English\b",
+    re.I,
+)
+
 
 class ContextError(Exception):
     """Raised for input or tool failures."""
@@ -252,9 +261,9 @@ def build_context(posting_path: str, cv_path: str, company: str, citizen: str | 
         "eu_free_movement": bool(countries) and all(
             c in knockout_check.EU_EEA_FREE_MOVEMENT for c in countries
         ),
-        "english_friendly": bool(countries) and any(
+        "english_friendly": (bool(countries) and any(
             c in ENGLISH_WORKPLACE_COUNTRIES for c in countries
-        ),
+        )) or bool(ENGLISH_REQUIRED_RE.search(posting)),
         "sponsorship_offered": not profile["sponsorship"],
     }
 
