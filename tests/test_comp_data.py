@@ -71,6 +71,34 @@ class EuptdParsingTests(unittest.TestCase):
             self.assertIsNone(comp_data.euptd_country("DK"))
 
 
+class EuptdCoverageTests(unittest.TestCase):
+    def test_coverage_splits_live_from_empty(self):
+        pages = {"DE": EUPTD_PAGE, "PL": EUPTD_PAGE}
+
+        def fake_get(url, headers=None, timeout=25):
+            code = url.rsplit("/country/", 1)[1].strip("/").upper()
+            return pages.get(code)
+
+        with mock.patch.object(comp_data, "_get", side_effect=fake_get):
+            result = comp_data.euptd_country_coverage(["DE", "DK", "PL"])
+        self.assertEqual(result["probed"], 3)
+        self.assertEqual(sorted(result["live"]), ["DE", "PL"])
+        self.assertEqual(result["empty"], ["DK"])
+        self.assertEqual(result["live"]["DE"]["sample_size"], 16)
+
+    def test_coverage_defaults_to_the_free_movement_codes(self):
+        with mock.patch.object(comp_data, "euptd_country", return_value=None) as country:
+            result = comp_data.euptd_country_coverage()
+        self.assertEqual(result["probed"], len(comp_data.EUPTD_COUNTRY_CODES))
+        self.assertEqual(result["live"], {})
+        self.assertEqual(country.call_count, len(comp_data.EUPTD_COUNTRY_CODES))
+
+    def test_coverage_passes_the_timeout_through(self):
+        with mock.patch.object(comp_data, "euptd_country", return_value=None) as country:
+            comp_data.euptd_country_coverage(["DE"], timeout=3)
+        country.assert_called_once_with("DE", timeout=3)
+
+
 class WageApiTests(unittest.TestCase):
     def test_requires_a_key(self):
         with mock.patch.dict("os.environ", {}, clear=True):
