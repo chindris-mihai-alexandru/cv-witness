@@ -155,5 +155,23 @@ class HirelogTrustTests(unittest.TestCase):
         self.assertIsNone(context["trust"]["hirelog"])
 
 
+class RelocationLanguageTests(unittest.TestCase):
+    def test_posting_english_requirement_overrides_country_heuristic(self):
+        posting = ("Product Support Engineer\nHungary - Budapest\n"
+                   "Fluent in English, both written and verbal\n")
+        context = company_context.build_context(
+            _write(posting), _write(CV), "Veeva", "RO", sponsorship=True,
+            holds_clearance=False, funding=False, layoffs_csv=None)
+        self.assertEqual(context["relocation"]["countries"], ["HU"])
+        self.assertTrue(context["relocation"]["english_friendly"])
+
+    def test_no_english_signal_stays_false_for_hungary(self):
+        context = company_context.build_context(
+            _write("Engineer\nBudapest, Hungary\nGerman required"), _write(CV),
+            "Acme", "RO", sponsorship=True, holds_clearance=False,
+            funding=False, layoffs_csv=None)
+        self.assertFalse(context["relocation"]["english_friendly"])
+
+
 if __name__ == "__main__":
     unittest.main()
