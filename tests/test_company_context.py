@@ -1,0 +1,94 @@
+"""Tests for the company context gate (scripts/company_context.py)."""
+import sys
+from pathlib import Path
+import tempfile
+import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scripts import company_context
+
+
+def _write(text: str) -> str:
+    handle = tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8")
+    handle.write(text)
+    handle.close()
+    return handle.name
+
+
+ATREIDES = """
+Cloud Support Engineer (remote)
+Atreides
+Deliver: Copenhagen, Denmark; Gloucester, United Kingdom
+Eligibility: You must have the right to work in the Denmark or the United Kingdom.
+Please note that we do not provide visa sponsorship.
+Security Clearance: This position requires the successful candidate to have an
+active security clearance.
+"""
+
+CENTRICA = """
+Cloud Platform Engineer
+Centrica Energy
+locations: Aalborg, Copenhagen, Antwerp
+time type: Full time
+You have hands-on experience with some of: Linux, AWS, Kubernetes, Terraform, Git.
+Your English is good, written and spoken.
+A degree in computer science. Equivalent practical experience is just as good.
+"""
+
+CV = "Alex Morgan\nRomania\nIT Operations & Support Engineer, Example Corp, Nov 2022 - Apr 2025\n"
+
+
+class CuratedListTests(unittest.TestCase):
+    def test_european_remote_list_loads(self):
+        table = company_context.load_european_remote()
+        self.assertGreater(len(table), 200)
+
+    def test_remote_dna_list_loads(self):
+        names = company_context.load_remote_dna()
+        self.assertGreater(len(names), 150)
+
+    def test_match_tolerates_a_parenthetical_suffix(self):
+        table = company_context.load_european_remote()
+        self.assertIn("automattic", table)
+        self.assertIsNotNone(company_context.match_company("Automattic (fully remote)", table))
+
+    def test_unknown_company_does_not_match(self):
+        table = company_context.load_european_remote()
+        self.assertIsNone(company_context.match_company("Not A Real Company XYZ", table))
+
+
+class VerdictTests(unittest.TestCase):
+    def test_clearance_gate_stops(self):
+        context = company_context.build_context(
+            _write(ATREIDES), _write(CV), "Atreides", "RO", sponsorship=False,
+            holds_clearance=False, funding=False, layoffs_csv=None)
+        self.assertEqual(context["verdict"], "STOP")
+        self.assertTrue(any(g["signal"] == "clearance" and g["status"] == "FAIL"
+                            for g in context["gates"]))
+
+    def test_eu_role_proceeds(self):
+        context = company_context.build_context(
+            _write(CENTRICA), _write(CV), "Centrica Energy", "RO", sponsorship=True,
+            holds_clearance=False, funding=False, layoffs_csv=None)
+        self.assertEqual(context["verdict"], "PROCEED")
+        self.assertTrue(context["relocation"]["eu_free_movement"])
+
+    def test_uk_only_role_is_not_free_movement(self):
+        posting = "Support Engineer\nLondon, United Kingdom\nright to work in the United Kingdom; no sponsorship"
+        context = company_context.build_context(
+            _write(posting), _write(CV), "Acme UK", "RO", sponsorship=False,
+            holds_clearance=False, funding=False, layoffs_csv=None)
+        self.assertFalse(context["relocation"]["eu_free_movement"])
+
+    def test_layoff_records_are_optional_and_filtered(self):
+        csv_path = _write("Company,Location,total_laid_off,date,percentage_laid_off,Industry,Source,stage,funds_raised,country,List_of_Employees_Laid_Off\n"
+                          "Acme,Berlin,500,2026-03-01,0.2,Software,news,Series B,10000000,Germany,\n"
+                          "Other,Paris,10,2026-02-01,0.01,Software,news,Seed,1000000,France,\n")
+        hits = company_context.layoff_records(csv_path, "Acme")
+        self.assertEqual(len(hits), 1)
+        self.assertEqual(hits[0]["company"], "Acme")
+        self.assertEqual(hits[0]["total_laid_off"], "500")
+
+
+if __name__ == "__main__":
+    unittest.main()
