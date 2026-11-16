@@ -314,8 +314,10 @@ clearance is employer-sponsored, takes months and cannot be obtained on request.
 Multi-location headers ("locations: Aalborg, Copenhagen, Antwerp") are read as a
 full list, not just the first two tokens, and city names resolve to countries.
 Place detection is scoped to the posting header: skill enumerations in the body
-("e.g., FTP, Postman", "Java, SSO") are never work locations, and "Country -
-City" headers ("Hungary - Budapest") resolve to "Budapest, Hungary".
+("e.g., FTP, Postman", "Java, SSO", "Node.js, TypeScript") are never work
+locations; "Country - City" headers ("Hungary - Budapest") resolve to
+"Budapest, Hungary", and "City, On-site" / "City Office" headers ("Berlin,
+On-site") resolve to "Berlin, DE".
 
 It extracts candidate knockout signals from the posting and reports PASS / FAIL /
 UNCLEAR per signal. It never returns a single verdict. When a signal is UNCLEAR,

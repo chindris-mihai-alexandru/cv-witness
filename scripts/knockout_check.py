@@ -145,10 +145,15 @@ LOCATION_LIST_RE = re.compile(
 # "Java, SSO" are skill enumerations, not cities. Scoping place detection to
 # the header avoids inventing locations from a requirements bullet.
 BODY_HEADING_RE = re.compile(
-    r"^\s*(?:requirements?|qualifications?|skills?|competencies)\s*:|"
-    r"^\s*(?:what you(?:['’]s|'ll| will)?\s+(?:do|need|bring)|"
-    r"about (?:the|us|our)|the role|position summary|responsibilities|"
-    r"nice to have|benefits|who you are|what we offer|key responsibilities)",
+    r"^\s*(?:requirements?|qualifications?|skills?|competencies|"
+    r"tech(?:nology)?|tools?)\s*:|"
+    r"^\s*(?:what you(?:['’]s|'ll| will|'re| are)?\s+"
+    r"(?:be\s+)?(?:do(?:ing)?|need|bring|working\s+on)|"
+    r"who (?:we|you)(?:['’]re| are)?\s+(?:looking\s+for|need)|"
+    r"example projects?|day-to-day|about\b|"
+    r"the role|position summary|responsibilities|nice to have|"
+    r"benefits|who you are|what we offer|key responsibilities|"
+    r"why (?:support|join|work|we)|what it.s like)",
     re.I | re.M,
 )
 SKILL_ENUM_RE = re.compile(
@@ -158,6 +163,14 @@ SKILL_ENUM_RE = re.compile(
 # dash form when the first half is a known country name.
 COUNTRY_DASH_RE = re.compile(
     r"^\s*([A-Z][A-Za-z ]{2,30}?)\s*[-–]\s*([A-Z][A-Za-z .'-]{2,30})\s*$", re.M)
+# YC/Lever headers often say "Berlin, On-site" or "Berlin Office" instead of
+# "Berlin, Germany". Resolve the known city to its country rather than leaving
+# the role with no location at all.
+CITY_MODE_RE = re.compile(
+    r"^\s*([A-Z][A-Za-z .'-]{2,30})\s*,\s*(?:on[- ]?site|hybrid|remote|office)\b"
+    r"|^\s*([A-Z][A-Za-z .'-]{2,30})\s+Office\b",
+    re.I | re.M,
+)
 
 WORK_AUTH_PATTERNS = [
     re.compile(r"\b(?:must\s+be\s+)?authorized\s+to\s+work\s+(?:in|for)\s+([A-Za-z .'-]{2,40})", re.I),
@@ -518,6 +531,14 @@ def extract_signals(posting: str) -> dict:
             country, city = m.group(1).strip(), m.group(2).strip()
             if country.lower() in COUNTRY_ISO2:
                 candidate = f"{city}, {country}"
+                if candidate.lower() not in {p.lower() for p in places}:
+                    places.append(candidate)
+        # "Berlin, On-site" / "Berlin Office" style headers (common on YC).
+        for m in CITY_MODE_RE.finditer(header):
+            city = (m.group(1) or m.group(2)).strip()
+            iso = CITY_COUNTRY.get(city.lower())
+            if iso:
+                candidate = f"{city}, {iso}"
                 if candidate.lower() not in {p.lower() for p in places}:
                     places.append(candidate)
         for m in PLACE_RE.finditer(header):
