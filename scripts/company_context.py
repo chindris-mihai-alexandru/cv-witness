@@ -8,7 +8,10 @@ Runs before tailoring. Combines three questions into one verdict:
    education, licences, locations).
 2. TRUST - is the employer financially real and stable enough to be worth a
    career move? Curated EU hiring lists, European startup funding data
-   (funding.tech.eu MCP, optional) and tech layoff records (optional).
+   (funding.tech.eu MCP, optional), tech layoff records (optional) and
+   employer-trust notes from Hirelog (MCP, on by default from the CLI; a note
+   Hirelog marks corroborated can STOP the application, an unverified one asks
+   a human).
 3. RELOCATION - does the role fit the candidate's move? EU/EEA freedom of
    movement, English-speaking workplace, sponsorship.
 
@@ -39,10 +42,12 @@ from pathlib import Path
 if __package__:
     from . import knockout_check
     from . import comp_data
+    from . import trust_data
 else:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from scripts import knockout_check
     from scripts import comp_data
+    from scripts import trust_data
 
 ROOT = Path(__file__).resolve().parents[1]
 LISTS_DIR = ROOT / "references" / "company_lists"
@@ -175,7 +180,9 @@ def layoff_records(path: str | None, company: str) -> list[dict]:
 def build_context(posting_path: str, cv_path: str, company: str, citizen: str | None,
                   sponsorship: bool, holds_clearance: bool, funding: bool,
                   layoffs_csv: str | None, comp_role: str | None = None,
-                  comp_country: str | None = None) -> dict:
+                  comp_country: str | None = None, hirelog: bool = False,
+                  posting_url: str | None = None,
+                  trust_transport=None) -> dict:
     posting = knockout_check.read_text(posting_path)
     cv = knockout_check.read_text(cv_path)
     signals = knockout_check.extract_signals(posting)
@@ -206,6 +213,8 @@ def build_context(posting_path: str, cv_path: str, company: str, citizen: str | 
         "european_remote_list": None,
         "remote_dna_list": None,
         "funding": None,
+        "hirelog": None,
+        "hirelog_posting": None,
         "layoffs": [],
     }
     eu_key = match_company(company, eu_table)
@@ -216,6 +225,13 @@ def build_context(posting_path: str, cv_path: str, company: str, citizen: str | 
         trust["remote_dna_list"] = dna_key
     if funding:
         trust["funding"] = mcp_funding_lookup(company)
+    if hirelog:
+        # Hirelog is EU-aware and free to read, but young: treat it as a signal
+        # that can escalate a verdict, never as the sole basis for one.
+        trust["hirelog"] = trust_data.hirelog_company(company, transport=trust_transport)
+        if posting_url:
+            trust["hirelog_posting"] = trust_data.hirelog_check_posting(
+                posting_url, company, transport=trust_transport)
     trust["layoffs"] = layoff_records(layoffs_csv, company)
 
     # Relocation fit.
@@ -264,6 +280,22 @@ def build_context(posting_path: str, cv_path: str, company: str, citizen: str | 
     if trust["layoffs"]:
         verdict = "CONFIRM" if verdict == "PROCEED" else verdict
         reasons.append(f"{len(trust['layoffs'])} recorded layoff event(s) for this company")
+
+    # Hirelog red flags. Only notes Hirelog's own model marks as reliable can
+    # stop an application; a single unverified observation asks a human instead.
+    red_flags = trust_data.all_notes(trust["hirelog"], ("red_flag",))
+    red_flags += trust_data.all_notes(trust["hirelog_posting"], ("red_flag",))
+    actionable = trust_data.actionable_notes({"notes": red_flags}, ("red_flag",))
+    if actionable:
+        verdict = "STOP"
+        for note in actionable:
+            reasons.append(f"hirelog red flag ({note.get('status')}, "
+                           f"score {note.get('score')}): {note.get('text')}")
+    elif red_flags and verdict == "PROCEED":
+        verdict = "CONFIRM"
+        for note in red_flags:
+            reasons.append(f"hirelog red flag, unverified: {note.get('text')}")
+
     if not relocation["eu_free_movement"] and verdict == "PROCEED":
         verdict = "CONFIRM"
         reasons.append("no workable location under EU/EEA free movement")
@@ -289,6 +321,11 @@ def main() -> int:
     ap.add_argument("--holds-clearance", action="store_true")
     ap.add_argument("--funding", action="store_true", help="Query the funding.tech.eu MCP")
     ap.add_argument("--layoffs-csv", help="layoffs.fyi-format CSV for a layoff check")
+    ap.add_argument("--hirelog", dest="hirelog", action="store_true", default=True,
+                    help="check employer-trust notes on Hirelog (default: on)")
+    ap.add_argument("--no-hirelog", dest="hirelog", action="store_false",
+                    help="skip the Hirelog trust check")
+    ap.add_argument("--posting-url", help="live posting URL, for pre-application warnings")
     ap.add_argument("--comp", help="job title for an EU salary benchmark, e.g. 'Cloud Platform Engineer'")
     ap.add_argument("--country", help="ISO country code for a country salary benchmark, e.g. DE")
     ap.add_argument("--json", action="store_true")
@@ -299,6 +336,7 @@ def main() -> int:
             args.posting, args.cv, args.company, args.citizen,
             args.sponsorship == "yes", args.holds_clearance,
             args.funding, args.layoffs_csv, args.comp, args.country,
+            hirelog=args.hirelog, posting_url=args.posting_url,
         )
     except (ContextError, knockout_check.KnockoutError) as error:
         print(f"company-context: {error}", file=sys.stderr)
@@ -325,6 +363,24 @@ def main() -> int:
         print(f"    EuropeanRemote EU hiring list: {trust['european_remote_list'] or 'not listed'}")
         print(f"    Remote-DNA list: {trust['remote_dna_list'] or 'not listed'}")
         print(f"    funding: {trust['funding'] or 'not queried'}")
+        brief = trust["hirelog"]
+        if brief is None:
+            print("    hirelog: not queried" if not args.hirelog else "    hirelog: unreachable")
+        elif not brief.get("found"):
+            print(f"    hirelog: no notes yet ({brief.get('hint') or 'no notes'})")
+        else:
+            notes = brief.get("notes", [])
+            print(f"    hirelog: {len(notes)} note(s), "
+                  f"{len(trust_data.all_notes(brief, ('red_flag',)))} red flag(s)")
+            for note in notes:
+                print(f"      [{note.get('status')}|{note.get('kind')}|"
+                      f"{note.get('score')}] {note.get('text')}")
+        posting = trust["hirelog_posting"]
+        if posting is not None:
+            flags = trust_data.all_notes(posting, ("red_flag",))
+            print(f"    hirelog posting check: {len(flags)} red flag(s)")
+            for note in flags:
+                print(f"      [{note.get('status')}|{note.get('score')}] {note.get('text')}")
         print(f"    layoffs: {trust['layoffs'] or 'none recorded'}")
         comp = context["compensation"]
         print("  COMPENSATION")
@@ -339,7 +395,9 @@ def main() -> int:
             print(f"    {c['scope']} all roles: {c['band']} per year "
                   f"(sample {c['sample_size']}, as of {c['as_of']}, {c['provider']})")
         elif args.country:
-            print(f"    country benchmark {args.country.upper()}: no data published")
+            print(f"    country benchmark {args.country.upper()}: no EUPTD country page "
+                  f"(role benchmark above is Europe-wide; set WAGEAPI_KEY for "
+                  f"country percentiles)")
         if comp["wageapi"]:
             print(f"    WageAPI: {comp['wageapi']}")
         elif args.comp and args.country:

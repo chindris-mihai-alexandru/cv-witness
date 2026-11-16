@@ -330,16 +330,19 @@ and returns PROCEED / STOP / CONFIRM with reasons:
     python3 scripts/company_context.py --posting posting.txt --cv CV.pdf \
         --company "Centrica Energy" --citizen RO
     python3 scripts/company_context.py --posting posting.txt --cv CV.pdf \
-        --company "Atreides" --citizen RO --sponsorship no --funding
+        --company "Atreides" --citizen RO --sponsorship no --funding \
+        --posting-url https://jobs.example.com/123
 
 - **Hard gates**: the knockout signals above. A FAIL is a STOP.
 - **Trust**: membership in the curated EU hiring list
   (`references/company_lists/european_remote.tsv`, 228 companies, mirrored from
   EuropeanRemote) and the remote-DNA list
   (`references/company_lists/remote_dna.txt`, 231 companies, from
-  `lukasz-madon/awesome-remote-job`); optional European startup funding lookup
-  (`--funding`, funding.tech.eu MCP, no key); optional layoff check
-  (`--layoffs-csv`, layoffs.fyi format).
+  `lukasz-madon/awesome-remote-job`); employer-trust notes from Hirelog
+  (`--hirelog`, **on by default**, `--no-hirelog` to skip; `--posting-url` adds
+  pre-application warnings for the live posting); optional European startup
+  funding lookup (`--funding`, funding.tech.eu MCP, no key); optional layoff
+  check (`--layoffs-csv`, layoffs.fyi format).
 - **Relocation**: EU/EEA free movement for every named location, English-speaking
   workplace, sponsorship need.
 
@@ -348,10 +351,16 @@ answer it. Curated lists are software-industry focused: a large non-software
 employer (an energy trader, a bank, a manufacturer) legitimately does not appear
 and that absence is not a negative signal.
 
+Hirelog is EU-aware and free to read, but young: a single unverified note
+escalates to CONFIRM (a human decides), and only a note Hirelog's own model
+marks corroborated can STOP an application. Coverage is thin - most employers
+return "no notes yet" - so it is a signal, never the sole basis for a verdict.
+
 ### Trust-feed source notes (EU-first)
 
 | Signal | Source | Access | EU | Cost |
 | -- | -- | -- | -- | -- |
+| Employer trust notes (red flags, knockouts, process, pay bands) | Hirelog MCP | Streamable HTTP, no key | EU-aware | free |
 | Startup funding / rounds | funding.tech.eu MCP | Streamable HTTP, no key | yes | free |
 | Layoffs | layoffs.fyi (Kaggle / HuggingFace CSV) | bulk CSV, attribution | global | free |
 | EU remote-friendly employers | EuropeanRemote/european-remote-software-companies | git + europeanremote.com | yes | free |
@@ -397,11 +406,22 @@ itself sells an enterprise MCP/API but is US-centric and its coverage "drops
 sharply outside the US and outside tech". Building a parallel European dataset
 would duplicate Figures/Ravio and still not measure trustworthiness.
 
-Employer trust is the real gap, and it is fragmented, not absent: Kununu covers
-DACH (15M+ reviews, 14 factor scores), Trustpilot has an API for consumer
-sentiment, and Great Place to Work publishes national lists. There is no single
-EU-wide employer-reputation API, so the gate combines the curated lists with
-whatever trust feed is reachable and says so when one is not.
+Employer trust is fragmented, not absent, and the EU MCP market already has
+incumbents - checked live 2026-11-16, so consume them rather than clone them:
+
+| Provider | What it already does | Endpoint | Reuse |
+| -- | -- | -- | -- |
+| Hirelog | typed, evidence-backed hiring notes with a decaying trust score: red flags, form knockouts, ATS quirks, process, remote/visa, pay bands; market insights (`ai-engineering-europe`); pre-posting checks | `https://hirelog.dev/mcp` | **wired in** (`trust_data.py`, gate default-on) |
+| Jobs Brief | hand-picked EU cloud/platform/SRE/AI-infra roles, remote EU or Poland | `https://jobsbrief.eu/api/mcp` | job source, not trust; documented only |
+| WhatJobs | job search + salaries, 58 countries | `https://mcp.whatjobs.com/mcp` | comp/jobs, not wired |
+| EOR Scope | statutory employer cost by country | `@frds_ai/eor-scope` | not wired |
+| open-data-mcp, W System EU | VAT / LEI / EORI / sanctions / registries | MCP | not wired |
+| Kununu | DACH reviews, 14-factor scores | Apify MCP / Scrappa REST | not wired (paid) |
+
+The differentiation is the **gate**, not a dataset: Hirelog supplies the trust
+signal, the curated lists supply the EU hiring set, EUPTD/WageAPI supply pay, and
+`company_context.py` turns them into one PROCEED / STOP / CONFIRM verdict with
+the gaps stated. No bespoke trust server is justified while Hirelog is live.
 
 ### MCP vs API: one provider layer, two transports
 
@@ -409,18 +429,21 @@ whatever trust feed is reachable and says so when one is not.
   the loop. `comp_data` speaks REST.
 - **MCP** is for agent-facing lookups inside Hermes: tool discovery and natural
   language. Use the **upstream** MCP where one exists (WageAPI:
-  `https://salary.wageapi.com/api/mcp`) rather than hosting a duplicate.
+  `https://salary.wageapi.com/api/mcp`; Hirelog: `https://hirelog.dev/mcp`) rather
+  than hosting a duplicate. `trust_data` is that thin client.
 - Do **not** build a bespoke MCP server unless a provider has no MCP and the
   caching/normalisation is worth it. If one is added, it must be a thin wrapper
-  over `comp_data`, not a second implementation.
+  over `comp_data`/`trust_data`, not a second implementation.
 - A "paid tier" in this skill means **env-key support with a free fallback**, not
   a product: `WAGEAPI_KEY`, `APIFY_TOKEN`/`SCRAPPA_KEY`, `LEVELS_API_KEY`.
   Without a key the free providers still answer, and the gap is reported rather
   than papered over.
 
-Known limits to report, never hide: EUPTD country pages are sparse; EUPTD and
-Figures/Ravio measure pay, not culture; Kununu is DACH-only; salary bands are
-posted ranges, not offers.
+Known limits to report, never hide: EUPTD country pages are sparse (probe with
+`python3 scripts/comp_data.py --coverage`; DE and PL only at 2026-11-16, so use
+the Europe-wide role page and say so); Hirelog coverage is thin and mostly
+`unverified` single observations; EUPTD and Figures/Ravio measure pay, not
+culture; Kununu is DACH-only; salary bands are posted ranges, not offers.
 
 ## Bullet audit (before delivery)
 

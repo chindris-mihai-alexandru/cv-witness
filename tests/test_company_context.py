@@ -1,4 +1,5 @@
 """Tests for the company context gate (scripts/company_context.py)."""
+import json
 import sys
 from pathlib import Path
 import tempfile
@@ -88,6 +89,70 @@ class VerdictTests(unittest.TestCase):
         self.assertEqual(len(hits), 1)
         self.assertEqual(hits[0]["company"], "Acme")
         self.assertEqual(hits[0]["total_laid_off"], "500")
+
+
+def _envelope(text: str) -> dict:
+    return {"jsonrpc": "2.0", "id": 1,
+            "result": {"content": [{"type": "text", "text": text}]}}
+
+
+def _hirelog_transport(text: str):
+    return lambda payload: _envelope(text)
+
+
+class HirelogTrustTests(unittest.TestCase):
+    """The Hirelog seam is injected, so the verdict logic runs offline."""
+
+    def _build(self, transport, company="Centrica Energy", posting_url=None):
+        return company_context.build_context(
+            _write(CENTRICA), _write(CV), company, "RO", sponsorship=True,
+            holds_clearance=False, funding=False, layoffs_csv=None,
+            hirelog=True, posting_url=posting_url, trust_transport=transport)
+
+    def test_hirelog_is_off_by_default_so_tests_stay_offline(self):
+        context = company_context.build_context(
+            _write(CENTRICA), _write(CV), "Centrica Energy", "RO", sponsorship=True,
+            holds_clearance=False, funding=False, layoffs_csv=None)
+        self.assertIsNone(context["trust"]["hirelog"])
+        self.assertIsNone(context["trust"]["hirelog_posting"])
+
+    def test_no_notes_keeps_the_verdict(self):
+        transport = _hirelog_transport('{"found": false, "hint": "No notes yet."}')
+        context = self._build(transport)
+        self.assertEqual(context["verdict"], "PROCEED")
+        self.assertFalse(context["trust"]["hirelog"]["found"])
+
+    def test_unverified_red_flag_escalates_to_confirm(self):
+        note = {"kind": "red_flag", "status": "unverified",
+                "text_en": "Aggregator repost behind a remote label.",
+                "trust": {"score": 0.77, "confirms": 0, "disputes": 0}}
+        transport = _hirelog_transport(json.dumps({"found": True, "notes": [note]}))
+        context = self._build(transport)
+        self.assertEqual(context["verdict"], "CONFIRM")
+        self.assertTrue(any("unverified" in reason for reason in context["reasons"]))
+
+    def test_corroborated_red_flag_stops(self):
+        note = {"kind": "red_flag", "status": "corroborated",
+                "text_en": "Pay-to-apply confirmed by three agents.",
+                "trust": {"score": 3.1, "confirms": 3, "disputes": 0}}
+        transport = _hirelog_transport(json.dumps({"found": True, "notes": [note]}))
+        context = self._build(transport)
+        self.assertEqual(context["verdict"], "STOP")
+        self.assertTrue(any("red flag" in reason for reason in context["reasons"]))
+
+    def test_posting_red_flag_is_read_too(self):
+        note = {"kind": "red_flag", "status": "unverified",
+                "text_en": "Form knockout on location.",
+                "trust": {"score": 0.8, "confirms": 0, "disputes": 0}}
+        transport = _hirelog_transport(json.dumps({"notes": [note]}))
+        context = self._build(transport, posting_url="https://example.com/job")
+        self.assertEqual(context["verdict"], "CONFIRM")
+        self.assertEqual(len(context["trust"]["hirelog_posting"]["notes"]), 1)
+
+    def test_unreachable_hirelog_does_not_change_the_verdict(self):
+        context = self._build(lambda payload: None)
+        self.assertEqual(context["verdict"], "PROCEED")
+        self.assertIsNone(context["trust"]["hirelog"])
 
 
 if __name__ == "__main__":

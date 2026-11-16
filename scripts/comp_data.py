@@ -10,12 +10,19 @@ Providers, best first for a European job search:
   EUPTD          advertised tech salary bands from job postings, open data
                  (CC BY 4.0 via the Aramente eu-tech-jobs corpus). No key.
                  Rebuilt on a schedule, so the as-of date is reported.
+                 Role pages are Europe-wide and live; country pages are not:
+                 at 2026-11-16 only DE and PL published one. Probe with
+                 ``euptd_country_coverage`` rather than assuming a page exists.
   WageAPI        Eurostat SES / Destatis / INSEE salary percentiles for 28 EU
-                 countries. Needs WAGEAPI_KEY.
+                 countries. Needs WAGEAPI_KEY. This is the country-level
+                 provider; EUPTD is the role-level one.
   Kununu         DACH employer reviews and 14-factor scores. No official API;
                  reachable through the Apify MCP or the Scrappa API (key).
   Figures, Ravio European comp benchmarking platforms. No public API; documented
                  here so a paid tier can be added without guessing.
+
+Employer-trust notes (red flags, knockouts, process, pay bands) live in
+``trust_data``, which keeps the trust signal out of the compensation layer.
 
 Nothing in this module invents a number: a provider that is unreachable returns
 None and the caller reports the gap.
@@ -32,6 +39,15 @@ import urllib.request
 
 EUPTD_BASE = "https://euptd.eu/salary"
 WAGEAPI_BASE = "https://salary.wageapi.com/api/v1"
+
+# EU/EEA + UK codes probed by euptd_country_coverage. Deliberately the codes the
+# candidate can work in under freedom of movement, so the probe answers "can I
+# benchmark this country at all?" rather than "does EUPTD have a page?".
+EUPTD_COUNTRY_CODES = (
+    "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR",
+    "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK",
+    "SI", "ES", "SE", "IS", "LI", "NO", "GB", "CH",
+)
 
 # Role slugs published by EUPTD (checked 2026-11-16).
 EUPTD_ROLES = (
@@ -127,18 +143,47 @@ def euptd_role(title: str) -> dict | None:
     return parsed
 
 
-def euptd_country(country: str) -> dict | None:
-    """Country-wide advertised band across all roles, from EUPTD (open data)."""
+def euptd_country(country: str, timeout: int = 25) -> dict | None:
+    """Country-wide advertised band across all roles, from EUPTD (open data).
+
+    Returns None when EUPTD publishes no page for that country. That is a data
+    gap, not an error: at 2026-11-16 only DE and PL had one. Use
+    ``euptd_country_coverage`` to see which codes are live before promising a
+    number to the user.
+    """
     code = country.strip().lower()
     if len(code) != 2:
         return None
-    body = _get(f"{EUPTD_BASE}/country/{code}/")
+    body = _get(f"{EUPTD_BASE}/country/{code}/", timeout=timeout)
     if not body:
         return None
     parsed = _parse_band(_text_from_html(body))
     if parsed:
         parsed.update({"provider": "euptd", "scope": code.upper(), "role": "all roles"})
     return parsed
+
+
+def euptd_country_coverage(codes: tuple[str, ...] | list[str] | None = None,
+                           timeout: int = 8) -> dict:
+    """Probe which EUPTD country pages are live.
+
+    Bounded and deliberately serial: one short request per code, so a slow
+    provider cannot turn a coverage check into a hang. Returns the live codes
+    with their sample size, and the codes that published nothing, so the gap is
+    a fact on the page rather than a silent None.
+    """
+    probe = list(codes) if codes else list(EUPTD_COUNTRY_CODES)
+    live, empty = {}, []
+    for code in probe:
+        parsed = euptd_country(code, timeout=timeout)
+        if parsed:
+            live[code.upper()] = {"sample_size": parsed.get("sample_size"),
+                                  "employers": parsed.get("employers"),
+                                  "as_of": parsed.get("as_of")}
+        else:
+            empty.append(code.upper())
+    return {"provider": "euptd", "probed": len(probe), "live": live, "empty": sorted(empty)}
+
 
 
 def wageapi_salary(job_title: str, country: str) -> dict | None:
@@ -184,10 +229,14 @@ if __name__ == "__main__":
     ap.add_argument("--role", help="job title, e.g. 'Cloud Platform Engineer'")
     ap.add_argument("--country", help="ISO country code, e.g. DE")
     ap.add_argument("--salary", action="store_true", help="also try WageAPI (needs WAGEAPI_KEY)")
+    ap.add_argument("--coverage", action="store_true",
+                    help="probe which EUPTD country pages are live")
     ap.add_argument("--catalog", action="store_true")
     args = ap.parse_args()
     if args.catalog:
         print(json.dumps(provider_catalog(), indent=2))
+    elif args.coverage:
+        print(json.dumps(euptd_country_coverage(), indent=2))
     elif args.role:
         print(json.dumps(euptd_role(args.role), indent=2, ensure_ascii=False))
     elif args.country:
