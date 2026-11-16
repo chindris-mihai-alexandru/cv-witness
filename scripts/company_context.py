@@ -38,9 +38,11 @@ from pathlib import Path
 
 if __package__:
     from . import knockout_check
+    from . import comp_data
 else:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from scripts import knockout_check
+    from scripts import comp_data
 
 ROOT = Path(__file__).resolve().parents[1]
 LISTS_DIR = ROOT / "references" / "company_lists"
@@ -172,7 +174,8 @@ def layoff_records(path: str | None, company: str) -> list[dict]:
 
 def build_context(posting_path: str, cv_path: str, company: str, citizen: str | None,
                   sponsorship: bool, holds_clearance: bool, funding: bool,
-                  layoffs_csv: str | None) -> dict:
+                  layoffs_csv: str | None, comp_role: str | None = None,
+                  comp_country: str | None = None) -> dict:
     posting = knockout_check.read_text(posting_path)
     cv = knockout_check.read_text(cv_path)
     signals = knockout_check.extract_signals(posting)
@@ -239,6 +242,15 @@ def build_context(posting_path: str, cv_path: str, company: str, citizen: str | 
         "sponsorship_offered": not profile["sponsorship"],
     }
 
+    # Compensation benchmark (EU-first, open data first). Optional and never a
+    # verdict input: it informs negotiation, not whether to apply.
+    compensation = {
+        "role": comp_data.euptd_role(comp_role) if comp_role else None,
+        "country": comp_data.euptd_country(comp_country) if comp_country else None,
+        "wageapi": comp_data.wageapi_salary(comp_role, comp_country)
+        if comp_role and comp_country else None,
+    }
+
     # Verdict.
     reasons = []
     if hard_fail:
@@ -263,6 +275,7 @@ def build_context(posting_path: str, cv_path: str, company: str, citizen: str | 
         "gates": gates,
         "trust": trust,
         "relocation": relocation,
+        "compensation": compensation,
     }
 
 
@@ -276,6 +289,8 @@ def main() -> int:
     ap.add_argument("--holds-clearance", action="store_true")
     ap.add_argument("--funding", action="store_true", help="Query the funding.tech.eu MCP")
     ap.add_argument("--layoffs-csv", help="layoffs.fyi-format CSV for a layoff check")
+    ap.add_argument("--comp", help="job title for an EU salary benchmark, e.g. 'Cloud Platform Engineer'")
+    ap.add_argument("--country", help="ISO country code for a country salary benchmark, e.g. DE")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -283,7 +298,7 @@ def main() -> int:
         context = build_context(
             args.posting, args.cv, args.company, args.citizen,
             args.sponsorship == "yes", args.holds_clearance,
-            args.funding, args.layoffs_csv,
+            args.funding, args.layoffs_csv, args.comp, args.country,
         )
     except (ContextError, knockout_check.KnockoutError) as error:
         print(f"company-context: {error}", file=sys.stderr)
@@ -311,6 +326,24 @@ def main() -> int:
         print(f"    Remote-DNA list: {trust['remote_dna_list'] or 'not listed'}")
         print(f"    funding: {trust['funding'] or 'not queried'}")
         print(f"    layoffs: {trust['layoffs'] or 'none recorded'}")
+        comp = context["compensation"]
+        print("  COMPENSATION")
+        if comp["role"]:
+            r = comp["role"]
+            print(f"    {r['scope']} {r['role']}: {r['band']} per year "
+                  f"(sample {r['sample_size']}, as of {r['as_of']}, {r['provider']})")
+        else:
+            print("    role benchmark: not queried")
+        if comp["country"]:
+            c = comp["country"]
+            print(f"    {c['scope']} all roles: {c['band']} per year "
+                  f"(sample {c['sample_size']}, as of {c['as_of']}, {c['provider']})")
+        elif args.country:
+            print(f"    country benchmark {args.country.upper()}: no data published")
+        if comp["wageapi"]:
+            print(f"    WageAPI: {comp['wageapi']}")
+        elif args.comp and args.country:
+            print("    WageAPI: set WAGEAPI_KEY to enable")
 
     return 0 if context["verdict"] == "PROCEED" else 1
 

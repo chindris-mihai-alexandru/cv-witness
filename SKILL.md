@@ -364,6 +364,64 @@ and that absence is not a negative signal.
 Levels.fyi measures compensation, not trustworthiness; treat it as a salary
 benchmark and a weak pay-transparency proxy, never as a quality verdict.
 
+## Compensation and employer-trust providers (EU-first)
+
+`scripts/comp_data.py` is the single provider layer. Every provider is a
+function; the script path (`company_context.py --comp <title> --country <CC>`)
+and any MCP binding call the same functions, so no transport re-implements a
+provider.
+
+    python3 scripts/comp_data.py --role "Cloud Platform Engineer"
+    python3 scripts/comp_data.py --country DE
+    python3 scripts/company_context.py --posting posting.txt --cv CV.pdf \
+        --company "Example Energy" --citizen RO \
+        --comp "Cloud Platform Engineer" --country DK
+
+Providers, best first for a European search:
+
+| Provider | Signal | Access | Scope | Cost |
+| -- | -- | -- | -- | -- |
+| EUPTD | advertised tech salary band from real postings (open data, CC BY) | HTTP, no key | Europe-wide per role; country pages only where the corpus has data (DE, PL at 2026-11-16) | free |
+| WageAPI | salary percentiles from Eurostat SES / Destatis / INSEE | REST **and** MCP, `WAGEAPI_KEY` | 28 EU countries, 618 ISCO-08 occupations | free tier / paid |
+| Kununu | employer reviews, 14-factor scores, recommendation rate | no official API; Apify MCP or Scrappa REST | Germany, Austria, Switzerland | paid |
+| Figures | EU base + variable pay, Mercer partnership, pay-transparency workflows | no public API | EU + UK | from EUR 2,500/yr |
+| Ravio | EU total comp including equity | no public API | EU, 48+ countries | from GBP 5,000/yr |
+| levels.fyi | tech total comp and level ladders | paid MCP/API | US-centric | from USD 800/mo |
+
+### "A levels.fyi for Europe" already exists - do not build one
+
+European comp benchmarking is a solved, paid market: **Figures** (EU + UK,
+Mercer data, pay-transparency compliance) and **Ravio** (EU total comp including
+equity, 48+ countries) are the European levels.fyi equivalents. Levels.fyi
+itself sells an enterprise MCP/API but is US-centric and its coverage "drops
+sharply outside the US and outside tech". Building a parallel European dataset
+would duplicate Figures/Ravio and still not measure trustworthiness.
+
+Employer trust is the real gap, and it is fragmented, not absent: Kununu covers
+DACH (15M+ reviews, 14 factor scores), Trustpilot has an API for consumer
+sentiment, and Great Place to Work publishes national lists. There is no single
+EU-wide employer-reputation API, so the gate combines the curated lists with
+whatever trust feed is reachable and says so when one is not.
+
+### MCP vs API: one provider layer, two transports
+
+- **API (REST)** is for scripts: deterministic, testable offline, no agent in
+  the loop. `comp_data` speaks REST.
+- **MCP** is for agent-facing lookups inside Hermes: tool discovery and natural
+  language. Use the **upstream** MCP where one exists (WageAPI:
+  `https://salary.wageapi.com/api/mcp`) rather than hosting a duplicate.
+- Do **not** build a bespoke MCP server unless a provider has no MCP and the
+  caching/normalisation is worth it. If one is added, it must be a thin wrapper
+  over `comp_data`, not a second implementation.
+- A "paid tier" in this skill means **env-key support with a free fallback**, not
+  a product: `WAGEAPI_KEY`, `APIFY_TOKEN`/`SCRAPPA_KEY`, `LEVELS_API_KEY`.
+  Without a key the free providers still answer, and the gap is reported rather
+  than papered over.
+
+Known limits to report, never hide: EUPTD country pages are sparse; EUPTD and
+Figures/Ravio measure pay, not culture; Kununu is DACH-only; salary bands are
+posted ranges, not offers.
+
 ## Bullet audit (before delivery)
 
 Recruiters and AI screeners read for evidence, not duties: what you did (action),
