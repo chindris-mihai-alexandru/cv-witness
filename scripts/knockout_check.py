@@ -119,11 +119,12 @@ def _first_place(posting: str) -> str | None:
     masquerade as locations. Also strips job-title prefixes ("Backend
     Engineer Berlin, Germany" -> "Berlin, Germany").
     """
-    m = PLACE_RE.search(posting)
+    header = BODY_HEADING_RE.split(posting, maxsplit=1)[0]
+    m = PLACE_RE.search(header)
     if not m:
         return None
     # "City, Country and X" = a list continuation, not a location.
-    if re.match(r"\s+(?:and|&)\s+[A-Za-z]", posting[m.end():]):
+    if re.match(r"\s+(?:and|&)\s+[A-Za-z]", header[m.end():]):
         return None
     return _clean_place(m.group(1))
 
@@ -138,6 +139,25 @@ LOCATION_PATTERNS = [
 LOCATION_LIST_RE = re.compile(
     r"\blocations?\s*[:=]\s*([A-Z][A-Za-z.'&/ ]+(?:,[ \t]*[A-Z][A-Za-z.'&/ ]+)*)"
 )
+
+# A posting's header carries the work location. Everything after the first
+# body heading is duties and requirements, where "FTP, Postman" and
+# "Java, SSO" are skill enumerations, not cities. Scoping place detection to
+# the header avoids inventing locations from a requirements bullet.
+BODY_HEADING_RE = re.compile(
+    r"^\s*(?:requirements?|qualifications?|skills?|competencies)\s*:|"
+    r"^\s*(?:what you(?:['’]s|'ll| will)?\s+(?:do|need|bring)|"
+    r"about (?:the|us|our)|the role|position summary|responsibilities|"
+    r"nice to have|benefits|who you are|what we offer|key responsibilities)",
+    re.I | re.M,
+)
+SKILL_ENUM_RE = re.compile(
+    r"\b(?:e\.g\.|such as|including|knowledge of|understanding of|"
+    r"experience with|familiarity with|tools?|certifications?|plus)\b", re.I)
+# Lever postings often put "Hungary - Budapest" in the header. Only accept the
+# dash form when the first half is a known country name.
+COUNTRY_DASH_RE = re.compile(
+    r"^\s*([A-Z][A-Za-z ]{2,30}?)\s*[-–]\s*([A-Z][A-Za-z .'-]{2,30})\s*$", re.M)
 
 WORK_AUTH_PATTERNS = [
     re.compile(r"\b(?:must\s+be\s+)?authorized\s+to\s+work\s+(?:in|for)\s+([A-Za-z .'-]{2,40})", re.I),
@@ -492,7 +512,21 @@ def extract_signals(posting: str) -> dict:
     if list_match:
         places = [c.strip() for c in list_match.group(1).split(",") if c.strip()]
     if not places:
-        for m in PLACE_RE.finditer(posting):
+        header = BODY_HEADING_RE.split(posting, maxsplit=1)[0]
+        # "Hungary - Budapest" style headers (common on Lever).
+        for m in COUNTRY_DASH_RE.finditer(header):
+            country, city = m.group(1).strip(), m.group(2).strip()
+            if country.lower() in COUNTRY_ISO2:
+                candidate = f"{city}, {country}"
+                if candidate.lower() not in {p.lower() for p in places}:
+                    places.append(candidate)
+        for m in PLACE_RE.finditer(header):
+            line_start = header.rfind("\n", 0, m.start()) + 1
+            line_end = header.find("\n", m.start())
+            line = header[line_start:line_end if line_end >= 0 else len(header)]
+            # "e.g., FTP, Postman" is a tool list, never a work location.
+            if SKILL_ENUM_RE.search(line):
+                continue
             candidate = _clean_place(m.group(1))
             if candidate and candidate.lower() not in {p.lower() for p in places}:
                 places.append(candidate)

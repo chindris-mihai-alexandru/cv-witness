@@ -210,6 +210,27 @@ class LocationFilterTests(unittest.TestCase):
         self.assertEqual(knockout_check._first_place("The Munich, Germany office"), "Munich, Germany")
         self.assertEqual(knockout_check._first_place("The Hague, Netherlands"), "The Hague, Netherlands")
 
+    def test_country_dash_header_is_a_location(self):
+        posting = "Product Support Engineer\nHungary - Budapest\nFull-Time\nRemote"
+        signals = knockout_check.extract_signals(posting)
+        self.assertEqual(signals.get("location"), "Budapest, Hungary")
+        self.assertEqual(signals.get("locations"), ["Budapest, Hungary"])
+
+    def test_skill_lists_in_the_body_are_not_locations(self):
+        # A real Veeva posting tripped this: "e.g., FTP, Postman" and
+        # "Java, SSO" were reported as work locations, which made the gate
+        # claim there was no EU/EEA location for a Budapest role.
+        posting = ("Product Support Engineer\nHungary - Budapest\nFull-Time\nRemote\n"
+                   "Requirements:\n"
+                   "- industry-standard tools (e.g., FTP, Postman, AWS Tools)\n"
+                   "Nice to Have:\n"
+                   "- Understanding of Java, SSO, SQL, HTML\n"
+                   "- Knowledge of Zendesk, Jira, and Confluence")
+        signals = knockout_check.extract_signals(posting)
+        self.assertEqual(signals.get("locations"), ["Budapest, Hungary"])
+        self.assertNotIn("Postman", str(signals))
+        self.assertNotIn("SSO", str(signals.get("locations")))
+
 
 # --- preflight: wiring ------------------------------------------------------
 
