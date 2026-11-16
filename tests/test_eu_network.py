@@ -231,6 +231,14 @@ class LocationFilterTests(unittest.TestCase):
         self.assertNotIn("Postman", str(signals))
         self.assertNotIn("SSO", str(signals.get("locations")))
 
+    def test_city_mode_header_is_a_location(self):
+        posting = ("Developer Support Engineer (Berlin)\nBerlin, On-site\nFull-time\n"
+                   "What You'll Be Working On\n"
+                   "- authentication flows (OAuth, API keys)\n"
+                   "Tech: APIs (REST + SOAP + OAuth), Node.js, TypeScript")
+        signals = knockout_check.extract_signals(posting)
+        self.assertEqual(signals.get("locations"), ["Berlin, DE"])
+
 
 # --- preflight: wiring ------------------------------------------------------
 
