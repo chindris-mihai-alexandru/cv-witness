@@ -82,10 +82,70 @@ class KnockoutSignalTests(unittest.TestCase):
                                                 "B.A. in Economic Informatics, 2020")
         self.assertEqual(status, "FAIL")
 
-    def test_work_authorization_is_never_auto_passed(self):
+    def test_work_authorization_is_unclear_without_a_candidate_profile(self):
+        # No citizenship/residency fact: the checker must not guess a pass.
         status, _ = knockout_check.check_signal("work_auth", "authorized to work in CH",
                                                 "authorized to work in CH")
         self.assertEqual(status, "UNCLEAR")
+
+    def test_work_authorization_passes_under_eu_free_movement(self):
+        # A Romanian citizen may work in Denmark without sponsorship.
+        status, detail = knockout_check.check_signal(
+            "work_auth", "right to work in Denmark",
+            "Romania", {"citizen": "RO", "work_auth_countries": ["denmark"], "sponsorship": False})
+        self.assertEqual(status, "PASS")
+        self.assertIn("free movement", detail)
+
+    def test_work_authorization_fails_for_uk_without_sponsorship(self):
+        status, detail = knockout_check.check_signal(
+            "work_auth", "right to work in the United Kingdom",
+            "Romania", {"citizen": "RO", "work_auth_countries": ["united kingdom"], "sponsorship": False})
+        self.assertEqual(status, "FAIL")
+        self.assertIn("no sponsorship", detail)
+
+    def test_work_authorization_one_viable_country_is_enough(self):
+        # "Denmark or the United Kingdom": the Danish option carries the role.
+        status, _ = knockout_check.check_signal(
+            "work_auth", "right to work in Denmark or the United Kingdom",
+            "Romania", {"citizen": "RO",
+                        "work_auth_countries": ["denmark", "united kingdom"],
+                        "sponsorship": False})
+        self.assertEqual(status, "PASS")
+
+    def test_clearance_is_a_hard_fail_without_an_active_clearance(self):
+        status, detail = knockout_check.check_signal(
+            "clearance", "active security clearance", "no clearance", {"citizen": "RO"})
+        self.assertEqual(status, "FAIL")
+        self.assertIn("employer-sponsored", detail)
+
+    def test_clearance_passes_when_the_candidate_holds_one(self):
+        status, _ = knockout_check.check_signal(
+            "clearance", "active security clearance", "no clearance",
+            {"citizen": "RO", "holds_clearance": True})
+        self.assertEqual(status, "PASS")
+
+    def test_extracts_every_location_from_a_locations_header(self):
+        posting = "Cloud Platform Engineer\nlocations: Aalborg, Copenhagen, Antwerp\nFull time"
+        signals = knockout_check.extract_signals(posting)
+        self.assertEqual(signals.get("locations"), ["Aalborg", "Copenhagen", "Antwerp"])
+
+    def test_locations_pass_for_an_eu_citizen(self):
+        status, detail = knockout_check.check_signal(
+            "locations", ["Aalborg", "Copenhagen", "Antwerp"], "Romania", {"citizen": "RO"})
+        self.assertEqual(status, "PASS")
+        self.assertIn("Aalborg", detail)
+
+    def test_extracts_clearance_requirement(self):
+        signals = knockout_check.extract_signals(
+            "This position requires the successful candidate to have an active security clearance.")
+        self.assertEqual(signals.get("clearance"), "active security clearance")
+
+    def test_city_names_resolve_to_countries(self):
+        self.assertEqual(knockout_check.country_iso2("Aalborg"), "DK")
+        self.assertEqual(knockout_check.country_iso2("Copenhagen"), "DK")
+        self.assertEqual(knockout_check.country_iso2("Antwerp"), "BE")
+        self.assertEqual(knockout_check.country_iso2("Gloucester"), "GB")
+        self.assertIsNone(knockout_check.country_iso2("Springfield"))
 
 
 # --- bullet_audit ----------------------------------------------------------
