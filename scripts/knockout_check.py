@@ -46,6 +46,9 @@ EXPERIENCE_PATTERNS = [
     re.compile(r"(\d+)\s*\+?\s*years?\s+(?:of\s+)?experience\s+(?:in|with)", re.I),
     re.compile(r"experience\s*(?:of\s*)?(?:at\s+least\s*)?(\d+)\s*\+?\s*years?", re.I),
     re.compile(r"(\d+)\s*\+?\s*years?\s+(?:of\s+)?(?:industry\s+|work\s+)?experience", re.I),
+    # "3+ years system development, network operations, software support, IT
+    # experience" - a noun list sits between the number and "experience".
+    re.compile(r"(\d+)\s*\+?\s*years?\s+(?:of\s+)?(?:prior\s+)?[a-z][a-z ,/&\-]{2,300}?experience", re.I),
 ]
 
 EDUCATION_PATTERNS = [
@@ -446,19 +449,28 @@ def extract_signals(posting: str) -> dict:
         for pat in EXPERIENCE_PATTERNS[2:]:
             for m in pat.finditer(posting):
                 try:
-                    years.append(int(m.group(1)))
+                    years.append((int(m.group(1)), m.start()))
                 except (ValueError, IndexError):
                     continue
         # A lone decade-spanning number is usually the COMPANY's tenure, not a
         # candidate requirement ("a firm with over 22 years of experience").
         # No mainstream role requires 15+ years literally; drop such frames
         # unless the posting is explicitly senior-staff level.
-        plausible = [y for y in years if y <= 15]
+        plausible = [(y, pos) for y, pos in years if y <= 15]
         if plausible:
-            signals["min_years"] = max(plausible)
+            # "3+ years X OR 4+ years Y" are alternatives, not additive: the
+            # candidate can satisfy either branch, so the floor is the
+            # smallest. Without an "or" between mentions they stack, and the
+            # largest stated minimum wins.
+            alternatives = any(
+                re.search(r"\bor\b", posting[plausible[i][1]:plausible[i + 1][1]], re.I)
+                for i in range(len(plausible) - 1)
+            )
+            signals["min_years"] = (min(y for y, _ in plausible) if alternatives
+                                    else max(y for y, _ in plausible))
         elif years and re.search(r"\b(?:senior|staff|principal|lead|head)\b", posting, re.I):
             # e.g. "requires 20+ years" for an explicitly stated senior-level role
-            signals["min_years"] = max(years)
+            signals["min_years"] = max(y for y, _ in years)
 
     # Education floor. "Master's or PhD" means the floor is the lower degree;
     # "Master's and 5 years" still means Master's. Only take the highest when the
