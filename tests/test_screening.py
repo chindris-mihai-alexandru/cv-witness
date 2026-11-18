@@ -45,6 +45,20 @@ class KnockoutSignalTests(unittest.TestCase):
         posting = "2+ years of experience; senior roles need 6 years of experience."
         self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 6)
 
+    def test_noun_list_between_years_and_experience(self):
+        # Microsoft's "Technical Support Advisor" wording: the number and
+        # "experience" are separated by a list of job functions.
+        posting = ("Bachelor's Degree in IT AND 3+ years system development, network "
+                   "operations, software support, IT, consulting or technical "
+                   "troubleshooting experience OR 4+ years of the above")
+        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 3)
+
+    def test_or_alternatives_use_the_lower_floor(self):
+        # "3+ years X OR 4+ years Y" is satisfiable by either branch, so the
+        # honest floor is 3, not 4.
+        posting = "3+ years of experience OR 4+ years of equivalent experience"
+        self.assertEqual(knockout_check.extract_signals(posting).get("min_years"), 3)
+
     def test_education_floor_is_the_lower_degree_when_offered_as_alternatives(self):
         posting = ("a Master's degree with 2 to 6 years of post-graduation "
                    "professional experience; or a PhD with no more than 3 years")
