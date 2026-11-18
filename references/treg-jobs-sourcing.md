@@ -74,9 +74,13 @@ its auth stay upstream; this skill only documents the workflow.
 3. **Find the team that owns the role** — `treg.people.search` (free providers
    first), by `company_domain` + `title` (e.g. "customer support manager"), not
    the recruiter. A found email/phone is the provider's *best match*, not
-   confirmed: verify it (`treg.people.email.find` with `X-Treg-Route-Verify: true`)
-   before anyone sends. **Never auto-contact an employer** — drafting a note is
-   fine; sending requires the user's explicit go-ahead.
+   confirmed. To reach them, `treg.people.email.find` / `treg.people.phone.find`
+   route cheapest-vendor-first and stop at the first answer — a miss on a
+   pay-per-hit vendor costs nothing — then verify (`X-Treg-Route-Verify: true`):
+   email checked deliverable, mobile checked live with the carrier (live is not
+   proof it is the right person). **Never auto-contact an employer** — drafting a
+   note is fine; sending requires the user's explicit go-ahead, and only after the
+   application itself is submitted.
 
 4. **Know the pay** — `hirebase.jobs.salary.insights` ($0.01/call) gives posted-pay
    percentiles (p25/p50/p75/p90), remote share and top skills for a search;
