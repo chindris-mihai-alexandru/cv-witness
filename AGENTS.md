@@ -31,8 +31,9 @@ Codex, and any agent that reads AGENTS.md.
   Forbidden tracked paths must fail before any content read; do not scan this
   working tree or private vaults directly. See `docs/exploration.md`.
 
-- **Format baseline rule (enforced, not advisory):** The user's approved CV at
-  `~/Downloads/Career/CV.pdf` is the format baseline for every tailored output.
+- **Format baseline rule (enforced, not advisory):** The candidate-approved CV
+  (path set in SKILL.md "Personal configuration") is the format baseline for
+  every tailored output.
   The local template `template.html` is the only rendering format the skill
   produces unless the user explicitly approves a redesign. Never generate a
   new CV layout, switch column structure, change section order, or substitute

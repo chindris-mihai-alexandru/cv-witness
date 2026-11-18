@@ -6,7 +6,8 @@ Thanks for considering a contribution. The skill exists to keep CVs honest, so t
 
 - **Small and focused wins.** One change per PR - a doc fix, a template tweak, a verification improvement. Large rewrites are hard to review and will be asked to split.
 - **Evidence over assertion.** If your change makes the skill claim something (a tool works, a platform is supported), include the command output or screenshot that proves it.
-- **No personal data.** Never commit resumes, contact details, or `foundation.md`. PRs containing personal data will be closed.
+- **No personal data.** Never commit resumes, tailored CVs, job-specific notes, contact details, or `foundation.md`/`provenance.md`. Test and example fixtures stay fictional (reserved `example.*` domains). PRs containing personal data will be closed.
+- **Keep the README structure tree in sync.** `tests/test_readme_structure.py` fails when a tracked script is missing from the README; update the tree when you add or remove scripts.
 - **Preserve the anti-fabrication gates.** Changes that weaken the `[FILL: ...]` marker system, the merge-state checks, or the approval-before-render flow will be declined, however clever they are.
 - **Conventional commits** (`feat:`, `fix:`, `docs:`, `chore:`) keep the history readable.
 
