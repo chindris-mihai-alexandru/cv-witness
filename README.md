@@ -94,10 +94,11 @@ AdaL, Claude Code and Codex have installation paths above. Other hosts may read 
 
 <p>
   <a href="https://github.com/rezi-io/rezi-mcp"><img alt="Rezi MCP optional" src="https://img.shields.io/badge/Rezi%20MCP-optional-2b3542?style=flat&labelColor=1b222c"></a>
+  <a href="https://github.com/superdesigndev/treg"><img alt="Treg jobs-api optional" src="https://img.shields.io/badge/Treg%20jobs--api-optional-2b3542?style=flat&labelColor=1b222c"></a>
   <img alt="Amazon Quick optional" src="https://img.shields.io/badge/Amazon%20Quick-optional-2b3542?style=flat&labelColor=1b222c">
 </p>
 
-Rezi can provide resume facts from an account you choose. Writes require your explicit approval and a read-back check. Amazon Quick is a documented host-native DOCX workflow, not a bundled integration. Neither service is required for the local PDF path.
+Rezi can provide resume facts from an account you choose. Writes require your explicit approval and a read-back check. The Treg jobs-api is an optional paid catalog for finding and ranking roles, the hiring manager and posted pay before tailoring; it is used through its own upstream CLI/MCP, not a bundled client (see `references/treg-jobs-sourcing.md`). Amazon Quick is a documented host-native DOCX workflow, not a bundled integration. None of these services is required for the local PDF path.
 
 ## Usage
 
@@ -197,7 +198,8 @@ cv-witness/
 │   ├── sample-cv.json
 │   └── structured-cv.json
 ├── references/
-│   └── company_lists/
+│   ├── company_lists/
+│   └── treg-jobs-sourcing.md
 ├── scripts/
 │   ├── ats_validate.py
 │   ├── bookface_mcp_auth.py
