@@ -39,6 +39,15 @@ class FillTemplateTests(unittest.TestCase):
         out = rs.fill_template(TEMPLATE, fields)
         self.assertNotIn("{{", out)
 
+    def test_margin_override_replaces_all_three_tokens(self):
+        src = ":root { --m-top: 18mm; --m-side: 13mm; --m-bottom: 14mm; --font: 9.3pt; }"
+        out = rs._apply_margin(src, 15)
+        self.assertIn("--m-top: 15mm", out)
+        self.assertIn("--m-side: 15mm", out)
+        self.assertIn("--m-bottom: 15mm", out)
+        self.assertIn("--font: 9.3pt", out)  # non-margin tokens untouched
+        self.assertNotIn("18mm", out)
+
     def test_sample_fields_match_canonical_template(self):
         import json
         from pathlib import Path
