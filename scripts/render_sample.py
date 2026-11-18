@@ -49,12 +49,23 @@ def fill_template(template, fields):
     return re.sub(r"\{\{([A-Z0-9_]+)\}\}", fill, template)
 
 
-def render_fields(fields, pdf, expected_text=(), no_sandbox=False, max_pages=1):
+def _apply_margin(source, margin_mm):
+    """Override the template's page margins to a uniform value (the candidate's
+    house preference is 15mm all sides). Only the three margin tokens change."""
+    for token in ("--m-top", "--m-side", "--m-bottom"):
+        source = re.sub(rf"{token}:\s*[\d.]+mm", f"{token}: {margin_mm}mm", source)
+    return source
+
+
+def render_fields(fields, pdf, expected_text=(), no_sandbox=False, max_pages=1, margin_mm=None):
     """Render any fields dict through the canonical template + checked renderer.
     This is the single house-style path: the public synthetic sample and any
-    tailored CV use the same template and renderer, so their format matches."""
+    tailored CV use the same template and renderer, so their format matches.
+    margin_mm overrides the page margins (e.g. 15 for the candidate baseline)."""
     template = (ROOT / "template.html").read_text(encoding="utf-8")
     filled = fill_template(template, fields)
+    if margin_mm is not None:
+        filled = _apply_margin(filled, margin_mm)
     return render_html(filled, pdf, max_pages=max_pages, expected_text=expected_text,
                        no_sandbox=no_sandbox, replace=True)
 
@@ -64,6 +75,7 @@ def main(argv=None):
     parser.add_argument("--output-dir", type=Path, default=ROOT / "assets", help="Only synthetic PDF/PNG outputs are written here")
     parser.add_argument("--fields", type=Path, help="Render an arbitrary fields JSON (with a 'fields' key or a bare dict) through the canonical template instead of the synthetic sample")
     parser.add_argument("--output", type=Path, help="PDF destination when --fields is given")
+    parser.add_argument("--margin-mm", type=float, help="Uniform page margin in mm (candidate baseline is 15); default keeps the template margins")
     args = parser.parse_args(argv)
     no_sandbox = os.environ.get("CV_WITNESS_CI_NO_SANDBOX") == "1"
     if args.fields:
@@ -72,7 +84,7 @@ def main(argv=None):
         payload = json.loads(args.fields.expanduser().read_text(encoding="utf-8"))
         fields = payload["fields"] if isinstance(payload, dict) and "fields" in payload else payload
         expected = (fields.get("NAME", ""),) + SECTION_HEADINGS
-        report = render_fields(fields, args.output.expanduser().resolve(), expected_text=expected, no_sandbox=no_sandbox)
+        report = render_fields(fields, args.output.expanduser().resolve(), expected_text=expected, no_sandbox=no_sandbox, margin_mm=args.margin_mm)
         print(f"Rendered {args.output}: {report.get('pages')} page(s), {report.get('text_words')} words, passed={report.get('passed')}.")
         return
     fields = json.loads((ROOT / "examples/sample-cv.json").read_text(encoding="utf-8"))["fields"]
