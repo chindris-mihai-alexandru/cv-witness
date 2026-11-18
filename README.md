@@ -199,7 +199,8 @@ cv-witness/
 │   └── structured-cv.json
 ├── references/
 │   ├── company_lists/
-│   └── treg-jobs-sourcing.md
+│   ├── treg-jobs-sourcing.md
+│   └── recruiter-search-positioning.md
 ├── scripts/
 │   ├── ats_validate.py
 │   ├── bookface_mcp_auth.py

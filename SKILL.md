@@ -295,6 +295,14 @@ loop, costs, the remote-filter rule and verify-before-send. Ask for remote with
 needs the user's go-ahead. Feed the chosen posting into the normal
 liveness → fit → tailor workflow below.
 
+**Be findable, not just tailored.** The upstream `recruit` skill is the employer's
+sourcing workflow; read backwards it shows how a candidate is found, ranked and
+contacted. See `references/recruiter-search-positioning.md`: carry the target role's
+title variants and must-have keywords in the headline/skills, make the "one line on why
+you fit" easy to write, and keep the public footprint (GitHub, posts, site) consistent
+with the CV — evidence-backed claims rank up, contradictions rank down. Positioning, not
+deception: every variant and claim stays true and grounded in `foundation.md`.
+
 **Automation: live pre-flight before tailoring (not after).** Run
 `scripts/preflight.py --cv <cv.pdf> --role "<role>"` and it pulls postings
 from every working source above and runs the existing knockout checker
