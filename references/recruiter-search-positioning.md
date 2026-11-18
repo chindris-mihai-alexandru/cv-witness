@@ -63,6 +63,29 @@ Two rules follow for your CV and profile:
 - **Contradictions cost you.** If your CV says "led X" but your public footprint shows
   nothing of it, the evidence step can move you down. Do not claim what you cannot evidence.
 
+## How the people-search bench grades you (LessieAI People Search Bench)
+
+The open People Search Bench (119 queries, EMNLP 2026) scores people-search agents by
+decomposing each query into **checkable criteria** and verifying every returned person
+against them via **live web search — not the model's memory**. A person matching 2 of 3
+criteria scores 0.67. Three dimensions, reverse-engineered for the candidate:
+
+- **Relevance Precision** (padded nDCG@10): the fraction of the role's criteria you
+  verifiably satisfy, ranked. → Make every must-have criterion (skill, years, location,
+  seniority) factually true about you *online*, not only claimed on the CV.
+- **Effective Coverage** (qualified yield, grade ≥ 0.5): you count only if you match at
+  least half the criteria strongly. → Don't apply broadly into roles where you meet few of
+  the must-haves; concentrate where you genuinely clear the bar.
+- **Information Utility** (completeness + evidence quality + actionability): a complete
+  profile, corroborated by cited evidence, with a clear way to act. → Full work history and
+  skills, public repos/posts/talks that back the claims, and a contactable, consistent
+  identity.
+
+The lesson that ties it together: **agents grade on web-verifiable facts, not prose.** A
+criterion the web confirms scores; a vague or contradicted claim does not. This is the same
+rule as the evidence re-scoring above, measured. (The bench is maintained by LessieAI, itself
+an evaluated platform — read its leaderboard with that disclosed interest in mind.)
+
 ## You are contactable — act like it
 
 The agent finds a **personal email and mobile** for the shortlist, cheapest vendor first,
