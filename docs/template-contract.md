@@ -1,7 +1,7 @@
 # Repeatable CV templates
 
 Date: 2026-10-09
-POC: cv-witness contributors
+POC: cv-witness maintainers
 TL;DR: Supply approved structured wording, select a career lane and paper size, and export through one checked layout. Roles repeat without fixed slots or manual CSS adjustments.
 
 ## Build a CV
