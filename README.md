@@ -119,6 +119,14 @@ The script compares literal word sequences. `--strict` fails on any shared run o
 
 For checked output, use `sh render.sh approved.html output.pdf a4 --posting posting.txt`. The renderer validates a temporary PDF before publishing and preserves previous output if any check fails. It rejects external/resource-loading content in the HTML, including CSS escapes that disguise `@import` or `url()`. This narrow preflight is not a general-purpose hostile-HTML sandbox. Selecting a posting uses strict overlap checks by default; choose `--overlap-policy review` explicitly when shared generic wording should be reviewed rather than blocked.
 
+To preserve an approved CV's exact look, render tailored fields through the canonical house-style template:
+
+```sh
+python3 scripts/render_sample.py --fields fields.json --output CV.pdf --margin-mm 15
+```
+
+This fills `template.html` with the same checked renderer as the public sample, so margins, header, contact icons and section order match the approved baseline. `--margin-mm` sets uniform page margins (the approved baseline uses 15mm); omit it to keep the template defaults. Scalar fields are HTML-escaped; block fields (`ROLES_BLOCK`, `PROJECTS_BLOCK`, `SKILLS_BLOCK`, `CERTS_BLOCK`, `EDUCATION_BLOCK`, `SUMMARY_2`) are trusted HTML, and the field set must match the template placeholders exactly.
+
 For a PDF exported from another authoring tool:
 
 ```sh
@@ -188,24 +196,43 @@ cv-witness/
 │   ├── fit/
 │   ├── sample-cv.json
 │   └── structured-cv.json
+├── references/
+│   └── company_lists/
 ├── scripts/
+│   ├── ats_validate.py
+│   ├── bookface_mcp_auth.py
 │   ├── build_cv.py
+│   ├── bullet_audit.py
 │   ├── check_cv.py
 │   ├── check_cv_numbers.py
 │   ├── check_posting_liveness.py
 │   ├── ci_pdf_smoke.py
+│   ├── comp_data.py
+│   ├── company_context.py
 │   ├── cv_checks.py
+│   ├── cv_layout.py
+│   ├── eu_network.py
 │   ├── fit_score.py
 │   ├── jd_overlap.py
+│   ├── knockout_check.py
+│   ├── preflight.py
 │   ├── render_cv.py
 │   ├── render_exploration.py
 │   ├── render_sample.py
 │   ├── render_template_gallery.py
-│   └── voice_corpus.py
+│   ├── trust_data.py
+│   ├── verify_layout.py
+│   ├── voice_corpus.py
+│   └── yc_network.py
 ├── templates/
 │   └── structured.html
 ├── tests/
+├── .gitignore
 ├── AGENTS.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── README.md
 ├── SKILL.md
 ├── index.html
 ├── render.sh
@@ -216,15 +243,16 @@ cv-witness/
 | --- | --- |
 | `SKILL.md`, `AGENTS.md` | Agent workflow and contributor guidance. |
 | `scripts/`, `templates/` | CV building, validation, rendering, voice references and regeneration tools. |
+| `references/` | Public company lists used by the screening and network tools (no personal data). |
 | `docs/`, `examples/` | Usage guides, contracts and fictional inputs. |
 | `assets/explore/` | Interactive maps and the fictional PDF gallery. |
 | `tests/` | Synthetic contracts and actual PDF export regressions. |
 | `.github/`, `.claude-plugin/` | CI, deployment, branch-policy settings and plugin manifests. |
-| `index.html`, `render.sh`, `template.html` | Website entrypoint, checked-render command and legacy manual CV layout. |
+| `index.html`, `render.sh`, `template.html` | Website entrypoint, checked-render command and canonical house-style CV layout. |
 
 README, contribution guidance, changelog and license stay at the root. The small static site needs no framework, package install or generated bundle.
 
-`foundation.md` and `provenance.md` are private local sources excluded by `.gitignore`. They are not included in the public repository. Keep them outside public artifacts and remember that your agent provider's data policy applies when it reads them.
+`foundation.md` and `provenance.md` are private local sources excluded by `.gitignore`. They are not included in the public repository. Keep them outside public artifacts and remember that your agent provider's data policy applies when it reads them. Tailored CVs and the `cvs/` folder are gitignored too: never commit a tailored CV, job-specific notes, or real candidate/employer details to this public repo. Test and example fixtures use fictional people and reserved `example.*` domains (enforced by `tests/test_no_personal_data.py`).
 
 The banner source is `assets/banner.html`; it reuses `assets/mark.svg`. Render it in a Chromium browser at 2100 × 900 CSS pixels when updating the published `assets/banner.png`.
 
