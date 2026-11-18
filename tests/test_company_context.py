@@ -36,7 +36,7 @@ Your English is good, written and spoken.
 A degree in computer science. Equivalent practical experience is just as good.
 """
 
-CV = "Alex Morgan\nRomania\nIT Operations & Support Engineer, Example Corp, Nov 2022 - Apr 2025\n"
+CV = "Alex Morgan\nRomania\nIT Operations & Support Engineer, Example Studio, Nov 2022 - Apr 2025\n"
 
 
 class CuratedListTests(unittest.TestCase):
