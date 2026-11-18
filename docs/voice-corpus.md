@@ -1,7 +1,7 @@
 # Candidate voice references
 
 Date: 2026-10-08
-POC: cv-witness maintainers
+POC: Mihai-Alexandru Chindriș
 TL;DR: Import selected original writing locally, inspect its descriptive signals, and give your agent an approved style reference. No model training, provider login, automatic upload, or exact-voice score is involved.
 
 ## What this feature does

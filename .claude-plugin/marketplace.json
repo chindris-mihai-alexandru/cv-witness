@@ -4,15 +4,15 @@
     "description": "One skill for drafting and reviewing a CV from verified experience."
   },
   "owner": {
-    "name": "cv-witness contributors",
-    "url": "https://github.com/chindris-mihai-alexandru/cv-witness"
+    "name": "Mihai-Alexandru Chindriș",
+    "url": "https://mihaichindris.me"
   },
   "plugins": [
     {
       "name": "cv-witness",
       "source": "./",
       "description": "Draft and review CVs from verified experience, with optional private writing-style references.",
-      "version": "0.6.0",
+      "version": "0.8.0",
       "category": "productivity",
       "keywords": ["resume", "cv", "ats", "job-applications"]
     }

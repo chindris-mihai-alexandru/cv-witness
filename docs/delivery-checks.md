@@ -1,7 +1,7 @@
 # Checked local CV exports
 
 Date: 2026-10-09
-POC: cv-witness maintainers
+POC: Mihai-Alexandru Chindriș
 TL;DR: Render approved, self-contained HTML to a temporary PDF, run the shared checks, then publish only a passing candidate. A selected posting triggers phrase review automatically.
 
 ## Tools and inputs

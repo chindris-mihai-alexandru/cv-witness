@@ -1,7 +1,7 @@
 # Grounded fit scoring
 
 Date: 2026-10-28
-POC: cv-witness maintainers
+POC: Mihai-Alexandru Chindriș
 TL;DR: A judge answers one narrow question per posting requirement. `scripts/fit_score.py` verifies the quoted evidence, does the arithmetic and returns a fit band with an uncertainty range. It is triage for choosing where to spend effort, not an ATS score or a hiring prediction.
 
 ## What this is for

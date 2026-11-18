@@ -8,6 +8,23 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-18
+
+### Added
+
+- Canonical house-style renderer path: `scripts/render_sample.py --fields <json> --output <pdf> [--margin-mm N]` fills `template.html` through the same checked renderer as the public synthetic sample, so a tailored CV matches the approved baseline exactly (including uniform 15mm margins). Extracted `fill_template()` / `render_fields()` with unit tests for HTML escaping, the placeholder contract and the margin override.
+- Privacy guard test (`tests/test_no_personal_data.py`): committed test/example fixtures must use reserved `example.*` email domains.
+
+### Changed
+
+- Removed candidate-specific job-application content from the public skill (a job-facts section for a specific EU tech role and named tailoring notes in SKILL.md) and fictionalized employer/project references in test fixtures. Tailored CVs and private sources stay out of version control; maintainer authorship and GitHub-noreply commit metadata are retained.
+
+### Fixed
+
+- Knockout screening now parses "N+ years <job-function list> experience" and treats "3+ years X OR 4+ years Y" as alternatives (the lower floor), instead of missing the requirement or stacking the branches.
+
+## [0.7.0] - 2026-11-07
+
 ### Added
 
 - Grounded fit scorer (`scripts/fit_score.py`, `docs/fit-scoring.md`, `examples/fit/`): per-requirement judgments on described levels are combined in code into a fit band with an uncertainty range. Evidence quotes are verified against approved sources and unverified high claims are capped; hard gates, coverage limits and experience arithmetic (overlapping roles counted once) never go to the judge. The judge is pluggable and no service is called.

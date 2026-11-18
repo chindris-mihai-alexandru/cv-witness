@@ -1,7 +1,7 @@
 # Explore cv-witness
 
 Date: 2026-10-09
-POC: cv-witness maintainers
+POC: Mihai-Alexandru Chindriș
 TL;DR: Use the animated workflow for approval and export boundaries, and the interactive source map for files, symbols and dependencies. Both run locally without accounts or API keys.
 
 ## Two views with different jobs
