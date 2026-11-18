@@ -283,6 +283,18 @@ API):
 - `scripts/eu_network.py adzuna --country de --query ...` — optional tier-2
   (needs ADZUNA_APP_ID/ADZUNA_API_KEY); 19 markets, truncated descriptions.
 
+**Optional paid catalog: Treg jobs-api.** When the free boards miss a role, or you
+need cross-board search, neural fit-ranking, the hiring manager, or posted-pay
+benchmarks, the Treg catalog (treg.to) serves them per call with one token:
+`treg.companies.jobs.search` (search), `hirebase.jobs.match` (rank against the
+resume), `treg.people.search` (the team that owns the role), and
+`hirebase.jobs.salary.insights` (pay percentiles). Use the upstream `treg` CLI/MCP
+— do not write a duplicate client. See `references/treg-jobs-sourcing.md` for the
+loop, costs, the remote-filter rule and verify-before-send. Ask for remote with
+`remote=true`; a found email is a best match, never confirmed, and sending always
+needs the user's go-ahead. Feed the chosen posting into the normal
+liveness → fit → tailor workflow below.
+
 **Automation: live pre-flight before tailoring (not after).** Run
 `scripts/preflight.py --cv <cv.pdf> --role "<role>"` and it pulls postings
 from every working source above and runs the existing knockout checker
