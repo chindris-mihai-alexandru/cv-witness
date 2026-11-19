@@ -2,12 +2,17 @@
 name: cv-witness
 description: "Handle job applications end to end: find or review roles with Rezi, compare them with verified resume evidence, and tailor a CV using the user's chosen creation workflow. Use when job searching, assessing fit, or preparing a role-specific CV."
 author: mihai
-version: 0.7.0
+version: 0.8.0
 ---
 
 # Job applications with CV Witness
 
 This is the user's main job-application workflow. Rezi is an optional source for live job listings and resume facts. The cv-witness local flow (template plus renderer) or the user's preferred creation workflow produces the application document. Do not replace that workflow with Rezi's resume editor.
+
+## Two ways to run this
+
+- **Just tailor (no setup):** hand over a posting and your current CV. The workflow maps the role's requirements to your verified evidence and produces a role-specific CV in your approved design. No accounts, tokens, or integrations are required.
+- **Enrich from your public footprint (optional, deeper):** the workflow can also gather public evidence (GitHub repositories and merged PRs, your live LinkedIn profile, shipped projects, and model cards) to surface achievements worth keeping and to keep the CV current. See the evidence-gathering step in the job-application-tailoring skill and `references/recruiter-search-positioning.md`. Every claim stays verified against the master sources; nothing is invented, and a found profile is read, never edited. A scheduled refresh may draft an updated CV periodically for the candidate to review; it is never auto-published or applied without approval.
 
 ## Standing rules (always-on)
 
