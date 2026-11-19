@@ -86,6 +86,12 @@ criterion the web confirms scores; a vague or contradicted claim does not. This 
 rule as the evidence re-scoring above, measured. (The bench is maintained by LessieAI, itself
 an evaluated platform — read its leaderboard with that disclosed interest in mind.)
 
+Recruiters' agents build these lists as a *waterfall* — find → enrich → verify — and keep a
+receipt priced per **usable result** (a verified, deliverable contact); misses and unknown
+verdicts cost them nothing. Be the usable result: a complete, corroborated, contactable
+profile that verifies cleanly is worth the spend; one that bounces or contradicts is a free
+miss they discard.
+
 ## You are contactable — act like it
 
 The agent finds a **personal email and mobile** for the shortlist, cheapest vendor first,
