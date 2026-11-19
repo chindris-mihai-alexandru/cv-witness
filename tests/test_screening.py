@@ -74,6 +74,27 @@ class KnockoutSignalTests(unittest.TestCase):
         signals = knockout_check.extract_signals(posting)
         self.assertEqual(signals.get("location"), "Geneva, Switzerland")
 
+    def test_middle_dot_header_city_with_work_mode(self):
+        # Teamtailor headers: "Platform Services · Rotterdam · Hybrid". The city
+        # sits between middle dots mid-line, not as a "City, Country" pair.
+        posting = ("Azure & Citrix Platform Engineer\n"
+                   "Platform Services · Rotterdam · Hybrid\n"
+                   "Build secure, reliable cloud solutions.")
+        signals = knockout_check.extract_signals(posting)
+        self.assertEqual(signals.get("location"), "Rotterdam, NL")
+        self.assertIn("Rotterdam, NL", signals.get("locations", []))
+
+    def test_alternatives_list_is_not_a_location(self):
+        # "primarily in Azure, Citrix or infrastructure engineering" is a list of
+        # alternatives, not a work location; the real city still wins.
+        posting = ("Platform Engineer\n"
+                   "Whether your expertise lies primarily in Azure, Citrix or "
+                   "infrastructure engineering, you will grow.\n"
+                   "Platform Services · Rotterdam · Hybrid")
+        signals = knockout_check.extract_signals(posting)
+        self.assertNotIn("Azure, Citrix", signals.get("locations", []))
+        self.assertEqual(signals.get("location"), "Rotterdam, NL")
+
     def test_passes_when_cv_meets_the_year_floor(self):
         status, _ = knockout_check.check_signal("min_years", 4, "5 years of experience")
         self.assertEqual(status, "PASS")

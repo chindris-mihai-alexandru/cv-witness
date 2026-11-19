@@ -127,7 +127,7 @@ def _first_place(posting: str) -> str | None:
     if not m:
         return None
     # "City, Country and X" = a list continuation, not a location.
-    if re.match(r"\s+(?:and|&)\s+[A-Za-z]", header[m.end():]):
+    if re.match(r"\s+(?:and|&|or)\s+[A-Za-z]", header[m.end():]):
         return None
     return _clean_place(m.group(1))
 
@@ -173,6 +173,12 @@ CITY_MODE_RE = re.compile(
     r"^\s*([A-Z][A-Za-z .'-]{2,30})\s*,\s*(?:on[- ]?site|hybrid|remote|office)\b"
     r"|^\s*([A-Z][A-Za-z .'-]{2,30})\s+Office\b",
     re.I | re.M,
+)
+# Teamtailor-style headers put the city between middle dots, mid-line:
+# "Platform Services · Rotterdam · Hybrid". Capture the city before the mode word.
+CITY_DOT_MODE_RE = re.compile(
+    r"[·•]\s*([A-Z][A-Za-z .'-]{2,30})\s*[·•]\s*(?:on[- ]?site|hybrid|remote|office)\b",
+    re.I,
 )
 
 WORK_AUTH_PATTERNS = [
@@ -553,12 +559,23 @@ def extract_signals(posting: str) -> dict:
                 candidate = f"{city}, {iso}"
                 if candidate.lower() not in {p.lower() for p in places}:
                     places.append(candidate)
+        # "Platform Services · Rotterdam · Hybrid" (middle-dot separators).
+        for m in CITY_DOT_MODE_RE.finditer(header):
+            city = m.group(1).strip()
+            iso = CITY_COUNTRY.get(city.lower())
+            if iso:
+                candidate = f"{city}, {iso}"
+                if candidate.lower() not in {p.lower() for p in places}:
+                    places.append(candidate)
         for m in PLACE_RE.finditer(header):
             line_start = header.rfind("\n", 0, m.start()) + 1
             line_end = header.find("\n", m.start())
             line = header[line_start:line_end if line_end >= 0 else len(header)]
             # "e.g., FTP, Postman" is a tool list, never a work location.
             if SKILL_ENUM_RE.search(line):
+                continue
+            # "Azure, Citrix or infrastructure" is a list of alternatives, not a place.
+            if re.match(r"\s+(?:and|&|or)\s+[A-Za-z]", header[m.end():]):
                 continue
             candidate = _clean_place(m.group(1))
             if candidate and candidate.lower() not in {p.lower() for p in places}:
