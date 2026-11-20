@@ -565,6 +565,16 @@ on whether AI was involved (the slop-detector's "mixed/AI-polished results aren'
 flagged" is the right instinct). Judge the wording's evidence and plainness, never its
 origin. This audit is a lexical hype review, not an AI-detector, and must never become one.
 
+The durable defense is provenance, not detection. GPTZero's own advice to people wrongly
+flagged as AI is to "keep a record of your process" — which is exactly what foundation.md /
+provenance.md are. A documented record of the candidate's actual work does double duty: it
+grounds every claim, and it evidences the human process behind the writing. The stakes are
+real: KPMG, EY and Deloitte all retracted or refunded reports over AI-hallucinated citations
+and fabricated case studies (KPMG's had only 5 of 45 citations pointing to real sources).
+Unsupported claims in professional documents get exposed and do real reputational damage —
+a CV is no exception. Verify every claim and number against a real source (check_cv_numbers.py
+and the stack-honesty audit); invest in provenance, not in detecting origin.
+
 Advisory only (exit 0); it complements, never replaces, check_cv_numbers.py and
 the stack-honesty audit, which are the gates that judge truth.
 
