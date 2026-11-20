@@ -149,6 +149,26 @@ Lessons that held up in a real 50-company run and transfer to sourcing and outre
   returned 12 companies on one provider and 958 on another. Counts swing an order
   of magnitude between providers.
 
+### Classify at scale: cheap filter first, judge the middle, cache once
+
+From a Jev-at-scale demo (thousands of listings classified for $0.18) and its
+critiques — the same funnel cv-witness uses for roles:
+
+- Pre-reduce, then classify. A classifier does not scale to a whole corpus; narrow
+  with cheap filters (place, title, remote, posted-age) to a candidate set first and
+  spend on judgment only for the survivors.
+- Only judge where a cheap filter cannot decide. If the knockout gate or a
+  deterministic filter already accepts or rejects a row, do not pay a classifier to
+  re-decide it; spend the judgment on the ambiguous middle. DRY: never duplicate a
+  decision a cheaper step already made.
+- Classify once, cache by content. A fit verdict is a label on that content; cache it
+  keyed by content hash so a repeated search does not re-pay, and re-classify only
+  when the posting/profile text changes (the same content-keyed rule as any score
+  cache). Do not re-label the same corpus on every query.
+- Batch amortizes cost, but only if it beats the alternative. The demo's $0.18 covered
+  thousands of listings across 5 criteria, not one query — yet classification is only
+  worth it where it is cheaper or better than the filter it replaces.
+
 ## Feed the chosen role into cv-witness
 
 Once a role is picked, run the normal workflow on its posting:
