@@ -39,6 +39,7 @@ Usage:
   python3 scripts/eu_network.py ats --provider greenhouse --enterprise --query "engineer"
   python3 scripts/eu_network.py ats --provider lever --company zalando --limit 10
   python3 scripts/eu_network.py ats --provider ashby --company electric --limit 10
+  python3 scripts/eu_network.py dedup --file pooled.json   # once per role before paid enrichment
 
 Exit codes: 0 ok, 1 runtime/API error, 2 missing credentials/CLI prerequisites.
 """
@@ -303,6 +304,83 @@ def _ashby_rows(company: str) -> list[dict]:
     return rows
 
 
+# --- Cross-source dedup ----------------------------------------------------
+
+def _norm_url(url: str) -> str:
+    """Canonical URL identity: lowercase host, no fragment/trailing slash/utm params."""
+    url = (url or "").strip()
+    if not url:
+        return ""
+    try:
+        p = urllib.parse.urlsplit(url)
+        query = "&".join(kv for kv in (p.query or "").split("&")
+                         if kv and not kv.lower().startswith("utm_"))
+        return urllib.parse.urlunsplit((p.scheme.lower(), (p.netloc or "").lower(),
+                                        (p.path or "").rstrip("/"), query, ""))
+    except ValueError:
+        return url.lower()
+
+
+def _norm_text(value: str) -> str:
+    return " ".join((value or "").lower().split())
+
+
+def _richness(row: dict) -> int:
+    score = len(row.get("description") or "")
+    for field in ("salary_min", "salary_max", "location", "url", "contract_type"):
+        if row.get(field):
+            score += 50
+    return score
+
+
+def dedup_jobs(rows: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Dedup a pooled job list so downstream paid enrichment runs once per role.
+
+    Identity: canonical URL first, then (company, title) to catch the same role
+    syndicated across sources with different URLs. Keeps the richer row and returns
+    dropped duplicates with the reason, so nothing is silently lost. The same
+    company+title in different locations may be distinct roles: inspect dropped rows
+    before discarding them.
+    """
+    kept: list[dict] = []
+    dropped: list[dict] = []
+    by_url: dict[str, int] = {}
+    by_ct: dict[tuple, int] = {}
+    for row in rows:
+        url_key = _norm_url(row.get("url", ""))
+        company = _norm_text(row.get("company", ""))
+        title = _norm_text(row.get("title", ""))
+        ct_key = (company, title) if company and title else None
+        idx = by_url.get(url_key) if url_key else None
+        reason = "same URL"
+        if idx is None and ct_key is not None:
+            idx = by_ct.get(ct_key)
+            reason = "same company+title (cross-source)"
+        if idx is None:
+            idx = len(kept)
+            kept.append(row)
+            if url_key:
+                by_url[url_key] = idx
+            if ct_key is not None:
+                by_ct[ct_key] = idx
+            continue
+        other = kept[idx]
+        dup_of = other.get("url") or f"{other.get('company')} - {other.get('title')}"
+        if _richness(row) > _richness(other):
+            kept[idx] = row
+            dropped.append({"row": other, "reason": reason, "duplicate_of": dup_of})
+        else:
+            dropped.append({"row": row, "reason": reason, "duplicate_of": dup_of})
+        win = kept[idx]
+        wurl = _norm_url(win.get("url", ""))
+        if wurl:
+            by_url[wurl] = idx
+        wc, wt = _norm_text(win.get("company", "")), _norm_text(win.get("title", ""))
+        if wc and wt:
+            by_ct[(wc, wt)] = idx
+    return kept, dropped
+
+
 # --- CLI -------------------------------------------------------------------
 
 def cmd_check(args: argparse.Namespace | None = None) -> int:
@@ -385,6 +463,24 @@ def cmd_ats(args: argparse.Namespace) -> int:
     return 1 if (not all_rows and errors) else 0
 
 
+def cmd_dedup(args: argparse.Namespace) -> int:
+    """Dedup a pooled jobs JSON (a list, or an object with a 'jobs' list)."""
+    try:
+        raw = open(args.file, encoding="utf-8").read() if args.file else sys.stdin.read()
+        data = json.loads(raw)
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"dedup: cannot read jobs JSON: {e}", file=sys.stderr)
+        return 2
+    rows = data.get("jobs") if isinstance(data, dict) else data
+    if not isinstance(rows, list):
+        print("dedup: expected a JSON list of rows or an object with a 'jobs' list", file=sys.stderr)
+        return 2
+    kept, dropped = dedup_jobs(rows)
+    print(json.dumps({"count": len(kept), "dropped_count": len(dropped),
+                      "jobs": kept, "dropped": dropped}, indent=2, ensure_ascii=False))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="European job-source intel for CV tailoring")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -419,6 +515,10 @@ def main() -> int:
     p.add_argument("--limit", type=int, default=10)
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_ats)
+
+    p = sub.add_parser("dedup", help="dedup a pooled jobs JSON (list or {'jobs':[...]}) so enrichment runs once per role")
+    p.add_argument("--file", default=None, help="JSON file of rows; default reads stdin")
+    p.set_defaults(func=cmd_dedup)
 
     args = ap.parse_args()
     return args.func(args)
