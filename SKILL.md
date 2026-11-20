@@ -554,6 +554,17 @@ Honest limits (keep them):
 - Do not force sentences to statistical targets. The goal is wording that is true
   to the candidate's actual work and reads human, not a low score.
 
+Judge content, not origin: never detect AI authorship. AI-text detection is
+unreliable (independent benchmarks show large false-positive gaps, e.g. GPTZero ~18%
+real-world vs ~0.24% claimed; arXiv 2303.11156 proves reliable detection is impossible
+as model text approaches human). Detectors also disproportionately flag non-native
+English writers (a Stanford study found ~61% false positives on TOEFL essays) — this
+candidate is one, so an AI-detector would wrongly flag their own legitimate writing.
+AI-assisted drafting is not slop: quality depends on the evidence and the choices, not
+on whether AI was involved (the slop-detector's "mixed/AI-polished results aren't
+flagged" is the right instinct). Judge the wording's evidence and plainness, never its
+origin. This audit is a lexical hype review, not an AI-detector, and must never become one.
+
 Advisory only (exit 0); it complements, never replaces, check_cv_numbers.py and
 the stack-honesty audit, which are the gates that judge truth.
 
