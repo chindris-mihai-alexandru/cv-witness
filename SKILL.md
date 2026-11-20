@@ -523,6 +523,40 @@ confirmed defect — read it in context before rewriting. A bullet that is
 accurate and specific can legitimately lack a number; a bullet that is vague
 cannot be fixed by adding one.
 
+## Humane wording audit (the BS-meter perspective)
+
+Run `scripts/humane_audit.py <cv.pdf>` as a review aid over the summary and
+bullets. It borrows the "BS meter" idea: judge every sentence against a fixed
+set of questions, the same set for every line. For CV wording the questions are:
+
+- Unsupported claim: does the evidence (foundation.md / provenance.md) actually
+  support this, or is it inflation the candidate cannot defend in an interview?
+- Hype / buzzword: synergy, leverage, spearhead, world-class, cutting-edge,
+  results-driven, proven track record.
+- Superlative without evidence: unparalleled, exceptional, outstanding, amazing.
+- Self-flattery / emotional appeal: passionate, dedicated, empathetic, team
+  player, detail-oriented. Plain factual phrasing is stronger.
+- Vague benefit: a claim with no concrete action or outcome (the bullet audit's
+  action/metric check already covers this).
+
+The script is a LEXICAL review aid, not a verdict. It flags candidate wording; it
+does not judge truth. Ground every flag in the verified sources before rewriting:
+the question is "does the evidence support this, and is it plain and human?", not
+"did a model score it high?". This is the lesson from the BS-meter critique: a
+score without retrieval is an opinion, not a fact-check.
+
+Honest limits (keep them):
+- A flag is a review prompt, not a defect. Some flagged words are legitimate in
+  context; read before rewriting. Never auto-strip on a score alone.
+- Sentence-level flags run high for everyone. Compare against the approved
+  baseline / plain professional prose, not an absolute zero-hype target.
+- Apply one fixed rule set to every bullet; do not hand-pick which lines to judge.
+- Do not force sentences to statistical targets. The goal is wording that is true
+  to the candidate's actual work and reads human, not a low score.
+
+Advisory only (exit 0); it complements, never replaces, check_cv_numbers.py and
+the stack-honesty audit, which are the gates that judge truth.
+
 ## English-level honesty rule
 
 A posted CEFR requirement (e.g. "English at C1") is a real gate, but the CV
