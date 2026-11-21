@@ -9,8 +9,11 @@ Codex, and any agent that reads AGENTS.md.
 - Private files: `foundation.md` (master resume) and `provenance.md`
   (verification notes) are gitignored. Never commit them, never send them to
   anyone, and never treat their contents as public data.
-- Verify any external GitHub PR with `gh pr view <url>` before citing it as
-  merged. Closed-unmerged work is never presented as merged.
+- Verify any external GitHub PR before citing it as merged:
+  `python3 scripts/public_footprint.py verify-pr <url>`. It returns `merged: true`
+  only when the PR state is MERGED **and** `mergedAt` is set; a CLOSED-unmerged
+  PR is never presented as merged. This replaces the manual-only `gh pr view`
+  rule and is tested in `tests/test_public_footprint.py`.
 - The posting informs emphasis and ordering, not invented facts or copied
   sentences. Run the shared posting checks; generic industry wording needs
   context review rather than automatic rewriting.

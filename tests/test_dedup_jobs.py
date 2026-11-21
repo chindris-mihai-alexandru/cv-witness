@@ -70,6 +70,14 @@ class DedupJobsTest(unittest.TestCase):
         self.assertIn("duplicate_of", dropped[0])
         self.assertTrue(dropped[0]["duplicate_of"])
 
+    def test_treg_rows_use_application_link(self):
+        # treg jobs-api rows carry application_link, not url; dedup must still work
+        a = {"company": "Acme", "title": "Platform Engineer", "application_link": "https://jobs.example/1"}
+        b = {"company": "Acme", "title": "Platform Engineer", "application_link": "https://other.example/2"}
+        kept, dropped = eu.dedup_jobs([a, b])
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(dropped[0]["reason"], "same company+title (cross-source)")
+
 
 class DedupCommandTest(unittest.TestCase):
     def _run(self, payload):
