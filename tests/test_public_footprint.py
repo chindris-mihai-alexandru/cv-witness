@@ -101,6 +101,31 @@ class HFFootprintTest(unittest.TestCase):
             pf.shutil.which = real_which
             subprocess.run = real_run
 
+    def test_as_records_accepts_documented_and_section_wrappers(self):
+        expected = [{"id": "example/model"}]
+        for wrapper in ("models", "datasets", "spaces", "collections",
+                        "items", "data", "results", "value", "objects"):
+            with self.subTest(wrapper=wrapper):
+                records, error = pf._as_records({wrapper: expected}, wrapper)
+                self.assertEqual(records, expected)
+                self.assertIsNone(error)
+
+    def test_generic_wrapped_payloads_are_unwrapped_in_footprint(self):
+        for wrapper in ("items", "data", "results", "value", "objects"):
+            with self.subTest(wrapper=wrapper):
+                pf._run = lambda cmd, timeout=45, w=wrapper: (
+                    True, {w: [{"id": "example/record"}]}, None)
+                r = pf.hf_footprint("example-user", hf_bin="hf")
+                for key in ("models", "datasets", "spaces", "collections"):
+                    self.assertEqual(r[key], [{"id": "example/record"}])
+                self.assertEqual(r["errors"], [])
+
+    def test_unknown_dict_shape_is_flagged_not_silently_emptied(self):
+        pf._run = lambda cmd, timeout=45: (True, {"unexpected": []}, None)
+        r = pf.hf_footprint("example-user", hf_bin="hf")
+        self.assertEqual(r["models"], [])
+        self.assertTrue(any("unrecognised JSON object shape" in e for e in r["errors"]))
+
     def test_low_numbers_not_inflated(self):
         pf._run = lambda cmd, timeout=45: (True, [{"id": "example/m", "downloads": 0, "likes": 0}], None)
         r = pf.hf_footprint("example-user", hf_bin="hf")

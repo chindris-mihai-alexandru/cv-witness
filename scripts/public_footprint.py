@@ -50,6 +50,25 @@ def _run(cmd, timeout=45):
     return True, out, None
 
 
+def _as_records(data, key):
+    """Normalise a CLI JSON payload to a list of records, or explain why not.
+
+    HF's docs say `--format json` emits "a compact JSON object or array": a
+    future CLI may wrap a listing as {"items": [...]}, {"data": [...]} or
+    {"<key>": [...]}. Never silently drop such a payload into []; unwrap only
+    recognised keys and report an unknown shape as an error instead.
+    """
+    if isinstance(data, list):
+        return data, None
+    if isinstance(data, dict):
+        for wrapper in (key, "items", "data", "results", "value", "objects"):
+            value = data.get(wrapper)
+            if isinstance(value, list):
+                return value, None
+        return [], f"unrecognised JSON object shape (keys: {sorted(data)[:6]})"
+    return [], "unexpected JSON payload type"
+
+
 def hf_footprint(author, hf_bin="hf", limit=100):
     """Read a public HF profile's models, datasets, spaces and collections.
 
@@ -82,7 +101,10 @@ def hf_footprint(author, hf_bin="hf", limit=100):
         if isinstance(data, str):
             result["errors"].append(f"{key}: CLI returned non-JSON output; upgrade hf CLI")
             continue
-        result[key] = data if isinstance(data, list) else []
+        records, shape_error = _as_records(data, key)
+        if shape_error:
+            result["errors"].append(f"{key}: {shape_error}")
+        result[key] = records
     return result
 
 
