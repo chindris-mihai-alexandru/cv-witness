@@ -95,6 +95,58 @@ def verify_pr(url, gh_bin="gh"):
             "title": data.get("title"), "error": None}
 
 
+def gh_pr_summary(author, gh_bin="gh", exclude_prefixes=None):
+    """Live, verifiable PR counts for a GitHub author via the search API.
+
+    Returns authored/merged totals and, when exclude_prefixes is given, a
+    precise external-only merged count with the repo breakdown. This gives
+    provenance files a refresh path instead of stale hand-counted numbers.
+    """
+    exclude_prefixes = [p.lower().rstrip("/") + "/" for p in (exclude_prefixes or [])]
+    result = {"author": author, "authored": None, "merged": None,
+              "external_merged": None, "external_repos": {}, "error": None}
+
+    def total(query):
+        ok, data, err = _run([gh_bin, "api",
+                              f"search/issues?q={query}&per_page=1"], timeout=60)
+        if not ok:
+            raise RuntimeError(err)
+        if not isinstance(data, dict) or "total_count" not in data:
+            raise RuntimeError("unexpected search response")
+        return data["total_count"]
+
+    try:
+        result["authored"] = total(f"author:{author}+type:pr")
+        result["merged"] = total(f"author:{author}+type:pr+is:merged")
+        # Only enumerate repos when the caller wants an external split.
+        if exclude_prefixes:
+            merged = []
+            for page in range(1, 6):  # cap at 500 PRs; report if truncated
+                ok, data, err = _run([gh_bin, "api",
+                                      f"search/issues?q=author:{author}+type:pr+is:merged"
+                                      f"&per_page=100&page={page}"], timeout=60)
+                if not ok or not isinstance(data, dict):
+                    raise RuntimeError(err or "unexpected search response")
+                items = data.get("items", [])
+                merged += items
+                if len(merged) >= data.get("total_count", 0) or not items:
+                    break
+            repos = {}
+            for pr in merged:
+                url = pr.get("html_url", "")
+                repo = url.split("github.com/")[-1].split("/pull/")[0] if "github.com/" in url else "?"
+                repos[repo] = repos.get(repo, 0) + 1
+            external = {r: n for r, n in repos.items()
+                        if not any(r.lower().startswith(p) for p in exclude_prefixes)}
+            result["external_repos"] = external
+            result["external_merged"] = sum(external.values())
+            if len(merged) >= 500:
+                result["error"] = "merged list truncated at 500; external count may be low"
+    except RuntimeError as e:
+        result["error"] = str(e)
+    return result
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -105,11 +157,18 @@ def main():
     p = sub.add_parser("verify-pr", help="verify a PR is actually MERGED")
     p.add_argument("url")
     p.add_argument("--gh-bin", default="gh")
+    p = sub.add_parser("pr-summary", help="live PR counts + external merged split")
+    p.add_argument("--author", required=True)
+    p.add_argument("--gh-bin", default="gh")
+    p.add_argument("--exclude-repo", action="append", default=[],
+                   help="repo prefix to exclude from external split (repeatable)")
     a = ap.parse_args()
     if a.cmd == "hf":
         out = hf_footprint(a.author, a.hf_bin, a.limit)
-    else:
+    elif a.cmd == "verify-pr":
         out = verify_pr(a.url, a.gh_bin)
+    else:
+        out = gh_pr_summary(a.author, a.gh_bin, a.exclude_repo)
     print(json.dumps(out, indent=2, ensure_ascii=False))
     return 0 if not out.get("error") and not out.get("errors") else 1
 
