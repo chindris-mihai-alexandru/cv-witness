@@ -39,14 +39,14 @@ def _run(cmd, timeout=45):
     except json.JSONDecodeError:
         pass
     # Edge case: some CLI versions print an update/new-version banner to stdout
-    # before the JSON. Recover the payload from the first JSON opener instead of
-    # throwing away every repo (a "non-JSON output" error lost all HF evidence).
+    # before the JSON. Recover the payload from a JSON opener, but keep scanning:
+    # a banner can itself contain brackets (e.g. "[WARNING] new version").
     for i, ch in enumerate(out):
         if ch in "[{":
             try:
                 return True, json.loads(out[i:]), None
             except json.JSONDecodeError:
-                break
+                continue  # this opener may be the banner's, not the payload's
     return True, out, None
 
 
