@@ -6,7 +6,10 @@ must never consume a tailored CV, report and delivery checks.
 
 Classification:
 - live: HTTP 200, the expected role title appears on the page, the final URL
-  still points at the posting, and no closure phrase is present
+  still points at the posting, no closure phrase, and no application deadline
+  that has already passed
+- expired: HTTP 200 with an explicit application deadline before today (the form
+  may still accept input; the candidate decides, but this is never "live")
 - dead: HTTP 404/410, a closure phrase on a non-200 page, or the site
   redirected away from the posting path (typical for closed Greenhouse jobs)
 - suspicious: everything else; the candidate decides, the script never guesses
@@ -21,6 +24,7 @@ board you know renders client-side means verify in a browser before tailoring.
 """
 
 import argparse
+import datetime as _dt
 import re
 import sys
 import urllib.request
@@ -41,11 +45,47 @@ CLOSURE_PHRASES = (
 )
 
 
+def find_deadline(text, today=None):
+    """Extract an explicit application deadline date, if the page states one.
+
+    Only deadline/apply-by phrasing counts. A yearless date resolves to the
+    current year unless that would be more than 60 days in the past, in which
+    case next year is used (a January deadline seen in November is next year).
+    Returns (date, raw_match) or (None, None).
+    """
+    today = today or _dt.date.today()
+    pattern = re.compile(
+        r"(?:deadline(?:\s+for\s+(?:applying|applications))?|apply\s+by|"
+        r"applications?\s+close)\s*(?:is|:|by)?\s*"
+        r"([A-Z][a-z]+|\d{1,2})\.?\s+(\d{1,2})(?:st|nd|rd|th)?"
+        r"(?:,?\s+(\d{4}))?", re.I)
+    months = {name.lower(): index for index, name in enumerate(
+        ("January", "February", "March", "April", "May", "June", "July",
+         "August", "September", "October", "November", "December"), 1)}
+    for match in pattern.finditer(text):
+        month = months.get(match.group(1).lower())
+        if not month:
+            continue
+        day, year = int(match.group(2)), match.group(3)
+        if not 1 <= day <= 31:
+            continue
+        for candidate_year in ([int(year)] if year else
+                               [today.year, today.year + 1]):
+            try:
+                deadline = _dt.date(candidate_year, month, day)
+            except ValueError:
+                continue
+            if year or deadline >= today - _dt.timedelta(days=60):
+                return deadline, match.group(0)
+    return None, None
+
+
 def normalize(text):
     return " ".join(text.split()).lower()
 
 
-def classify(status, body, final_url, requested_url, expected):
+def classify(status, body, final_url, requested_url, expected, today=None,
+             deadline_text=None):
     lowered = normalize(body)
     for phrase in CLOSURE_PHRASES:
         if phrase in lowered:
@@ -65,6 +105,14 @@ def classify(status, body, final_url, requested_url, expected):
                 % (requested_path, final_path))
 
     if status == 200:
+        deadline, _ = find_deadline(deadline_text or body, today=today)
+        if deadline:
+            today = today or _dt.date.today()
+            detail = "HTTP 200, expected content present, deadline %s (%s)" % (
+                deadline.isoformat(), "PASSED" if deadline < today else "open")
+            if deadline < today:
+                return "expired", detail
+            return "live", detail
         return "live", "HTTP 200, expected content present"
     return "suspicious", "HTTP %d" % status
 
@@ -76,6 +124,10 @@ def main(argv=None):
                         help="Role title the live page should contain")
     parser.add_argument("--timeout", type=int, default=20,
                         help="Seconds before the check gives up (default 20)")
+    parser.add_argument("--deadline", default="",
+                        help="Deadline text read from a browser-rendered page, "
+                             "e.g. 'November 20th'; JS-rendered boards can hide "
+                             "it from the raw HTML fetch")
     args = parser.parse_args(argv)
 
     request = urllib.request.Request(
@@ -93,7 +145,9 @@ def main(argv=None):
         print("suspicious: could not reach the posting (%s)" % error)
         sys.exit(1)
 
-    verdict, detail = classify(status, body, final_url, args.url, args.expect)
+    deadline_text = ("deadline for applying is " + args.deadline) if args.deadline else None
+    verdict, detail = classify(status, body, final_url, args.url, args.expect,
+                               deadline_text=deadline_text)
     print("%s: %s" % (verdict, detail))
     sys.exit(0 if verdict == "live" else 1)
 
