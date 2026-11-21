@@ -30,6 +30,7 @@ The skill asks your agent to:
 - Use `[FILL: ...]` markers in a draft when information is missing, then resolve or remove them before delivery.
 - Run the phrase-overlap script and review shared wording in context. A common technical phrase is not proof of copying and need not be changed just to avoid a match.
 - Optionally run `scripts/humane_audit.py` as an advisory wording review: it flags hype, buzzwords, unsupported superlatives and self-flattery so you can check them against your sources and keep the wording plain and human. It is a lexical review aid, not a verdict, and never replaces the number-provenance gate.
+- Run `scripts/jd_coverage.py <cv.pdf> --term "exact term" ...` for an advisory exact-term review of the posting's required terms. Covered and missing terms are reported; no ATS score is certified and a missing term is a gap to check against evidence, not a claim to add. `scripts/jd_overlap.py` is a separate phrase-originality check (runs of 4+ shared words), not a keyword-coverage tool.
 - Inspect the exported text, page count, placeholders and layout before sending the CV.
 
 These are workflow instructions, not guarantees an agent cannot bypass. The PDF renderer creates a file; it does not automatically certify its contents. No ATS parsing result, ranking, exact voice match or interview is promised.
