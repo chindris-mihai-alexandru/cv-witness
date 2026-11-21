@@ -100,5 +100,44 @@ class VerifyPRTest(unittest.TestCase):
         self.assertIn("gh not logged in", r["error"])
 
 
+class PRSummaryTest(unittest.TestCase):
+    def setUp(self):
+        self.real = pf._run
+
+    def tearDown(self):
+        pf._run = self.real
+
+    def test_external_split_excludes_own_repos(self):
+        def fake(cmd, timeout=45):
+            q = cmd[-1]
+            if q.endswith("&per_page=1"):
+                return True, {"total_count": 3}, None
+            # enumerate merged PRs: 2 own, 1 external
+            if "page=1" in q:
+                return True, {"total_count": 3, "items": [
+                    {"html_url": "https://github.com/example-own/repo/pull/1"},
+                    {"html_url": "https://github.com/example-own/repo/pull/2"},
+                    {"html_url": "https://github.com/other/repo/pull/3"},
+                ]}, None
+            return True, {"total_count": 3, "items": []}, None
+        pf._run = fake
+        r = pf.gh_pr_summary("example-user", exclude_prefixes=["example-own"])
+        self.assertEqual(r["authored"], 3)
+        self.assertEqual(r["merged"], 3)
+        self.assertEqual(r["external_merged"], 1)
+        self.assertIn("other/repo", r["external_repos"])
+
+    def test_no_exclude_prefix_skips_enumeration(self):
+        pf._run = lambda cmd, timeout=45: (True, {"total_count": 5}, None)
+        r = pf.gh_pr_summary("example-user")
+        self.assertEqual(r["external_merged"], None)
+        self.assertEqual(r["external_repos"], {})
+
+    def test_cli_error_reported(self):
+        pf._run = lambda cmd, timeout=45: (False, None, "gh error")
+        r = pf.gh_pr_summary("example-user")
+        self.assertIn("gh error", r["error"])
+
+
 if __name__ == "__main__":
     unittest.main()
