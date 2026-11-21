@@ -37,7 +37,17 @@ def _run(cmd, timeout=45):
     try:
         return True, json.loads(out), None
     except json.JSONDecodeError:
-        return True, out, None
+        pass
+    # Edge case: some CLI versions print an update/new-version banner to stdout
+    # before the JSON. Recover the payload from the first JSON opener instead of
+    # throwing away every repo (a "non-JSON output" error lost all HF evidence).
+    for i, ch in enumerate(out):
+        if ch in "[{":
+            try:
+                return True, json.loads(out[i:]), None
+            except json.JSONDecodeError:
+                break
+    return True, out, None
 
 
 def hf_footprint(author, hf_bin="hf", limit=100):

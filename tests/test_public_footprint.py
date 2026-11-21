@@ -5,6 +5,7 @@ name, email or private foundation content appears here (test_no_personal_data.py
 """
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -60,6 +61,25 @@ class HFFootprintTest(unittest.TestCase):
         pf._run = lambda cmd, timeout=45: (True, "plain text", None)
         r = pf.hf_footprint("example-user", hf_bin="hf")
         self.assertTrue(any("non-JSON" in e for e in r["errors"]))
+
+    def test_leading_banner_before_json_is_recovered(self):
+        real_which = pf.shutil.which
+        real_run = subprocess.run
+
+        class Resp:
+            returncode = 0
+            stdout = "A new version is available!\n[{\"id\":\"example/model\",\"likes\":0}]"
+            stderr = ""
+
+        try:
+            pf.shutil.which = lambda name: "/usr/bin/hf"
+            subprocess.run = lambda *a, **kw: Resp()
+            r = pf.hf_footprint("example-user", hf_bin="hf")
+            self.assertEqual(r["models"], [{"id": "example/model", "likes": 0}])
+            self.assertEqual(r["errors"], [])
+        finally:
+            pf.shutil.which = real_which
+            subprocess.run = real_run
 
     def test_low_numbers_not_inflated(self):
         pf._run = lambda cmd, timeout=45: (True, [{"id": "example/m", "downloads": 0, "likes": 0}], None)
