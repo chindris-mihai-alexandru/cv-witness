@@ -24,7 +24,7 @@ The job posting guides emphasis and ordering. It should not become a script for 
 
 The skill asks your agent to:
 
-- Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged. Before delivery, run `scripts/check_cv_numbers.py` against the approved source files; this lexical check flags unsupported numbers but does not validate their context or meaning.
+- Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged with `python3 scripts/public_footprint.py verify-pr <url>`; a CLOSED-unmerged PR is never merged. Optionally read a public Hugging Face footprint with `python3 scripts/public_footprint.py hf --author <user>` (evidence leads only; zero downloads/likes are reported honestly, never inflated). Before delivery, run `scripts/check_cv_numbers.py` against the approved source files; this lexical check flags unsupported numbers but does not validate their context or meaning.
 - Before tailoring from a job URL, run `scripts/check_posting_liveness.py <url> --expect "Role Title"`. It returns live, dead or suspicious; verify suspicious or client-side-rendered postings in a browser rather than treating uncertainty as closure.
 - Optionally triage a role first: judge each posting requirement against your verified facts, then let `scripts/fit_score.py` verify the quoted evidence and return a fit band with an uncertainty range. See [grounded fit scoring](docs/fit-scoring.md); it is not an ATS score.
 - Use `[FILL: ...]` markers in a draft when information is missing, then resolve or remove them before delivery.
@@ -221,6 +221,7 @@ cv-witness/
 │   ├── jd_overlap.py
 │   ├── knockout_check.py
 │   ├── preflight.py
+│   ├── public_footprint.py
 │   ├── render_cv.py
 │   ├── render_exploration.py
 │   ├── render_sample.py

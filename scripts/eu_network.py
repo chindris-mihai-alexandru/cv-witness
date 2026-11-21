@@ -347,7 +347,7 @@ def dedup_jobs(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     by_url: dict[str, int] = {}
     by_ct: dict[tuple, int] = {}
     for row in rows:
-        url_key = _norm_url(row.get("url", ""))
+        url_key = _norm_url(row.get("url") or row.get("application_link") or row.get("job_board_link") or "")
         company = _norm_text(row.get("company", ""))
         title = _norm_text(row.get("title", ""))
         ct_key = (company, title) if company and title else None
