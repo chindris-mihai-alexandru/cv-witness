@@ -70,7 +70,9 @@ TOOL_RE = re.compile(
     r"Node\.js|FastAPI|Django|Flask|Spring|\.NET|Linux|Bash|PowerShell|"
     r"Prometheus|Grafana|Datadog|Splunk|AppDynamics|Sentry|New\s+Relic|"
     r"Terraform|Helm|OCM|Open\s+Cloud\s+Mesh|Azure\s+DevOps|Postman|Newman|"
-    r"Jira|Confluence|Figma|SAP|Pentaho|IPFS|Stripe|AdalFlow|Pydantic)\b",
+    r"Jira|Confluence|Figma|SAP|Pentaho|IPFS|Stripe|AdalFlow|Pydantic|"
+    r"Hugging\s+Face|Gradio|ChromaDB|LightGBM|Diffusers|scikit-learn|Scikit-learn|"
+    r"OpenRouter|Streamlit)\b",
     re.I,
 )
 

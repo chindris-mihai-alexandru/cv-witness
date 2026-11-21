@@ -51,13 +51,19 @@ def fetch_yc_postings(role: str, limit: int) -> list[dict]:
     """Live WAAS postings via the yc CLI. Returns [] and a note when unusable."""
     if not shutil.which("yc"):
         return []
-    proc = subprocess.run(
-        ["yc", "tools", "run", "search", "--input", json.dumps({
-            "entity": "jobs", "query": role, "limit": limit,
-            "extra_fields": "description,min_experience,skills,role,company_name",
-        })],
-        capture_output=True, text=True, timeout=240,
-    )
+    try:
+        proc = subprocess.run(
+            ["yc", "tools", "run", "search", "--input", json.dumps({
+                "entity": "jobs", "query": role, "limit": limit,
+                "extra_fields": "description,min_experience,skills,role,company_name",
+            })],
+            capture_output=True, text=True, timeout=240,
+        )
+    except subprocess.TimeoutExpired:
+        # A slow source degrades to "no postings from this source"; it must not
+        # crash the whole pre-flight (yc_network.py handles its own timeout).
+        print("[preflight] yc search timed out; skipping this source", file=sys.stderr)
+        return []
     if proc.returncode != 0:
         return []
     try:
@@ -177,14 +183,17 @@ def main() -> int:
         print(f"preflight: {e}", file=sys.stderr)
         return 2
 
+    # Keep per-source limits >= 1: floor division of a small --max-postings
+    # (e.g. 3 // 4 == 0) used to silently disable several sources.
+    limit = max(1, args.max_postings)
     postings = []
-    postings += fetch_yc_postings(args.role, args.max_postings // 2)
+    postings += fetch_yc_postings(args.role, max(1, limit // 2))
     ats_specs = [s.strip() for s in args.ats.split(",") if s.strip()]
     postings += fetch_ats_postings(ats_specs)
     if args.adzuna_country:
-        postings += fetch_adzuna_postings(args.adzuna_country, args.role, args.max_postings // 4)
-    postings += fetch_arbeitnow_postings(args.role, args.max_postings // 4)
-    postings += fetch_bundesagentur_postings(args.role, args.where, args.max_postings // 4)
+        postings += fetch_adzuna_postings(args.adzuna_country, args.role, max(1, limit // 4))
+    postings += fetch_arbeitnow_postings(args.role, max(1, limit // 4))
+    postings += fetch_bundesagentur_postings(args.role, args.where, max(1, limit // 4))
 
     if not postings:
         print(json.dumps({"checked": 0, "note": "no postings available from any source"}))
