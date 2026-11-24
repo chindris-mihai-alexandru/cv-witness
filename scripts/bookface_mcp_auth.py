@@ -181,6 +181,20 @@ def _write_token_file(path: str, data: dict) -> None:
     os.chmod(path, 0o600)
 
 
+def _http_error_detail(error) -> str:
+    """Render an HTTP error with its OAuth challenge, never with a token."""
+    detail = f"HTTP {error.code}"
+    challenge = error.headers.get("WWW-Authenticate") if getattr(error, "headers", None) else None
+    if challenge:
+        detail += f"; WWW-Authenticate: {challenge}"
+    raw = error.read()
+    if isinstance(raw, bytes):
+        raw = raw.decode("utf-8", errors="replace")
+    if raw:
+        detail += f"; body: {str(raw)[:200]}"
+    return detail
+
+
 def _mcp_call(token: str, method: str, params: dict | None = None, reqid: int = 1) -> dict:
     payload = {"jsonrpc": "2.0", "id": reqid, "method": method}
     if params:
@@ -195,7 +209,7 @@ def _mcp_call(token: str, method: str, params: dict | None = None, reqid: int = 
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read().decode(errors="replace"))
     except urllib.error.HTTPError as e:
-        return {"error": f"HTTP {e.code}: {e.read()[:200]!r}"}
+        return {"error": _http_error_detail(e)}
 
 
 # --- commands --------------------------------------------------------------
@@ -216,6 +230,36 @@ def cmd_token_only(token_path: str) -> int:
     return 0
 
 
+def candidate_action_summary(tools):
+    """Extract candidate-side actions from a tools/list response.
+
+    Employer-side hiring actions are deliberately excluded: this skill is for
+    the job seeker. Returns the advertised waas_candidate action enum plus
+    candidate-useful discovery/profile/apply subsets.
+    """
+    actions = []
+    tool_names = []
+    for tool in tools or []:
+        name = tool.get("name", "")
+        tool_names.append(name)
+        if "candidate" not in name.lower():
+            continue
+        schema = tool.get("inputSchema") or tool.get("input_schema") or {}
+        props = schema.get("properties") or {}
+        enum = props.get("action", {}).get("enum") or []
+        for value in enum:
+            if isinstance(value, str) and value not in actions:
+                actions.append(value)
+    return {
+        "tool_names": tool_names,
+        "actions": actions,
+        "job_discovery": [a for a in actions
+                          if a in ("search_jobs", "company_jobs")],
+        "profile_or_apply": [a for a in actions
+                             if any(k in a for k in ("profile", "apply", "resume"))],
+    }
+
+
 def cmd_list_actions(token_path: str) -> int:
     saved = _read_token_file(token_path)
     if not saved or "access_token" not in saved:
@@ -234,6 +278,17 @@ def cmd_list_actions(token_path: str) -> int:
             continue
         seen.add(name)
         print(f"  - {name}")
+    summary = candidate_action_summary(tools)
+    if summary["actions"]:
+        print("Candidate actions advertised: " + ", ".join(summary["actions"]))
+        if summary["job_discovery"]:
+            print("Job discovery: " + ", ".join(summary["job_discovery"]))
+        if summary["profile_or_apply"]:
+            print("Profile/apply (use only on explicit request, never auto-apply): "
+                  + ", ".join(summary["profile_or_apply"]))
+    else:
+        print("No candidate actions advertised; do not retry tools/list. "
+              "Use yc login + scripts/yc_network.py postings/skills.")
     return 0
 
 

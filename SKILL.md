@@ -219,8 +219,12 @@ This is a deterministic, read-only check. It does not validate the content's acc
 ## Bookface / WAAS MCP as an intel feed (requires a YC account)
 
 Bookface MCP (`https://api.ycombinator.com/v1/mcp`) is an OAuth-protected,
-streamable-HTTP server with no public frontend. An unauthenticated request
-returns `invalid_token` — that is the auth gate, not an error to work around.
+streamable-HTTP server with no public frontend. An unauthenticated call returns
+`invalid_token` with `WWW-Authenticate: Bearer resource_metadata="https://api.ycombinator.com/.well-known/oauth-protected-resource", scope="mcp:access"`
+(verified 2026-11-24). That is the auth gate working: reconsent or use a
+supported client login, never switch transports or scrape. The standalone
+`yc-software/waas-mcp` is superseded; no local Python package or `waas login`
+is needed for the hosted server.
 
 Worth doing **only when the user has a YC / Work-at-a-Startup account** with
 the job-search actions granted. No Claude Code or Codex is needed: run
@@ -228,7 +232,13 @@ the job-search actions granted. No Claude Code or Codex is needed: run
 via the auth server's DCR endpoint, prints a consent URL, captures the code
 on 127.0.0.1:8090, exchanges it with PKCE S256 + RFC 8707 resource, and
 stores a refreshable token in `~/.cv-witness/.bookface_token`, 0600). Then
-use `--list-actions` to call `tools/list`.
+use `--list-actions` to call `tools/list`. The script prints the advertised
+candidate action enum and warns when it is empty; do not retry tools/list in
+that case. If the user already has an MCP-capable client, the upstream hosted
+registration is also valid: `claude mcp add --transport http --scope user
+bookface https://api.ycombinator.com/v1/mcp` or `codex mcp add bookface --url
+https://api.ycombinator.com/v1/mcp` + `codex mcp login bookface`; remove any
+legacy `waas` entry so the two auth stores are not mixed.
 
 Candidate vs company scope matters: a **candidate** account (job seeking, the
 common case) exposes job search, candidate-profile management and apply tools
@@ -241,13 +251,32 @@ WAAS account. Do not expect candidate-scoped access to return applicant data.
    snapshot of Bookface's current field vocabulary.
 2. Diff the snapshot against the previous one to detect schema changes (new
    tools, changed fields). This is the "keeps getting updated" feed: MCP
-   servers re-answer `tools/list` on every request.
-3. Useful tools for CV work: `hiring.get_job` / `hiring.list_jobs` (posting
-   field vocabulary), `hiring.get_job_applicants` (application questions and
-   resume links), `hiring.get_candidate` / `hiring.search_candidates` (the
-   profile fields a CV must expose), `hiring.prepare_resume_upload` (deliverable
-   constraints, e.g. 5 MiB PDF/DOC/DOCX).
-4. Record any changed vocabulary in the CV guide, not in this skill body.
+   servers re-answer `tools/list` on every request. Do not transplant the
+   standalone repo's flat 23 job fields into hosted calls: hosted job authoring
+   nests them under `job_attributes`/`job_updates`, and tool names may render
+   with underscores (`hiring_list_jobs`) rather than dots. Re-read the live
+   schema before every call rather than reusing a saved argument shape.
+3. Candidate-side discovery: if `waas_candidate` is granted, inspect its action
+   enum. Use `search_jobs` by title/skills and `company_jobs` for a named
+   employer; hosted docs say these are the only attendee actions returning WAAS
+   apply links, per-job fit and compensation. Load an installed
+   `finding-a-startup-job` skill once per conversation if available, then follow
+   this workflow. Inspect profile/apply actions but use them only on explicit
+   user request; never auto-apply or send resume content to an employer.
+4. Useful posting vocabulary for CV audit: role/subtype, `job_type`,
+   `min_experience` (or `min_school_year` for internships), `remote`,
+   `us_work_authorization_required`, `locations`, pay period/currency and
+   `skills`. Mirror only exact strings the candidate can defend; an unmatched
+   employer-side skill is dropped, and a guessed skill on a CV is invented
+   evidence. Employer tools (`hiring.*`, notes, pipeline, contact reveal) are
+   not part of this candidate workflow.
+5. Record any changed vocabulary in the CV guide, not in this skill body.
+
+**Provenance for upstream claims.** A README table, PR text or third-party tool
+scan is a lead, not verified capability: record source and date, confirm against
+code or `tools/list`, and never encode an unverified number or scale into a
+deliverable. Example: an employer-only PR describes note scores as 1-5 while
+its final commit says 1-4; adopt neither number for a candidate document.
 
 **Verified 2026-11: the MCP tools exist but the job-search actions can be
 empty.** A candidate account authenticates (OAuth + PKCE works end-to-end,
