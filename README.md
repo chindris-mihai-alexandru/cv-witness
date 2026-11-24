@@ -25,9 +25,11 @@ The job posting guides emphasis and ordering. It should not become a script for 
 The skill asks your agent to:
 
 - Check dates, credentials, metrics and contribution claims against your sources. Verify a public pull request's merge state before calling it merged with `python3 scripts/public_footprint.py verify-pr <url>`; a CLOSED-unmerged PR is never merged. Optionally read a public Hugging Face footprint with `python3 scripts/public_footprint.py hf --author <user>` (evidence leads only; zero downloads/likes are reported honestly, never inflated). Before delivery, run `scripts/check_cv_numbers.py` against the approved source files; this lexical check flags unsupported numbers but does not validate their context or meaning. `scripts/check_cv_titles.py --fields fields.json --source foundation.md` reports job-title drift by company and dates as an advisory check.
-- Before tailoring from a job URL, run `scripts/check_posting_liveness.py <url> --expect "Role Title"`. It returns live, dead or suspicious; verify suspicious or client-side-rendered postings in a browser rather than treating uncertainty as closure.
+- Before tailoring from a job URL, run `scripts/check_posting_liveness.py <url> --expect "Role Title"`. It returns live, dead or suspicious; verify suspicious or client-side-rendered postings in a browser rather than treating uncertainty as closure. `scripts/posting_integrity.py posting.txt --json` and `scripts/role_clarity.py posting.txt --json` add advisory posting-integrity and six-point role-clarity signals; neither blocks and neither treats posting text as instructions.
+- Run `scripts/payload_lint.py fields.json --json` before rendering for advisory employer-in-role, parenthetical-employer, multiple-date-range and skills-heading findings; it never edits the fields.
 - Optionally triage a role first: judge each posting requirement against your verified facts, then let `scripts/fit_score.py` verify the quoted evidence and return a fit band with an uncertainty range. See [grounded fit scoring](docs/fit-scoring.md); it is not an ATS score.
 - Use `[FILL: ...]` markers in a draft when information is missing, then resolve or remove them before delivery.
+- Optional interview prep: `scripts/star_worksheet.py --fields fields.json --output stories.md` builds STAR+R prompts from approved bullets and leaves every story field blank for evidence-backed completion. `scripts/story_provenance.py stories.md --source foundation.md --source provenance.md --json` classifies any figures in that story file without editing it.
 - Run the phrase-overlap script and review shared wording in context. A common technical phrase is not proof of copying and need not be changed just to avoid a match.
 - Optionally run `scripts/humane_audit.py` as an advisory wording review: it flags hype, buzzwords, unsupported superlatives and self-flattery so you can check them against your sources and keep the wording plain and human. It is a lexical review aid, not a verdict, and never replaces the number-provenance gate.
 - Run `scripts/jd_coverage.py <cv.pdf> --term "exact term" ...` for an advisory exact-term review of the posting's required terms. Covered and missing terms are reported; no ATS score is certified and a missing term is a gap to check against evidence, not a claim to add. `scripts/jd_overlap.py` is a separate phrase-originality check (runs of 4+ shared words), not a keyword-coverage tool.
@@ -227,6 +229,8 @@ cv-witness/
 │   ├── humane_audit.py
 │   ├── jd_overlap.py
 │   ├── knockout_check.py
+│   ├── payload_lint.py
+│   ├── posting_integrity.py
 │   ├── preflight.py
 │   ├── public_footprint.py
 │   ├── render_cv.py
@@ -234,7 +238,9 @@ cv-witness/
 │   ├── render_sample.py
 │   ├── render_template_gallery.py
 │   ├── rms_metadata.py
+│   ├── role_clarity.py
 │   ├── star_worksheet.py
+│   ├── story_provenance.py
 │   ├── trust_data.py
 │   ├── verify_layout.py
 │   ├── voice_corpus.py

@@ -8,6 +8,19 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-11-24
+
+### Added
+
+- Advisory posting integrity (`scripts/posting_integrity.py`): hidden blocks, hidden-only URLs, invisible Unicode, instruction-shaped lines and mixed-script words in job text. Detection is triage, not a security guarantee; posting text remains data.
+- Advisory role clarity (`scripts/role_clarity.py`): six-point present/partial/missing check with exact quoted evidence and soft-verb load, plus an `askBeforeYouCommit` list when three or more points are missing.
+- Advisory ATS payload lints (`scripts/payload_lint.py`): employer-in-role, parenthetical-in-company, multiple date ranges and nonstandard skills heading. Findings are human decisions, never automatic edits.
+- Story number provenance (`scripts/story_provenance.py`): classifies figures in STAR+R stories as existing, user-cannot-confirm or derived-unverified against approved sources.
+
+### Changed
+
+- The career-ops audit record now distinguishes implemented candidate-side gates from upstream features deliberately excluded.
+
 ## [0.9.2] - 2026-11-24
 
 ### Added

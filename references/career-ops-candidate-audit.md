@@ -26,6 +26,10 @@ generic CLI plumbing were excluded.
   current `v1.40.0` additions around partial board reads, renderer-drop lint and
   verb-drift blocking are noted below rather than duplicated blindly.
 
+- **Posting integrity and role clarity.** career-ops' posting-guard and role-clarity helpers make untrusted posting text and vague roles visible. `scripts/posting_integrity.py` and `scripts/role_clarity.py` adapt the same candidate-side ideas without following posting instructions or blocking a run. Web evidence supports the caution: posting-side canaries exist but are rare (~0.03% in one 2026 survey), and text-level detection is triage, not a guarantee.
+- **ATS payload lints.** career-ops moves competencies into Skills and reports employer-in-role, parenthetical-in-company and multiple date ranges without rewriting text. `scripts/payload_lint.py` reports the same classes from canonical CV fields, plus a nonstandard skills heading, and never edits.
+- **Story provenance.** career-ops classifies story-bank figures with an explicit durable `user-cannot-confirm` state. `scripts/story_provenance.py` applies the same three-bucket idea to STAR+R stories against approved sources.
+
 ## Deliberately not taken
 
 - **Auto-apply and form filling.** cv-witness requires human review and has no
