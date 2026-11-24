@@ -293,15 +293,20 @@ time trying to force it. Use the `yc` CLI route instead:
 - Direct check on this account: `yc tools describe waas_candidate` describes
   `search_jobs` and `company_jobs`, but calling either returns HTTP 422
   `Unknown or unavailable action: ... Available:` with an empty enum. A description
-  is not a grant.
-- `yc tools list` exposes `load_skill`, but its enum contains only
-  `using-the-yc-cli` and `paxel`; `finding-a-startup-job` returns
-  `Unknown skill`, and `yc skills read` returns 403 (active founders only).
-  Do not invent or install that skill.
-- The `yc` CLI token in `~/.yc/credentials.json` lacks `mcp:access`; a direct
-  hosted MCP call returns 403 `insufficient_scope`. Only a fresh DCR consent via
-  `scripts/bookface_mcp_auth.py` can grant that scope, and it needs the user's
-  browser. Do not reuse the CLI token for the MCP endpoint.
+  is not a grant. After DCR consent, hosted `tools/list` returned 8 tools and did
+  not advertise `waas_candidate`; a hosted `tools/call waas_candidate` still
+  returned `status:"error"` with the same empty `Available:` message. That is the
+  authoritative dead end.
+- `yc tools list` and the hosted `load_skill` enum contain only
+  `using-the-yc-cli` and `paxel`; direct `tools/call load_skill` with
+  `finding-a-startup-job` returns `Unknown skill`, and `yc skills read` returns 403
+  (active founders only). Do not invent or install that skill.
+- A DCR token from `scripts/bookface_mcp_auth.py` now exists at
+  `~/.cv-witness/.bookface_token` (0600) with `mcp:access`. Hosted `tools/list`
+  succeeds but returns only 8 tools for this community-member account; the `yc`
+  CLI token in `~/.yc/credentials.json` still lacks `mcp:access` (403
+  `insufficient_scope`). Do not reuse the CLI token for the MCP endpoint; refresh
+  the DCR token with `--token-only`.
 - Working fallback: `yc tools run search --input '{"entity":"jobs", ...}'`
   returns real WAAS postings with apply links, `min_experience`, `remote`,
   `locations_for_search`, `us_visa_required` and skill filters. This is what

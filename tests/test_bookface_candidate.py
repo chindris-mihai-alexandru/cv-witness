@@ -28,6 +28,12 @@ class CandidateActionTest(unittest.TestCase):
         self.assertEqual(summary["actions"], [])
         self.assertEqual(summary["job_discovery"], [])
 
+    def test_no_candidate_tool_in_hosted_tools_list(self):
+        tools = [{"name": "search"}, {"name": "load_skill"}, {"name": "company"}]
+        summary = bf.candidate_action_summary(tools)
+        self.assertEqual(summary["actions"], [])
+        self.assertEqual(summary["job_discovery"], [])
+
     def test_discovery_and_profile_actions_are_split(self):
         tools = [{"name": "waas_candidate", "inputSchema": {
             "properties": {"action": {"enum": [
@@ -69,6 +75,8 @@ class SkillDocTest(unittest.TestCase):
         for phrase in (
             "Unknown or unavailable action: search_jobs",
             "insufficient_scope",
+            "mcp:access",
+            "8 tools",
             "finding-a-startup-job",
             "yc tools run search",
         ):
