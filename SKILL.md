@@ -301,12 +301,11 @@ time trying to force it. Use the `yc` CLI route instead:
   `using-the-yc-cli` and `paxel`; direct `tools/call load_skill` with
   `finding-a-startup-job` returns `Unknown skill`, and `yc skills read` returns 403
   (active founders only). Do not invent or install that skill.
-- A DCR token from `scripts/bookface_mcp_auth.py` now exists at
-  `~/.cv-witness/.bookface_token` (0600) with `mcp:access`. Hosted `tools/list`
-  succeeds but returns only 8 tools for this community-member account; the `yc`
-  CLI token in `~/.yc/credentials.json` still lacks `mcp:access` (403
-  `insufficient_scope`). Do not reuse the CLI token for the MCP endpoint; refresh
-  the DCR token with `--token-only`.
+- A DCR token was created once to verify the hosted endpoint; it was deleted with
+  `scripts/bookface_mcp_auth.py --forget` afterwards. No standing Bookface
+  credential is kept by default. Re-run the full flow when direct verification is
+  needed. The `yc` CLI token in `~/.yc/credentials.json` lacks `mcp:access` (403
+  `insufficient_scope`) and must not be reused for the MCP endpoint.
 - Working fallback: `yc tools run search --input '{"entity":"jobs", ...}'`
   returns real WAAS postings with apply links, `min_experience`, `remote`,
   `locations_for_search`, `us_visa_required` and skill filters. This is what

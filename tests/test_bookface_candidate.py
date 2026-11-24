@@ -1,6 +1,7 @@
 """Candidate-side Bookface action helpers (fictional tool schemas only)."""
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -66,6 +67,16 @@ class CandidateActionTest(unittest.TestCase):
         self.assertIn("mcp:access", text)
         self.assertIn("invalid_token", text)
         self.assertNotIn("Authorization", text)
+
+
+class TokenCleanupTest(unittest.TestCase):
+    def test_forget_removes_token_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = str(Path(d) / "token.json")
+            Path(path).write_text("{}", encoding="utf-8")
+            self.assertEqual(bf.cmd_forget(path), 0)
+            self.assertFalse(Path(path).exists())
+            self.assertEqual(bf.cmd_forget(path), 0)
 
 
 class SkillDocTest(unittest.TestCase):

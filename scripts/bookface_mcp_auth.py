@@ -294,6 +294,15 @@ def cmd_list_actions(token_path: str) -> int:
     return 0
 
 
+def cmd_forget(token_path: str) -> int:
+    if os.path.exists(token_path):
+        os.unlink(token_path)
+        print("Deleted saved Bookface token at", token_path)
+    else:
+        print("No saved Bookface token to delete.")
+    return 0
+
+
 def cmd_full(token_path: str) -> int:
     client_id = register_client()
     url, verifier = authorize_url(client_id)
@@ -334,6 +343,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Bootstrap Bookface MCP OAuth token")
     ap.add_argument("--token-only", action="store_true", help="refresh as needed and print the access token")
     ap.add_argument("--list-actions", action="store_true", help="call tools/list with the saved token")
+    ap.add_argument("--forget", action="store_true", help="delete the saved token file")
     ap.add_argument("--token-path", default=DEFAULT_TOKEN_PATH)
     args = ap.parse_args()
 
@@ -341,6 +351,8 @@ def main() -> int:
         return cmd_token_only(args.token_path)
     if args.list_actions:
         return cmd_list_actions(args.token_path)
+    if args.forget:
+        return cmd_forget(args.token_path)
     return cmd_full(args.token_path)
 
 

@@ -8,6 +8,29 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-24
+
+### Added
+
+- Public-footprint enrichment: `scripts/public_footprint.py` reads Hugging Face profiles and verifies GitHub pull-request merges, with a live `pr-summary` replacing static hand-counted PR numbers. Dict-shaped HF payloads, CLI banner-before-JSON output and official HF branding are handled.
+- Advisory delivery checks: `scripts/jd_coverage.py` reports exact posting-term presence without claiming an ATS score; `scripts/cover_letter_check.py` checks length, placeholders, hype and work-rights contradictions; `check_posting_liveness.py` parses explicit deadlines and gates expired postings.
+- Candidate-side Bookface workflow: `scripts/bookface_mcp_auth.py` supports DCR token bootstrap, `--list-actions` and `--forget`; `SKILL.md` documents account-bound limits, the `yc` CLI fallback and verified dead ends for `search_jobs`/`company_jobs` and `finding-a-startup-job`.
+- Two run modes are explicit: quick tailoring versus footprint enrichment. Anti-hypertailoring and keyword-mirroring gates keep exact posting vocabulary only where it is truthful and defensible.
+- Cross-source job dedup, structured sourcing references, and a humane wording audit turn third-party repos into candidate-side evidence without importing employer-side workflows.
+
+### Changed
+
+- Provenance now uses the live GitHub PR summary (`106 authored`, `40 merged`, `22 external across 15 repos` as of 2026-11-21) and explicitly caveats self-reported Hugging Face model metrics.
+- CV guide integration: 6–10 second scan, one primary role per application, 3–4 line summary, and Siemens-as-one-employer structure feed the tailoring flow.
+- Tailored CVs are rendered from the latest candidate-approved baseline with official icons and verified layout/number gates.
+
+### Fixed
+
+- Knockout screening reads middle-dot city headers and rejects "A, B or C" lists as locations.
+- Preflight timeout degradation, small-limit clamping and HF stack tokens in the bullet audit.
+- Deadline expiry is authoritative even when a job form still returns HTTP 200; cover-letter HTML escaping no longer leaks literal `<` characters, and EU work-rights negation no longer false-flags.
+- Candidate action parsing now targets only `waas_candidate`; employer tools containing "candidate" are ignored. Dedup handles `treg` `company_name`/`job_title` and `application_link` reindexing.
+
 ## [0.8.0] - 2026-11-18
 
 ### Added
