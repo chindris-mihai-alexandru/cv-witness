@@ -26,6 +26,9 @@ class ATSValidationError(Exception):
     """Raised when ATS validation fails."""
 
 
+MAX_GREENHOUSE_PARSE_BYTES = 2_500_000
+
+
 def run_tool(cmd: list[str]) -> str:
     """Run a command and return its stdout."""
     try:
@@ -115,6 +118,30 @@ def check_dates(text: str) -> list[str]:
     return issues
 
 
+def check_pdf_hygiene(pdf_path: str) -> list[str]:
+    """Check deterministic, vendor-documented PDF parsing risks."""
+    issues: list[str] = []
+    size = Path(pdf_path).stat().st_size
+    if size > MAX_GREENHOUSE_PARSE_BYTES:
+        issues.append(
+            f"PDF is {size} bytes; Greenhouse documents a 2.5 MB parsing limit")
+    font_report = run_tool(["pdffonts", pdf_path]).splitlines()
+    font_rows = [line for line in font_report[2:] if line.strip()]
+    if not font_rows:
+        issues.append("No fonts found; the PDF may be image-only")
+    else:
+        unembedded = []
+        for line in font_rows:
+            columns = line.split()
+            # Final columns are emb sub uni object generation; take from the
+            # right because the font type can contain spaces ("CID TrueType").
+            if len(columns) >= 7 and columns[-5].lower() != "yes":
+                unembedded.append(columns[0])
+        if unembedded:
+            issues.append(f"Fonts are not embedded: {', '.join(unembedded[:3])}")
+    return issues
+
+
 def check_fraud_signals(text: str) -> list[str]:
     """Check for fraud signals in the CV."""
     issues = []
@@ -173,11 +200,15 @@ def check_ats_fields(text: str) -> list[str]:
     if len(found_skills) < 3:
         issues.append(f"Few recognizable skills found ({len(found_skills)}): {found_skills}")
 
-    # Check for education keywords
-    education_keywords = ["B.S.", "M.S.", "B.A.", "M.A.", "PhD", "Bachelor", "Master", "Degree"]
-    found_education = [kw for kw in education_keywords if kw.lower() in text.lower()]
-    if not found_education:
-        issues.append("No education keywords found (expected: B.S., M.S., PhD, etc.)")
+    # Check for education keywords. Degrees vary by country; B.Sc. and BSc are
+    # as legitimate as B.S. and must not be flagged as missing education.
+    education_patterns = [
+        r"\bB\.?S\.?c\.?\b", r"\bM\.?S\.?c\.?\b", r"\bB\.?S\.?\b",
+        r"\bM\.?S\.?\b", r"\bB\.?A\.?\b", r"\bM\.?A\.?\b", r"\bPh\.?D\.?\b",
+        r"\bBachelor\b", r"\bMaster\b", r"\bDegree\b", r"\bDiploma\b",
+    ]
+    if not any(re.search(pattern, text, re.IGNORECASE) for pattern in education_patterns):
+        issues.append("No education keywords found (expected: degree, B.Sc., B.S., PhD, etc.)")
 
     return issues
 
@@ -192,6 +223,7 @@ def validate_cv(pdf_path: str) -> dict:
         "dates": check_dates(text),
         "fraud_signals": check_fraud_signals(text),
         "ats_fields": check_ats_fields(text),
+        "pdf_hygiene": check_pdf_hygiene(pdf_path),
     }
 
     return results

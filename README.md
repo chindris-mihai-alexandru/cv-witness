@@ -33,6 +33,8 @@ The skill asks your agent to:
 - Run `scripts/jd_coverage.py <cv.pdf> --term "exact term" ...` for an advisory exact-term review of the posting's required terms. Covered and missing terms are reported; no ATS score is certified and a missing term is a gap to check against evidence, not a claim to add. `scripts/jd_overlap.py` is a separate phrase-originality check (runs of 4+ shared words), not a keyword-coverage tool.
 - Run `scripts/cover_letter_check.py <letter.txt> --role "<title>" --company "<company>" --eu-citizen` for an advisory review of a short cover letter: length, placeholders, hype wording, and work-rights contradictions (an EU/EEA applicant does not need a Danish work permit). It is lexical only, never a truth verdict or ATS score.
 - Inspect the exported text, page count, placeholders and layout before sending the CV.
+- Run `scripts/ats_validate.py CV.pdf`: contact, headings, dates, fraud signals, skill/education fields, PDF size and embedded fonts. It reduces known structural risks but cannot guarantee any vendor parser. Where TXT is accepted, `scripts/ats_text_export.py --fields fields.json --output CV.txt` creates a one-column fallback from the same approved fields.
+- Optional: add Rezi's RMS v2 metadata layer as the final invisible step with `python3 scripts/rms_metadata.py --pdf CV.pdf --fields fields.json --output CV-rms.pdf`, then verify with `--verify`. Generate the full synthetic key template with `--print-template`. This is an XMP add-on for parsers that implement RMS, not an ATS guarantee; the upstream repo is stale and no major ATS is documented as consuming it.
 
 These are workflow instructions, not guarantees an agent cannot bypass. The PDF renderer creates a file; it does not automatically certify its contents. No ATS parsing result, ranking, exact voice match or interview is promised.
 
@@ -205,6 +207,7 @@ cv-witness/
 │   ├── treg-jobs-sourcing.md
 │   └── recruiter-search-positioning.md
 ├── scripts/
+│   ├── ats_text_export.py
 │   ├── ats_validate.py
 │   ├── bookface_mcp_auth.py
 │   ├── build_cv.py
@@ -228,6 +231,7 @@ cv-witness/
 │   ├── render_exploration.py
 │   ├── render_sample.py
 │   ├── render_template_gallery.py
+│   ├── rms_metadata.py
 │   ├── trust_data.py
 │   ├── verify_layout.py
 │   ├── voice_corpus.py

@@ -1,6 +1,7 @@
 """Tests for the ATS validation, knockout check and bullet audit scripts."""
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -344,6 +345,35 @@ class FraudSignalTests(unittest.TestCase):
               "PROFESSIONAL SUMMARY\nExperience")
         issues = ats_validate.check_fraud_signals(cv)
         self.assertTrue(any("Location claims" in i for i in issues))
+
+
+class DegreeTests(unittest.TestCase):
+    def test_bsc_education_keyword_is_recognized(self):
+        text = ("PROFESSIONAL SUMMARY\nPython Docker CI/CD\n\n"
+                "EDUCATION\nB.Sc. Computer Science\n")
+        self.assertEqual(ats_validate.check_ats_fields(text), [])
+
+    def test_education_keyword_still_required(self):
+        text = "PROFESSIONAL SUMMARY\nPython Docker CI/CD\n"
+        issues = ats_validate.check_ats_fields(text)
+        self.assertTrue(any("education" in i.lower() for i in issues))
+
+
+class PDFHygieneTests(unittest.TestCase):
+    def test_flags_oversized_pdf(self):
+        from unittest.mock import patch
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as handle:
+            handle.write(b"%PDF-1.4\n" + b"x" * 200)
+            handle.flush()
+            with patch.object(ats_validate, "MAX_GREENHOUSE_PARSE_BYTES", 100):
+                issues = ats_validate.check_pdf_hygiene(handle.name)
+        self.assertTrue(any("2.5 MB" in i for i in issues))
+
+    def test_sample_pdf_has_embedded_fonts(self):
+        root = Path(__file__).resolve().parents[1]
+        if not shutil.which("pdffonts"):
+            self.skipTest("pdffonts not available")
+        self.assertEqual(ats_validate.check_pdf_hygiene(str(root / "assets/sample-cv.pdf")), [])
 
 
 if __name__ == "__main__":

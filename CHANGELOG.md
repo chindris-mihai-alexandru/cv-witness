@@ -8,6 +8,19 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-24
+
+### Added
+
+- Parser-safe plain-text export (`scripts/ats_text_export.py`): one-column real text with standard headings from the same approved fields, for TXT uploads and manual ATS autofill review. It is a fallback channel, not a new CV design.
+- `scripts/rms_metadata.py` prints the full synthetic 1,274-key v2 template, maps canonical CV fields to RMS keys, and appends XMP through a PDF incremental update without changing visible text. `--verify` reports producer and counts without printing PII.
+- `docs/rms-v2-metadata.md` records the upstream staleness, the absence of a declarative template, and the limits of the standard: an RMS-aware parser copies supplied fields exactly, but no major ATS is documented as consuming RMS.
+
+### Changed
+
+- `scripts/ats_validate.py` now accepts country-specific degrees such as B.Sc., checks PDF size against Greenhouse's documented 2.5 MB parsing limit, and verifies embedded fonts. It still cannot guarantee vendor parsing.
+- The RMS writer validates key names, count/index bounds, timestamps, booleans and date formats; verifies the new startxref and XMP round-trip; and rejects encrypted, xref-stream or already-tagged PDFs. Duplicate metadata updates must be re-rendered from source.
+
 ## [0.9.0] - 2026-11-24
 
 ### Added

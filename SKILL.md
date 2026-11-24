@@ -2,7 +2,7 @@
 name: cv-witness
 description: "Handle job applications end to end: find or review roles with Rezi, compare them with verified resume evidence, and tailor a CV using the user's chosen creation workflow. Use when job searching, assessing fit, or preparing a role-specific CV."
 author: mihai
-version: 0.9.0
+version: 0.9.1
 ---
 
 # Job applications with CV Witness
@@ -200,19 +200,35 @@ The structured template uses one spacing scale in `pt` only. Every vertical gap 
 - After changing layout or spacing tokens, regenerate the public sample with `scripts/render_sample.py` and commit the updated `assets/sample-cv.pdf` and `assets/sample-cv.png`. The GitHub Pages preview shows this sample; a stale file misrepresents the current layout.
 - Justified paragraphs need `class="just"` (or equivalent `text-align: justify`). A bare `<p>` renders ragged-right, which looks uneven on long summaries. Check the extracted text: lines ending at varying x positions indicate justified text; ragged lines indicate a missing class.
 
+## Resume Metadata Standard (optional, invisible layer)
+
+Rezi's `resume-standard` repo defines an XMP layer whose keys are
+`rms_{section}_{index}_{field}`; a parser only accepts producers starting with
+`rms_v2`. The upstream code is stale (last code commit 2025-03-21, no releases)
+and no newer version was found online. Treat its "100% ATS accuracy" claim as
+the author's claim: it means a parser that implements RMS copies the supplied
+fields exactly, not that Workday, Greenhouse or any other ATS reads RMS. Rezi's
+own Workday experiment still lost a large share of resume data.
+
+Use this only as an optional post-render layer; it changes no pixels or visible
+text. Generate the full synthetic 1,274-key template with
+`python3 scripts/rms_metadata.py --print-template`, then attach it to a final
+PDF with `python3 scripts/rms_metadata.py --pdf CV.pdf --fields fields.json --output CV-rms.pdf`
+(or `--in-place`). Use `--metadata explicit.json` when a structured source maps
+more accurately than the CV field blocks. `--verify` reports counts without
+printing PII. `scripts/rms_metadata.py` is dependency-free and appends a PDF
+incremental update; it validates key names, count/index bounds, timestamps,
+booleans and date formats, verifies the XMP round-trip and startxref, and
+rejects encrypted PDFs, xref streams and files that already contain XMP.
+Re-render a clean PDF instead of stacking metadata updates.
+Run it last, then repeat the layout and text checks on the final file.
+
 ## ATS parsing rules
 
 
 ## ATS field validation (run before delivery)
 
-Run `scripts/ats_validate.py <rendered-cv.pdf>` to check:
-- Contact fields (email, phone, name) are present and extractable
-- Standard section headings (PROFESSIONAL SUMMARY, SKILLS, EXPERIENCE, EDUCATION) are present
-- Dates are in a standard format (Jan 2023, 2023-01, etc.)
-- No fraud signals (broken LinkedIn URLs, mismatched location/phone prefixes)
-- ATS-parsable fields (skills, education) are present
-
-This is a deterministic, read-only check. It does not validate the content's accuracy or meaning.
+Run `scripts/ats_validate.py <rendered-cv.pdf>` to check contact fields, standard section headings, date patterns, fraud signals, ATS fields plus PDF hygiene (size and embedded fonts). This is a deterministic, read-only check. It removes known structural risks but cannot simulate vendor parsers; no local check can guarantee parsing by every ATS. For an extra low-risk channel, run `scripts/ats_text_export.py --fields fields.json --output CV.txt` where TXT is accepted or to review autofill manually. It emits one column, standard headings and real text from the approved fields, not a new design. An optional RMS XMP layer is documented below; it is not a substitute for vendor parsing.
 
 
 
