@@ -2,7 +2,7 @@
 name: cv-witness
 description: "Handle job applications end to end: find or review roles with Rezi, compare them with verified resume evidence, and tailor a CV using the user's chosen creation workflow. Use when job searching, assessing fit, or preparing a role-specific CV."
 author: mihai
-version: 0.9.5
+version: 0.9.6
 ---
 
 # Job applications with CV Witness
@@ -12,7 +12,7 @@ This is the user's main job-application workflow. Rezi is an optional source for
 ## Two ways to run this
 
 - **Just tailor (no setup):** hand over a posting and your current CV. The workflow maps the role's requirements to your verified evidence and produces a role-specific CV in your approved design. No accounts, tokens, or integrations are required.
-- **Enrich from your public footprint (optional, deeper):** the workflow can also gather public evidence (GitHub repositories and merged PRs, Hugging Face models/datasets/spaces/collections, your live LinkedIn profile, shipped projects, and model cards) to surface achievements worth keeping and to keep the CV current. Read public sources with `scripts/public_footprint.py hf --author <user>` (uses the installed `hf` CLI login) and `scripts/public_footprint.py verify-pr <url>` (uses `gh`). These are evidence leads: verify every claim against the master sources (`foundation.md` / `provenance.md`) before it reaches a CV; nothing is invented, and a found profile is read, never edited. Downloads and likes are reported as-is, never inflated into popularity claims. See `references/recruiter-search-positioning.md`. A scheduled refresh may draft an updated CV periodically for the candidate to review; it is never auto-published or applied without approval.
+- **Enrich from your public footprint (optional, deeper):** the workflow can also gather public evidence (GitHub repositories and merged PRs, Hugging Face models/datasets/spaces/collections, your live LinkedIn profile, shipped projects, and model cards) to surface achievements worth keeping and to keep the CV current. For the user's own LinkedIn data, use only their official export: `scripts/linkedin_export_import.py <export.zip|dir> --output <private-snapshot>.json --json` then `scripts/linkedin_profile_diff.py <snapshot> --source foundation.md --provenance provenance.md --json --preview <private-preview>.md`. This locally mirrors LinkedIn My Profile MCP's read and preview steps; it never signs in, writes to LinkedIn, or uses session cookies. See `references/linkedin-export-workflow.md`. Read public sources with `scripts/public_footprint.py hf --author <user>` (uses the installed `hf` CLI login) and `scripts/public_footprint.py verify-pr <url>` (uses `gh`). These are evidence leads: verify every claim against the master sources (`foundation.md` / `provenance.md`) before it reaches a CV; nothing is invented, and a found profile is read, never edited. Downloads and likes are reported as-is, never inflated into popularity claims. See `references/recruiter-search-positioning.md`. A scheduled refresh may draft an updated CV periodically for the candidate to review; it is never auto-published or applied without approval.
 
 ## Standing rules (always-on)
 

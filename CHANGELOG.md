@@ -8,6 +8,12 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.9.6] - 2026-11-25
+
+### Added
+
+- Safe LinkedIn export workflow: `scripts/linkedin_export_import.py` creates a local, privacy-filtered snapshot from the candidate's own export; `scripts/linkedin_profile_diff.py` performs alias-aware read-only comparison and writes a private preview draft. Based on the documented LinkedIn My Profile MCP read/resolve/preview design, with no write tool, session cookies or scraping. See `references/linkedin-export-workflow.md`.
+
 ## [0.9.5] - 2026-11-24
 
 ### Changed
