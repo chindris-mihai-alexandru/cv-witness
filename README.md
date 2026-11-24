@@ -288,11 +288,19 @@ python3 scripts/render_sample.py
 
 The helper fills the canonical template, runs the existing renderer, checks one-page output and text extraction, then creates the PDF and screenshot in `assets/`. The site links to both the PDF and its source; this demonstrates the current layout, not universal ATS compatibility.
 
+## Versioning
+
+Stable from 1.0.0. See [docs/versioning.md](docs/versioning.md) for the release policy.
+
 ## Contributing and status
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Small changes with reproducible checks are easiest to review. Run `CV_WITNESS_REQUIRE_PDF_TESTS=1 python3 -m unittest discover -s tests -q` with Chromium and Poppler to include actual export checks. All fixtures are synthetic; no personal corpus or connected account is needed.
 
 [Releases](https://github.com/chindris-mihai-alexandru/cv-witness/releases) and [CHANGELOG.md](CHANGELOG.md) record shipped changes. The [initial roadmap](https://github.com/chindris-mihai-alexandru/cv-witness/issues/1) is complete; its closed sub-issues retain implementation and verification notes. Propose future work in a new, focused issue.
+
+## Versioning
+
+Stable from 1.0.0. See [docs/versioning.md](docs/versioning.md) for the release policy.
 
 ## License
 

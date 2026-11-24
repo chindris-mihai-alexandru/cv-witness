@@ -2,7 +2,7 @@
 name: cv-witness
 description: "Handle job applications end to end: find or review roles with Rezi, compare them with verified resume evidence, and tailor a CV using the user's chosen creation workflow. Use when job searching, assessing fit, or preparing a role-specific CV."
 author: mihai
-version: 0.9.7
+version: 1.0.0
 ---
 
 # Job applications with CV Witness

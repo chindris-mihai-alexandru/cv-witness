@@ -8,7 +8,11 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
-## [0.9.7] - 2026-11-25
+### Versioning policy
+
+From 1.0.0 onward, releases follow a slower SemVer cadence: patch for backwards-compatible bug fixes, minor for new compatible scripts/flags/docs, and major only for breaking template fields, CLI output contracts or privacy/safety behavior. Multiple related fixes are grouped into one release instead of tagging every work session. Existing 0.x tags are not renumbered.
+
+## [1.0.0] - 2026-11-25
 
 ### Fixed
 
