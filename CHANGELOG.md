@@ -8,6 +8,12 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.9.5] - 2026-11-24
+
+### Changed
+
+- Number fact gate: equivalent claim spellings are canonicalized before comparison — percentage words and LaTeX `\%`, currency codes/words and postfix symbols, spelled-out counts with digits, and `-fold`/`x` multipliers. A reworded figure can no longer bypass the gate; the check remains lexical, not a context or truth verdict.
+
 ## [0.9.4] - 2026-11-24
 
 ### Added

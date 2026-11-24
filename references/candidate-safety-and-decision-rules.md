@@ -90,6 +90,9 @@ the workflow must apply the rule by hand and say so plainly.
   unrecognized language is reported as such, not silently treated as English.
 - `jd_coverage.py`: optional `--fields` adds advisory reverse coverage,
   listing CV skills not named by the supplied JD terms.
+- `check_cv_numbers.py`: respelled figures are canonicalized so `45 percent`,
+  `USD 3M`, `forty engineers` and `tenfold` are checked as `45%`, `$3m`,
+  `40 engineers` and `10x`.
 
 Everything in this file is candidate-side. Nothing here authorizes running
 employer/recruiter tooling or making a submission on the user's behalf.
