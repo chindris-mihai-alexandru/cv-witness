@@ -32,6 +32,12 @@ speculation.
    → Make location and remote-openness explicit; state seniority clearly; keep your title
    in the right job family; and always have a public, contactable profile URL. A missing
    URL is an automatic drop.
+   → State work rights and location truthfully in the CV header or summary and in every
+   application form (e.g. "EU citizen, no sponsorship required, based in Romania, open to
+   relocation"). Recruiter-side review flags unclear work authorization or location for
+   human review; absence is not an auto-archive, but a clear answer prevents a needless flag.
+   Never invent sponsorship status, seniority or a CEFR level. Any header layout change still
+   needs candidate approval under the design-baseline rule.
 
 4. **Ranking is one line on why you fit.** The agent ranks only survivors it can write a
    single specific line for ("8 yrs Go at a payments scale-up, led a Kafka migration"). No
@@ -91,6 +97,21 @@ receipt priced per **usable result** (a verified, deliverable contact); misses a
 verdicts cost them nothing. Be the usable result: a complete, corroborated, contactable
 profile that verifies cleanly is worth the spend; one that bounces or contradicts is a free
 miss they discard.
+
+## One application per employer at a time, on the original channel
+
+Recruiter-side tooling treats several applications from one person to the same employer as
+a possible spam signal (or persistent interest). Prefer one tailored application per company
+at a time. If you do apply to more than one role there, make each version role-specific and
+acknowledge the other truthfully rather than resending identical material.
+
+Channel continuity matters because employer systems distinguish Applied, candidate-initiated
+direct message, and pure sourcing. A WAAS direct message may not generate an email
+notification, and a platform "Sourced" label can include candidates who messaged first.
+→ If you applied through a posting, reply on that application thread; if you contacted the
+company first, expect a platform message rather than an email and refer to your earlier
+message in any follow-up. Check both channels before sending a fresh cold introduction. This
+is responsiveness, not a trick to game a classifier.
 
 ## You are contactable — act like it
 
