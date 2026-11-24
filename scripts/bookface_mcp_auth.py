@@ -242,7 +242,9 @@ def candidate_action_summary(tools):
     for tool in tools or []:
         name = tool.get("name", "")
         tool_names.append(name)
-        if "candidate" not in name.lower():
+        # Only the hosted attendee action tool is candidate-side. Employer tools
+        # such as hiring.get_candidates must never be parsed into this summary.
+        if name != "waas_candidate":
             continue
         schema = tool.get("inputSchema") or tool.get("input_schema") or {}
         props = schema.get("properties") or {}

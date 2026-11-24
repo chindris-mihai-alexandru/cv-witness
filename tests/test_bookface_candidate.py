@@ -39,8 +39,14 @@ class CandidateActionTest(unittest.TestCase):
         self.assertEqual(summary["profile_or_apply"], ["update_profile", "apply_to_job"])
 
     def test_employer_tools_are_ignored(self):
-        tools = [{"name": "hiring_list_applicants", "inputSchema": {
-            "properties": {"action": {"enum": ["apply_to_job"]}}}}]
+        tools = [
+            {"name": "hiring_list_applicants", "inputSchema": {
+                "properties": {"action": {"enum": ["apply_to_job"]}}}},
+            {"name": "hiring.get_candidates", "inputSchema": {
+                "properties": {"action": {"enum": ["apply_to_job"]}}}},
+            {"name": "candidate_batch", "inputSchema": {
+                "properties": {"action": {"enum": ["apply_to_job"]}}}},
+        ]
         summary = bf.candidate_action_summary(tools)
         self.assertEqual(summary["actions"], [])
 

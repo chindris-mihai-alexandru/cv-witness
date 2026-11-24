@@ -256,13 +256,17 @@ WAAS account. Do not expect candidate-scoped access to return applicant data.
    nests them under `job_attributes`/`job_updates`, and tool names may render
    with underscores (`hiring_list_jobs`) rather than dots. Re-read the live
    schema before every call rather than reusing a saved argument shape.
-3. Candidate-side discovery: if `waas_candidate` is granted, inspect its action
-   enum. Use `search_jobs` by title/skills and `company_jobs` for a named
-   employer; hosted docs say these are the only attendee actions returning WAAS
-   apply links, per-job fit and compensation. Load an installed
-   `finding-a-startup-job` skill once per conversation if available, then follow
-   this workflow. Inspect profile/apply actions but use them only on explicit
-   user request; never auto-apply or send resume content to an employer.
+3. Candidate-side discovery: inspect the `waas_candidate` action enum on the actual
+   account. Its tool description says `search_jobs` and `company_jobs` are the only
+   attendee job-discovery actions returning WAAS apply links, per-job fit and
+   compensation (verified via `yc tools describe waas_candidate` on 2026-11-24),
+   but that is a description, not proof of grant. In this account the enum is empty.
+   If non-empty, use `search_jobs` by title/skills and `company_jobs` for a named
+   employer. The same description says to load `finding-a-startup-job` once at the
+   start of a job-search conversation; as of 2026-11-24 that skill is unavailable to
+   this non-founder account (`yc skills list` 403) and not in the Hermes catalog, so
+   follow this workflow instead. Inspect profile/apply actions but use them only on
+   explicit user request; never auto-apply or send resume content to an employer.
 4. Useful posting vocabulary for CV audit: role/subtype, `job_type`,
    `min_experience` (or `min_school_year` for internships), `remote`,
    `us_work_authorization_required`, `locations`, pay period/currency and
