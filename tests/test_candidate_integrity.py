@@ -62,6 +62,16 @@ class RoleClarityTest(unittest.TestCase):
         self.assertEqual(len(report["questions"]), 6)
         self.assertTrue(report["soft_verbs"]["heavy"])
 
+    def test_supervisor_without_department_is_partial(self):
+        report = clarity.analyze("Reports to: Head of ML. Key responsibilities include training models.")
+        self.assertEqual(report["points"]["supervisor"]["status"], "partial")
+
+    def test_empty_posting_keeps_six_point_shape(self):
+        report = clarity.analyze("   ")
+        self.assertEqual(len(report["points"]), 6)
+        self.assertFalse(report["askBeforeYouCommit"])
+        self.assertEqual(report["questions"], [])
+
 
 class PayloadLintTest(unittest.TestCase):
     def test_lints_are_advisory_and_specific(self):
@@ -96,6 +106,24 @@ class StoryProvenanceTest(unittest.TestCase):
         self.assertEqual(report["counts"]["existing"], 1)
         self.assertEqual(report["counts"]["user-cannot-confirm"], 1)
         self.assertEqual(report["counts"]["derived-unverified"], 1)
+
+    def test_same_number_different_metric_is_unverified(self):
+        text = "Raised incident rate by 40%."
+        report = provenance.analyze(text, ["Reduced deploy time by 40%."])
+        self.assertEqual(report["counts"]["derived-unverified"], 1)
+
+    def test_story_level_marker_masks_every_figure(self):
+        text = ("### Deployment story\n"
+                "Cut deploy time by 40% and saved 12 hours.\n"
+                "**Provenance:** user-cannot-confirm\n")
+        report = provenance.analyze(text, ["Cut deploy time by 40% and saved 12 hours."])
+        self.assertEqual(report["counts"]["user-cannot-confirm"], 2)
+        self.assertTrue(all(item["display"] == "[unconfirmed figure]" for item in report["claims"]))
+
+    def test_unicode_metric_context_is_kept(self):
+        report = provenance.analyze("Сократили время на 40%.",
+                                    ["Сократили время на 40%."])
+        self.assertEqual(report["counts"]["existing"], 1)
 
 
 if __name__ == "__main__":

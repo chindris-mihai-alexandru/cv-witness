@@ -306,6 +306,11 @@ class SectionHeadingTests(unittest.TestCase):
                 "PROFESSIONAL EXPERIENCE\nbody\nEDUCATION\nbody\n")
         self.assertEqual(ats_validate.check_section_headings(text), [])
 
+    def test_heading_aliases_are_recognized(self):
+        text = ("ZUSAMMENFASSUNG\nbody\nKENNTNISSE\nbody\n"
+                "BERUFSERFAHRUNG\nbody\nAUSBILDUNG\nbody\n")
+        self.assertEqual(ats_validate.check_section_headings(text), [])
+
     def test_flags_a_missing_heading(self):
         issues = ats_validate.check_section_headings("PROFESSIONAL SUMMARY\nbody\n")
         self.assertTrue(any("EXPERIENCE" in i for i in issues))

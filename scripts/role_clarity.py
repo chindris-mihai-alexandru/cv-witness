@@ -59,18 +59,53 @@ SOFT_VERBS = (
 )
 
 
+MAX_QUOTE = 240
+def _placeholder_supervisor(value: str) -> bool:
+    return bool(re.fullmatch(r"(?:reports? to|reporting to)?\s*(?:tbd|n/?a|the|a|team)[\s.!?]*", value, re.I))
+
+
 def _first_quote(text: str, pattern: str) -> str | None:
     match = re.search(pattern, text, re.I)
-    return match.group(0).strip() if match else None
+    if not match:
+        return None
+    return " ".join(match.group(0).split())[:MAX_QUOTE]
+
+
+def _sentence_at(text: str, position: int) -> str:
+    start = max(text.rfind(".", 0, position), text.rfind("!", 0, position),
+                text.rfind("?", 0, position), text.rfind("\n", 0, position)) + 1
+    candidates = [text.find(mark, position) for mark in (".", "!", "?", "\n")]
+    ends = [index for index in candidates if index != -1]
+    end = min(ends) + 1 if ends else len(text)
+    return text[start:end]
 
 
 def analyze(text: str) -> dict:
+    if not text.strip():
+        return {
+            "status": "ok",
+            "points": {name: {"status": "missing", "quote": None} for name in POINTS},
+            "soft_verbs": {"count": 0, "heavy": False, "quotes": []},
+            "askBeforeYouCommit": False,
+            "questions": [],
+            "note": "Empty posting: six-point shape retained, no questions inferred.",
+        }
     points = {}
     for name, patterns in POINTS.items():
         strong = _first_quote(text, patterns[0])
         weak = _first_quote(text, patterns[1]) if len(patterns) > 1 else None
         if strong:
             status, quote = "present", strong
+            if name == "supervisor" and not re.search(r"\bdepartment\b", quote, re.I):
+                status = "partial"
+            if name == "supervisor" and _placeholder_supervisor(quote or ""):
+                status, quote = "missing", None
+            if name == "success":
+                quote_text = quote or ""
+                sentence = _sentence_at(text, text.lower().find(quote_text[:40].lower()))
+                if not (re.search(r"\b(?:first|within|in)\b[^.!?]{0,40}\b(?:3|three|6|six|30|60|90)\b", sentence, re.I)
+                        and re.search(r"\b(?:measure|measured|success|kpi|okr|by)\b", sentence, re.I)):
+                    status = "partial"
         elif weak:
             status, quote = "partial", weak
         else:

@@ -39,6 +39,24 @@ class DeadlineTest(unittest.TestCase):
         date, _ = liveness.find_deadline("Posted 20 November 2026.", today=self.TODAY)
         self.assertIsNone(date)
 
+    def test_transient_http_is_suspicious_not_dead(self):
+        for status in (429, 500, 502, 504):
+            verdict, detail = liveness.classify(status, "Bad Gateway", "/job/1", "/job/1", "")
+            self.assertEqual(verdict, "suspicious")
+            self.assertIn("transient", detail)
+        verdict, detail = liveness.classify(404, "Not found", "/job/1", "/job/1", "")
+        self.assertEqual(verdict, "dead")
+
+    def test_closure_question_and_filled_form_are_not_closure(self):
+        body = "Applications closed? Don't see what you're looking for? Engineer roles open."
+        self.assertIsNone(liveness.closure_detail(body))
+        body = "Once the job application form has been filled out, submit it. Engineer role."
+        self.assertIsNone(liveness.closure_detail(body))
+
+    def test_filled_requisition_is_closure(self):
+        body = "We are sorry, the job you are trying to apply for has been filled."
+        self.assertIn("filled", liveness.closure_detail(body))
+
 
 class CoverLetterTest(unittest.TestCase):
     BODY = ("Dear Team, I support cloud platforms. " * 42 +
@@ -64,6 +82,12 @@ class CoverLetterTest(unittest.TestCase):
     def test_negated_permit_statement_is_not_flagged(self):
         text = self.BODY + " As an EU citizen I do not need a work permit in Denmark."
         self.assertTrue(clc.check_letter(text, eu_citizen=True)["passed"])
+
+    def test_flags_dashes_and_stock_opening(self):
+        text = self.BODY + " I am writing to apply — with care."
+        flags = " ".join(clc.check_letter(text)["flags"])
+        self.assertIn("em dash", flags)
+        self.assertIn("hype wording", flags)
 
 
 if __name__ == "__main__":

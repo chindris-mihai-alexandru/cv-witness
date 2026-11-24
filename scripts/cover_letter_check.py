@@ -18,8 +18,10 @@ else:
     from cv_checks import CheckError, normalized_text, read_text, words
 
 HYPE = ("passionate", "thrilled", "excited", "world-class", "cutting-edge",
-        "leverage", "synergy", "rockstar", "guru", "dream job", "very excited")
+        "leverage", "synergy", "rockstar", "guru", "dream job", "very excited",
+        "i am writing to apply", "please accept my application", "to whom it may concern")
 PLACEHOLDERS = ("[FILL:", "[TODO:", "{{")
+FORBIDDEN_PUNCTUATION = re.compile(r"[–—“”‘’]")
 
 
 def check_letter(text, role="", company="", eu_citizen=False, min_words=180,
@@ -39,6 +41,12 @@ def check_letter(text, role="", company="", eu_citizen=False, min_words=180,
     for word in HYPE:
         if re.search(r"\b" + re.escape(word) + r"\b", lowered):
             flags.append(f"hype wording: {word}")
+    punctuation = sorted(set(FORBIDDEN_PUNCTUATION.findall(text)))
+    if punctuation:
+        labels = {"–": "en dash", "—": "em dash", "“": "left curly quote",
+                  "”": "right curly quote", "‘": "left curly apostrophe",
+                  "’": "right curly apostrophe"}
+        flags.append("forbidden punctuation: " + ", ".join(labels.get(p, str(p)) for p in punctuation))
     if eu_citizen:
         if re.search(r"(?<!not )(?<!n't )(?:need|require|apply for)"
                      r"(?:\s+\w+){0,3}\s+work permit", lowered):

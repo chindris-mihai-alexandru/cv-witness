@@ -19,6 +19,7 @@ import argparse
 import re
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 
@@ -77,21 +78,31 @@ def check_contact_fields(text: str) -> list[str]:
     return issues
 
 
+HEADING_ALIASES = {
+    "PROFESSIONAL SUMMARY": ("PROFESSIONAL SUMMARY", "ZUSAMMENFASSUNG", "RÉSUMÉ",
+                             "RESUME", "SAMENVATTING", "ÖZET", "PEŁNE PODSUMOWANIE",
+                             "要約", "개요", "सारांश", "ملخص"),
+    "SKILLS": ("SKILLS", "KENNTNISSE", "COMPÉTENCES", "VAARDIGHEDEN", "YETENEKLER",
+               "UMIEJĘTNOŚCI", "スキル", "기술", "कौशल", "المهارات"),
+    "EXPERIENCE": ("EXPERIENCE", "PROFESSIONAL EXPERIENCE", "WORK EXPERIENCE",
+                   "ERFAHRUNG", "BERUFSERFAHRUNG", "EXPÉRIENCE", "ERVARING",
+                   "DENEYİM", "DOŚWIADCZENIE", "経験", "경력", "अनुभव", "الخبرة"),
+    "EDUCATION": ("EDUCATION", "AUSBILDUNG", "FORMATION", "ONDERWIJS", "EĞİTİM",
+                  "WYKSZTAŁCENIE", "学歴", "교육", "शिक्षा", "التعليم"),
+}
+
+
+def _heading_text(value):
+    return " ".join(unicodedata.normalize("NFKD", value.upper()).split())
+
+
 def check_section_headings(text: str) -> list[str]:
-    """Check that standard section headings are present."""
+    """Check standard headings in English or common EU/global aliases."""
     issues = []
-
-    standard_headings = [
-        "PROFESSIONAL SUMMARY",
-        "SKILLS",
-        "EXPERIENCE",
-        "EDUCATION",
-    ]
-
-    for heading in standard_headings:
-        if heading not in text.upper():
-            issues.append(f"Missing standard section heading: {heading}")
-
+    normalized = _heading_text(text)
+    for heading, aliases in HEADING_ALIASES.items():
+        if not any(_heading_text(alias) in normalized for alias in aliases):
+            issues.append(f"Standard section heading not recognized: {heading}")
     return issues
 
 

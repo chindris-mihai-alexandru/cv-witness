@@ -42,7 +42,33 @@ CLOSURE_PHRASES = (
     "posting is closed",
     "not accepting applications",
     "no longer open",
+    "applications are closed",
+    "the vacancy is no longer published",
+    "ogłoszenie wygasło",
+    "deze vacature is niet meer gepubliceerd",
+    "oferta cerrada",
 )
+TRANSIENT_STATUSES = {429, 500, 502, 504}
+
+# A job noun within 60 chars of "has been filled" is closure; "form has been
+# filled out" is a candidate completing an application, not a closed req.
+FILLED_RE = re.compile(
+    r"\b(job|position|role|vacancy|requisition|opportunity)\b[^.!?\n]{0,60}"
+    r"\bhas been filled\b(?!\s+out)", re.I)
+
+
+def closure_detail(text):
+    """Return a closure detail, or None. Question forms are not closure."""
+    lowered = normalize(text)
+    for phrase in CLOSURE_PHRASES:
+        for match in re.finditer(re.escape(phrase), lowered):
+            tail = lowered[match.end():match.end() + 12]
+            if tail.lstrip().startswith("?"):
+                continue
+            return "closure phrase: %s" % phrase
+    if FILLED_RE.search(text):
+        return "closure phrase: job/position has been filled"
+    return None
 
 
 def find_deadline(text, today=None):
@@ -86,15 +112,16 @@ def normalize(text):
 
 def classify(status, body, final_url, requested_url, expected, today=None,
              deadline_text=None):
-    lowered = normalize(body)
-    for phrase in CLOSURE_PHRASES:
-        if phrase in lowered:
-            detail = "closure phrase: %s" % phrase
-            return ("dead" if status != 200 else "suspicious"), detail
+    detailed = closure_detail(body)
+    if status in TRANSIENT_STATUSES:
+        return "suspicious", "transient HTTP %d; retry later, never expired" % status
     if status in (404, 410):
         return "dead", "HTTP %d" % status
+    if detailed:
+        return ("dead" if status != 200 else "suspicious"), detailed
 
-    if expected and normalize(expected) not in lowered:
+    normalized_body = normalize(body)
+    if expected and normalize(expected) not in normalized_body:
         return ("suspicious", "expected role title '%s' not found on the page"
                 % expected)
 

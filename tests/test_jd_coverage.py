@@ -45,6 +45,10 @@ class CoverageTest(unittest.TestCase):
         rows = jc.coverage(self.CV, ["   "])
         self.assertFalse(rows[0]["present"])
 
+    def test_skills_from_fields_for_reverse_coverage(self):
+        fields = {"SKILLS_BLOCK": "<p><em>Cloud:</em> Azure, AWS and Terraform</p>"}
+        self.assertEqual(jc.skills_from_fields(fields), ["Azure", "AWS", "Terraform"])
+
 
 if __name__ == "__main__":
     unittest.main()

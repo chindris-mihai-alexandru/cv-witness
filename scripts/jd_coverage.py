@@ -10,12 +10,30 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 
 if __package__:
     from .cv_checks import CheckError, normalized_text, read_text
+    from .rms_metadata import html_text
 else:
     from cv_checks import CheckError, normalized_text, read_text
+    from rms_metadata import html_text
+
+
+def skills_from_fields(fields):
+    """Return skill keywords from an RMS-style SKILLS_BLOCK, for reverse checks."""
+    blocks = fields.get("SKILLS_BLOCK") or ""
+    if isinstance(blocks, (list, tuple)):
+        blocks = " ".join(str(block) for block in blocks)
+    plain = html_text(str(blocks))
+    terms = []
+    for raw in re.split(r"[,\n;]| and ", plain, flags=re.I):
+        term = " ".join(raw.split()).strip(" .:-")
+        term = re.sub(r"^[A-Za-z][\w /&-]{0,30}:\s*", "", term).strip(" .:-")
+        if 1 < len(term) <= 48 and term.lower() not in {t.lower() for t in terms}:
+            terms.append(term)
+    return terms
 
 
 def coverage(cv_text, terms):
@@ -35,6 +53,7 @@ def main(argv=None):
     parser.add_argument("--term", action="append", default=[],
                         help="exact required term to check (repeatable)")
     parser.add_argument("--terms-file", help="UTF-8 file, one required term per line")
+    parser.add_argument("--fields", help="Optional CV fields JSON for advisory reverse coverage")
     parser.add_argument("--json", action="store_true", help="machine-readable output")
     args = parser.parse_args(argv)
 
@@ -64,6 +83,18 @@ def main(argv=None):
                  "certified. A missing term is a gap to verify against trusted "
                  "evidence, never a reason to invent a claim."),
     }
+    if args.fields:
+        try:
+            with open(args.fields, encoding="utf-8") as handle:
+                fields = json.load(handle)
+        except (OSError, ValueError) as error:
+            print(f"jd-coverage: {error}", file=sys.stderr)
+            return 2
+        cv_text = normalized_text(read_text(args.cv))
+        named = {normalized_text(term) for term in terms}
+        report["cv_skills_not_named_in_jd"] = [
+            term for term in skills_from_fields(fields)
+            if normalized_text(term) in cv_text and normalized_text(term) not in named]
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))
     else:

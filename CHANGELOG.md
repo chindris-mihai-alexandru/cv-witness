@@ -8,6 +8,21 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.9.4] - 2026-11-24
+
+### Added
+
+- `references/candidate-safety-and-decision-rules.md`: late audit rules for candidate-side decisions only — two-pass job importance, never running recruiter code, visible do-not-apply records, opt-in cross-channel dedupe, no unsolicited salary expectations, fee/work-rights risk, ATS "own words" limits, retracted claims, no fabricated interview material, calibration floors and data portability.
+
+### Changed
+
+- Liveness: transient HTTP 429/5xx is suspicious; question-form closure and completed forms no longer close a posting; "job/role has been filled" is recognized.
+- Cover-letter check: flags em/en dashes, curly quotes and stock openers in addition to existing hype checks.
+- Role clarity: supervisor status requires a named department; success measure and horizon must share a sentence; quotes capped at 240 characters; empty posting retains six-point shape without fabricated questions.
+- Story provenance: same number + unit + shared metric tokens are required to call a figure existing; a story-level user-cannot-confirm marker masks every figure in that story; Unicode metric tokens are preserved.
+- ATS headings: common EU/global aliases are recognized; unrecognized languages are reported explicitly.
+- JD coverage: `--fields fields.json` adds advisory reverse coverage of CV skills not named by supplied JD terms.
+
 ## [0.9.3] - 2026-11-24
 
 ### Added
