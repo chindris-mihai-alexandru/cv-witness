@@ -79,6 +79,26 @@ class DedupJobsTest(unittest.TestCase):
         self.assertEqual(dropped[0]["reason"], "same company+title (cross-source)")
 
 
+    def test_treg_field_names_dedup_by_company_title(self):
+        r1 = {"company_name": "Example Corp", "job_title": "Engineer",
+              "url": "https://a.example/1", "description": "short"}
+        r2 = {"company_name": "Example Corp", "job_title": "Engineer",
+              "application_link": "https://b.example/2", "description": "much longer and richer description than the first row by a wide margin"}
+        kept, dropped = eu.dedup_jobs([r1, r2])
+        self.assertEqual(len(kept), 1)
+        self.assertIn("much longer", kept[0]["description"])
+
+    def test_treg_application_link_reindexed_after_swap(self):
+        r1 = {"company": "A", "title": "Eng", "url": "https://a.example/1", "description": "short"}
+        r2 = {"company": "A", "title": "Eng", "application_link": "https://b.example/2", "description": "much longer and richer description than the first row by a wide margin"}
+        r3 = {"company": "B", "title": "Other", "application_link": "https://b.example/2", "description": "x"}
+        kept, dropped = eu.dedup_jobs([r1, r2, r3])
+        # r3 shares the winner's application_link; reindexing must catch it
+        self.assertEqual(len(kept), 1)
+        self.assertEqual(len(dropped), 2)
+        self.assertTrue(any("same URL" in d["reason"] for d in dropped))
+
+
 class DedupCommandTest(unittest.TestCase):
     def _run(self, payload):
         return subprocess.run([sys.executable, os.path.join(SCRIPTS, "eu_network.py"), "dedup"],

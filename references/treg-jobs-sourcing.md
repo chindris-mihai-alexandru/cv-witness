@@ -161,6 +161,8 @@ critiques — the same funnel cv-witness uses for roles:
   The same role syndicated across Arbeitnow/Greenhouse/Adzuna must be enriched once,
   not once per source. It keeps the richer row and reports dropped duplicates with a
   reason; inspect those before discarding (same title, different city may be distinct).
+  `dedup_jobs` handles both local `url`/`company`/`title` and treg's
+  `application_link`/`company_name`/`job_title` field names.
 - Only judge where a cheap filter cannot decide. If the knockout gate or a
   deterministic filter already accepts or rejects a row, do not pay a classifier to
   re-decide it; spend the judgment on the ambiguous middle. DRY: never duplicate a

@@ -333,6 +333,18 @@ def _richness(row: dict) -> int:
     return score
 
 
+def _row_url(row):
+    """Canonical apply URL across local feeds and treg's field vocabulary."""
+    return (row.get("url") or row.get("application_link") or
+            row.get("job_board_link") or "")
+
+
+def _row_company_title(row):
+    """(company, title) across local feeds and treg's company_name/job_title."""
+    return (_norm_text(row.get("company") or row.get("company_name") or ""),
+            _norm_text(row.get("title") or row.get("job_title") or ""))
+
+
 def dedup_jobs(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     """Dedup a pooled job list so downstream paid enrichment runs once per role.
 
@@ -347,9 +359,8 @@ def dedup_jobs(rows: list[dict]) -> tuple[list[dict], list[dict]]:
     by_url: dict[str, int] = {}
     by_ct: dict[tuple, int] = {}
     for row in rows:
-        url_key = _norm_url(row.get("url") or row.get("application_link") or row.get("job_board_link") or "")
-        company = _norm_text(row.get("company", ""))
-        title = _norm_text(row.get("title", ""))
+        url_key = _norm_url(_row_url(row))
+        company, title = _row_company_title(row)
         ct_key = (company, title) if company and title else None
         idx = by_url.get(url_key) if url_key else None
         reason = "same URL"
@@ -365,17 +376,17 @@ def dedup_jobs(rows: list[dict]) -> tuple[list[dict], list[dict]]:
                 by_ct[ct_key] = idx
             continue
         other = kept[idx]
-        dup_of = other.get("url") or f"{other.get('company')} - {other.get('title')}"
+        dup_of = _row_url(other) or f"{other.get('company') or other.get('company_name')} - {other.get('title') or other.get('job_title')}"
         if _richness(row) > _richness(other):
             kept[idx] = row
             dropped.append({"row": other, "reason": reason, "duplicate_of": dup_of})
         else:
             dropped.append({"row": row, "reason": reason, "duplicate_of": dup_of})
         win = kept[idx]
-        wurl = _norm_url(win.get("url", ""))
+        wurl = _norm_url(_row_url(win))
         if wurl:
             by_url[wurl] = idx
-        wc, wt = _norm_text(win.get("company", "")), _norm_text(win.get("title", ""))
+        wc, wt = _row_company_title(win)
         if wc and wt:
             by_ct[(wc, wt)] = idx
     return kept, dropped
