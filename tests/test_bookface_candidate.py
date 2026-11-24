@@ -62,5 +62,18 @@ class CandidateActionTest(unittest.TestCase):
         self.assertNotIn("Authorization", text)
 
 
+class SkillDocTest(unittest.TestCase):
+    def test_skill_documents_verified_dead_ends(self):
+        skill = (Path(__file__).resolve().parents[1] / "SKILL.md").read_text(
+            encoding="utf-8")
+        for phrase in (
+            "Unknown or unavailable action: search_jobs",
+            "insufficient_scope",
+            "finding-a-startup-job",
+            "yc tools run search",
+        ):
+            self.assertIn(phrase, skill)
+
+
 if __name__ == "__main__":
     unittest.main()

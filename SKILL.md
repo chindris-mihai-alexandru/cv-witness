@@ -282,13 +282,30 @@ code or `tools/list`, and never encode an unverified number or scale into a
 deliverable. Example: an employer-only PR describes note scores as 1-5 while
 its final commit says 1-4; adopt neither number for a candidate document.
 
-**Verified 2026-11: the MCP tools exist but the job-search actions can be
+**Verified 2026-11-24: the MCP tools exist but the job-search actions can be
 empty.** A candidate account authenticates (OAuth + PKCE works end-to-end,
 `tools/list` returns ~23 tools) yet `waas_candidate` may answer
 `Unknown or unavailable action: search_jobs. Available:` (empty). This is a
 server-side per-account grant, not a client bug and not a visible account
 setting; the same empty enum appears through YC's own `yc` CLI. Do not burn
 time trying to force it. Use the `yc` CLI route instead:
+
+- Direct check on this account: `yc tools describe waas_candidate` describes
+  `search_jobs` and `company_jobs`, but calling either returns HTTP 422
+  `Unknown or unavailable action: ... Available:` with an empty enum. A description
+  is not a grant.
+- `yc tools list` exposes `load_skill`, but its enum contains only
+  `using-the-yc-cli` and `paxel`; `finding-a-startup-job` returns
+  `Unknown skill`, and `yc skills read` returns 403 (active founders only).
+  Do not invent or install that skill.
+- The `yc` CLI token in `~/.yc/credentials.json` lacks `mcp:access`; a direct
+  hosted MCP call returns 403 `insufficient_scope`. Only a fresh DCR consent via
+  `scripts/bookface_mcp_auth.py` can grant that scope, and it needs the user's
+  browser. Do not reuse the CLI token for the MCP endpoint.
+- Working fallback: `yc tools run search --input '{"entity":"jobs", ...}'`
+  returns real WAAS postings with apply links, `min_experience`, `remote`,
+  `locations_for_search`, `us_visa_required` and skill filters. This is what
+  `scripts/yc_network.py postings` uses.
 
 - Install: `curl -fsSL https://bookface.ycombinator.com/cli/install.sh | bash`
 - Authenticate: `yc login` (one browser consent, same login as WAAS)
