@@ -97,19 +97,33 @@ def read_text(path: str) -> str:
 CONTRACT_BLOCK_KINDS = ("role-sub", "project")
 
 
+def _bullet_lists_for_kind(source_html: str, kind: str) -> list[str]:
+    """Find contract bullet lists in either supported template shape."""
+    escaped = re.escape(kind)
+    lists = [match.group(1) for match in re.finditer(
+        rf'<ul class="{escaped}"[^>]*>(.*?)</ul>', source_html, re.DOTALL)]
+    # The approved house template wraps a plain <ul> in <div class="kind">.
+    # Find the first following <ul>...</ul> rather than relying on the first
+    # </div>, because project blocks contain nested divs.
+    for opening in re.finditer(rf'<div class="{escaped}"[^>]*>', source_html):
+        tail = source_html[opening.end():]
+        bullet_list = re.search(r"<ul[^>]*>(.*?)</ul>", tail, re.DOTALL)
+        if bullet_list:
+            lists.append(bullet_list.group(1))
+    return lists
+
+
 def count_block_bullets(source_html: str, kind: str) -> list[dict]:
-    """Count <li> bullets inside every <ul class="kind"> of an HTML CV source.
+    """Count <li> bullets inside every contract block of an HTML CV source.
 
     The rendered PDF text layer cannot reliably group bullets under their role
     or project heading, so the HTML template (the authoring input) is the
     deterministic ground truth for the bullet-count contract.
     """
-    pattern = re.compile(
-        rf'<ul class="{re.escape(kind)}">(.*?)</ul>', re.DOTALL)
     blocks = []
-    for i, m in enumerate(pattern.finditer(source_html), start=1):
-        li_count = len(re.findall(r"<li>", m.group(1)))
-        blocks.append({"kind": kind, "index": i, "bullets": li_count})
+    for i, content in enumerate(_bullet_lists_for_kind(source_html, kind), start=1):
+        blocks.append({"kind": kind, "index": i,
+                       "bullets": len(re.findall(r"<li>", content))})
     return blocks
 
 
@@ -181,6 +195,25 @@ def find_bullets(cv: str) -> list[str]:
     return bullets
 
 
+def bullets_from_source_html(source_html: str) -> list[str]:
+    """Return exact <li> bullets from contract blocks in authoring HTML.
+
+    PDF text extraction can merge consecutive indented bullets into one string.
+    When the HTML source is supplied it is the deterministic ground truth for
+    both bullet count and wording, so use it for the lexical audit too.
+    """
+    import html as html_module
+    bullets = []
+    for kind in CONTRACT_BLOCK_KINDS:
+        for content in _bullet_lists_for_kind(source_html, kind):
+            for li in re.findall(r"<li>(.*?)</li>", content, re.DOTALL):
+                text = html_module.unescape(re.sub(r"<[^>]+>", " ", li))
+                text = " ".join(text.split())
+                if text:
+                    bullets.append(text)
+    return bullets
+
+
 def audit_bullet(bullet: str) -> dict:
     """Return the elements present and missing in one bullet."""
     first = re.split(r"[\s,;:(]+", bullet.strip().lower(), maxsplit=1)
@@ -225,6 +258,7 @@ def main() -> int:
                     help="Upper bound per block (default: same as --bullets)")
     args = ap.parse_args()
 
+    src = ""
     violations: list[dict] = []
     if args.source_html:
         try:
@@ -246,7 +280,9 @@ def main() -> int:
         print(f"bullet-audit: {e}", file=sys.stderr)
         return 2
 
-    bullets = [b for b in find_bullets(cv) if len(b.split()) >= args.min_words]
+    raw_bullets = (bullets_from_source_html(src) if args.source_html
+                   else find_bullets(cv))
+    bullets = [b for b in raw_bullets if len(b.split()) >= args.min_words]
     audited = [audit_bullet(b) for b in bullets]
     flagged = [a for a in audited if a["missing"]]
 

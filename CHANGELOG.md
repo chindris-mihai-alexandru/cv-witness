@@ -8,6 +8,14 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.9.7] - 2026-11-25
+
+### Fixed
+
+- Bullet audit: recognizes both `<ul class="role-sub">` and the approved template's `<div class="role-sub"><ul>` shape. Contract checks now see all role/project blocks instead of silently reporting zero blocks.
+- Bullet audit: when `--source-html` is supplied, the Action/Metric/Tool review uses the exact `<li>` text from the authoring HTML instead of merged PDF text lines.
+- Template: repaired the malformed nested SVG for the Hugging Face contact link. The header now shows a legible `HF` text label; regenerated `assets/sample-cv.pdf` and `assets/sample-cv.png`.
+
 ## [0.9.6] - 2026-11-25
 
 ### Added

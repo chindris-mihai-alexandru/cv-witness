@@ -277,6 +277,21 @@ class BulletContractTests(unittest.TestCase):
                 '<ul class="role-sub"><li>a</li><li>b</li><li>c</li></ul>')
         self.assertEqual(bullet_audit.check_three_bullet_contract(html), [])
 
+    def test_contract_supports_div_wrapped_lists(self):
+        html = ('<div class="role-sub"><ul><li>a</li><li>b</li><li>c</li></ul></div>'
+                '<div class="project"><ul><li>x</li><li>y</li><li>z</li></ul></div>')
+        self.assertEqual(len(bullet_audit.count_block_bullets(html, "role-sub")), 1)
+        self.assertEqual(bullet_audit.check_three_bullet_contract(html), [])
+
+    def test_source_html_bullets_are_not_merged(self):
+        html = ('<ul class="role-sub"><li>Built a Python API with FastAPI.</li>'
+                '<li>Automated tests with 30 checks.</li>'
+                '<li>Monitored uptime above 99% with AppDynamics.</li></ul>')
+        bullets = bullet_audit.bullets_from_source_html(html)
+        self.assertEqual(len(bullets), 3)
+        self.assertTrue(bullets[0].startswith("Built"))
+        self.assertNotIn("Automated tests", bullets[0])
+
     def test_min_and_max_can_be_relaxed(self):
         html = '<ul class="role-sub"><li>a</li><li>b</li></ul>'
         self.assertEqual(bullet_audit.check_three_bullet_contract(html, 2, 3), [])
