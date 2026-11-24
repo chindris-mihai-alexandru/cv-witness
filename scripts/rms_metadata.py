@@ -209,6 +209,10 @@ def _span_text(fragment: str, class_name: str) -> str:
     return html_text(match.group(1)) if match else ""
 
 
+span_text = _span_text
+split_divs = _split_divs
+
+
 def _date_parts(value: str) -> tuple[str, str, str]:
     """Return display date, Unix-millisecond timestamp, and date format."""
     text = (value or "").strip()

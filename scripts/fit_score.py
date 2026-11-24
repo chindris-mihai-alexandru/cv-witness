@@ -60,7 +60,7 @@ def parse_criteria(data):
         raise CheckError(f"Provide between 1 and {MAX_CRITERIA} criteria.")
     criteria, seen = [], set()
     for position, item in enumerate(items, 1):
-        only_keys(item, ("id", "weight", "gate_min", "question", "levels", "min_years"), f"Criterion {position}")
+        only_keys(item, ("id", "weight", "gate_min", "question", "levels", "min_years", "weight_basis"), f"Criterion {position}")
         cid = item.get("id")
         if not isinstance(cid, str) or not ID.match(cid) or cid in seen:
             raise CheckError(f"Criterion {position} needs a unique id of lowercase letters, digits and underscores.")
@@ -72,7 +72,10 @@ def parse_criteria(data):
             raise CheckError(f"Criterion {cid} has zero weight and no gate.")
         if ("levels" in item) == ("min_years" in item):
             raise CheckError(f"Criterion {cid} needs exactly one of levels or min_years.")
-        entry = {"id": cid, "weight": weight, "gate_min": gate}
+        entry = {"id": cid, "weight": weight, "gate_min": gate,
+                 "weight_basis": item.get("weight_basis", "unlabelled")}
+        if entry["weight_basis"] not in {"wording", "structure", "estimate", "unlabelled"}:
+            raise CheckError(f"Criterion {cid} has an invalid weight_basis.")
         if "min_years" in item:
             entry["min_years"] = number(item["min_years"], f"Minimum years of {cid}", 0.5, 50)
         else:
@@ -199,7 +202,8 @@ def band_of(value, bands):
 
 def assess(criterion, judgments, sources, months):
     """Return the scored row for one criterion (assessed False when no input exists)."""
-    row = {"id": criterion["id"], "weight": criterion["weight"], "assessed": False}
+    row = {"id": criterion["id"], "weight": criterion["weight"],
+           "weight_basis": criterion["weight_basis"], "assessed": False}
     if "min_years" in criterion:
         if months is not None:
             row.update(assessed=True, mean=min(1.0, months / (criterion["min_years"] * 12)), variance=0.0,
@@ -233,6 +237,10 @@ def score(criteria_doc, judgments_doc, evidence_paths, experience=(), today=None
     total_weight = sum(row["weight"] for row in rows)
     assessed_weight = sum(row["weight"] for row in assessed)
     coverage = assessed_weight / total_weight
+    estimated_share = (sum(row["weight"] for row in assessed if row["weight_basis"] == "estimate")
+                       / assessed_weight) if assessed_weight else 0.0
+    # An estimated importance must not be the dominant driver of a top-band fit.
+    estimated_dominates = estimated_share >= 0.5
     blocked = [row["id"] for row in assessed if row["gate_min"] is not None and row["mean"] < row["gate_min"]]
     gate_unassessed = any(row["gate_min"] is not None and not row["assessed"] for row in rows)
     reasons = {reason for row in assessed for reason, flag in
@@ -250,6 +258,9 @@ def score(criteria_doc, judgments_doc, evidence_paths, experience=(), today=None
         verdict = "insufficient_evidence"
     else:
         verdict = band_of(value, bands)
+        if verdict == BAND_NAMES[0] and estimated_dominates:
+            verdict = BAND_NAMES[1]
+            reasons.add("estimated_weight_caps_top_band")
         if band_of(low, bands) != band_of(high, bands):
             reasons.add("range_crosses_band")
     settled = verdict in BAND_NAMES
@@ -262,11 +273,16 @@ def score(criteria_doc, judgments_doc, evidence_paths, experience=(), today=None
         "needs_review": bool(reasons) or verdict == "insufficient_evidence",
         "review_reasons": sorted(reasons),
         "coverage": round(coverage, 3),
+        "weight_basis_shares": {"wording": round(sum(row["weight"] for row in assessed if row["weight_basis"] == "wording") / total_weight, 3),
+                                "structure": round(sum(row["weight"] for row in assessed if row["weight_basis"] == "structure") / total_weight, 3),
+                                "estimate": round(sum(row["weight"] for row in assessed if row["weight_basis"] == "estimate") / total_weight, 3),
+                                "unlabelled": round(sum(row["weight"] for row in assessed if row["weight_basis"] == "unlabelled") / total_weight, 3)},
         "blocked_by": blocked,
         "not_assessed": [row["id"] for row in rows if not row["assessed"]],
         "strengths": [row["id"] for row in assessed if row["mean"] >= 0.7],
         "gaps": [row["id"] for row in sorted(assessed, key=lambda r: -r["weight"]) if row["mean"] < 0.5],
-        "breakdown": [{"id": row["id"], "weight_share": round(row["weight"] / total_weight, 3),
+        "breakdown": [{"id": row["id"], "weight": row["weight"], "weight_basis": row["weight_basis"],
+                       "weight_share": round(row["weight"] / total_weight, 3),
                        "score": present(100 * row["mean"]) if row["assessed"] else None,
                        "confidence": round(row["confidence"], 2) if row["assessed"] else None,
                        "grounded": row["grounded"] if row["assessed"] else None,

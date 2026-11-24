@@ -44,6 +44,7 @@ A fictional, tested example lives in [`examples/fit/`](../examples/fit) and show
 | --- | --- |
 | `id` | Lowercase letters, digits and underscores, unique |
 | `weight` | 0 to 1000. Zero is allowed only with `gate_min` |
+| `weight_basis` | Optional `wording`, `structure`, `estimate` or `unlabelled` (default). Only JD wording or JD structure should lead a top-band fit; if estimated weights carry at least half the assessed weight, a `great` band is capped to `good` and flagged `estimated_weight_caps_top_band` |
 | `question`, `levels` | The question and 2 to 10 ordered level descriptions, low to high |
 | `min_years` | Instead of levels: computed from `--experience`, as years divided by the minimum, capped at 1 |
 | `gate_min` | Optional 0.01 to 1. Scoring below it gives `blocked` |
@@ -61,6 +62,7 @@ Verdicts are `great`, `good`, `fair` and `bad` (floors 80, 65 and 50 by default,
 
 `needs_review` explains itself in `review_reasons`:
 
+- `estimated_weight_caps_top_band`: estimated importance carried at least half the assessed weight, so the "great" band was capped to "good". Re-check the weights against the posting rather than pursuing the score.
 - `ungrounded_claim`: the judge scored above 40 without a quote that exists in your evidence, so the score was capped at 40.
 - `unverified_quote`: a quote was not found, or had fewer than 4 or more than 60 words.
 - `range_crosses_band`: the one-standard-deviation range around the score reaches another band.

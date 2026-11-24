@@ -138,6 +138,25 @@ class ScoringTests(FitScoreTestCase):
         self.assertEqual(self.run_score(*base)["verdict"], "good")
         self.assertEqual(self.run_score(*base, bands=(90.0, 80.0, 70.0))["verdict"], "bad")
 
+    def test_estimated_dominant_weight_cannot_reach_top_band(self):
+        docs = (criteria(criterion("a", 10, weight_basis="estimate")),
+                judgments(a=judged(3)))
+        result = self.run_score(*docs)
+        self.assertEqual((result["verdict"], result["score"]), ("good", 100.0))
+        self.assertIn("estimated_weight_caps_top_band", result["review_reasons"])
+        self.assertEqual(result["weight_basis_shares"]["estimate"], 1.0)
+        self.assertEqual(result["breakdown"][0]["weight_basis"], "estimate")
+
+    def test_jd_stated_weight_can_reach_top_band(self):
+        docs = (criteria(criterion("a", 10, weight_basis="wording")), judgments(a=judged(3)))
+        result = self.run_score(*docs)
+        self.assertEqual(result["verdict"], "great")
+        self.assertNotIn("estimated_weight_caps_top_band", result["review_reasons"])
+
+    def test_invalid_weight_basis_is_rejected(self):
+        with self.assertRaises(cv_checks.CheckError):
+            self.run_score(criteria(criterion("a", weight_basis="vibes")), judgments(a=judged(3)))
+
 
 class CoverageAndGateTests(FitScoreTestCase):
     def test_low_coverage_gives_no_band(self):

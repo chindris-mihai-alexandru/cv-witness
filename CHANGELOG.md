@@ -8,6 +8,18 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-11-24
+
+### Added
+
+- `scripts/check_cv_titles.py`: advisory job-title drift check pairing tailored roles with `foundation.md` by company and dates. Mismatches, unmatched and ambiguous pairs are reported; title changes remain a human decision.
+- `scripts/star_worksheet.py`: STAR+R interview prompts anchored to approved bullets, with S/T/A/R and Reflection left blank for evidence-backed completion.
+- `references/career-ops-candidate-audit.md`: records the 2026-11-24 candidate-side audit of `career-ops-hq/career-ops` and why other upstream features were not copied.
+
+### Changed
+
+- `scripts/fit_score.py` accepts `weight_basis` (`wording`, `structure`, `estimate`, `unlabelled`) and reports weight-basis shares. If estimated weights carry at least half the assessed weight, a `great` band is capped to `good` with an explicit review reason. See `docs/fit-scoring.md`.
+
 ## [0.9.1] - 2026-11-24
 
 ### Added
