@@ -26,7 +26,7 @@ Security Clearance: This position requires the successful candidate to have an
 active security clearance.
 """
 
-CENTRICA = """
+EXAMPLE_ENERGY = """
 Cloud Platform Engineer
 Example Energy
 locations: Aalborg, Copenhagen, Antwerp
@@ -69,7 +69,7 @@ class VerdictTests(unittest.TestCase):
 
     def test_eu_role_proceeds(self):
         context = company_context.build_context(
-            _write(CENTRICA), _write(CV), "Example Energy", "RO", sponsorship=True,
+            _write(EXAMPLE_ENERGY), _write(CV), "Example Energy", "RO", sponsorship=True,
             holds_clearance=False, funding=False, layoffs_csv=None)
         self.assertEqual(context["verdict"], "PROCEED")
         self.assertTrue(context["relocation"]["eu_free_movement"])
@@ -105,13 +105,13 @@ class HirelogTrustTests(unittest.TestCase):
 
     def _build(self, transport, company="Example Energy", posting_url=None):
         return company_context.build_context(
-            _write(CENTRICA), _write(CV), company, "RO", sponsorship=True,
+            _write(EXAMPLE_ENERGY), _write(CV), company, "RO", sponsorship=True,
             holds_clearance=False, funding=False, layoffs_csv=None,
             hirelog=True, posting_url=posting_url, trust_transport=transport)
 
     def test_hirelog_is_off_by_default_so_tests_stay_offline(self):
         context = company_context.build_context(
-            _write(CENTRICA), _write(CV), "Example Energy", "RO", sponsorship=True,
+            _write(EXAMPLE_ENERGY), _write(CV), "Example Energy", "RO", sponsorship=True,
             holds_clearance=False, funding=False, layoffs_csv=None)
         self.assertIsNone(context["trust"]["hirelog"])
         self.assertIsNone(context["trust"]["hirelog_posting"])
