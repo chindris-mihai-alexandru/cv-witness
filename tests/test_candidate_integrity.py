@@ -1,4 +1,5 @@
 """Tests for posting integrity, role clarity, payload lints and story provenance."""
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -71,6 +72,38 @@ class RoleClarityTest(unittest.TestCase):
         self.assertEqual(len(report["points"]), 6)
         self.assertFalse(report["askBeforeYouCommit"])
         self.assertEqual(report["questions"], [])
+
+    def test_scraped_page_noise_is_not_quoted_as_job_facts(self):
+        text = ("This website uses cookies.\n"
+                '{"@context":"http://schema.org/","@type":"JobPosting"}\n'
+                "const x = { url: 'image.webp?outputFormat=webp'); @media screen and (min-width: 480px) {\n"
+                "Reports to the Head of Engineering in the Platform Department.\n"
+                "What you'll do: design a service.\n"
+                "This product has no monthly subscription and helps improve people's lives.\n"
+                "Collaborate with operations teams.\n"
+                "Weekly sprint reviews set the cadence.")
+        report = clarity.analyze(text)
+        blob = json.dumps(report)
+        for marker in ("@context", "outputFormat", "@media", "monthly subscription",
+                       "improve people's lives"):
+            self.assertNotIn(marker, blob)
+        self.assertEqual(report["points"]["supervisor"]["status"], "present")
+        self.assertEqual(report["points"]["cadence"]["status"], "present")
+        self.assertIn("Weekly sprint reviews", report["points"]["cadence"]["quote"])
+        self.assertEqual(report["points"]["success"]["status"], "missing")
+
+    def test_generic_improvement_is_not_a_success_measure(self):
+        report = clarity.analyze("Improve people's lives every day. Build services. Weekly reviews.")
+        self.assertEqual(report["points"]["success"]["status"], "missing")
+
+    def test_jsonld_description_survives_noise_filter(self):
+        payload = {
+            "@context": "http://schema.org/",
+            "description": "<p>Reports to the Head of Engineering in the Platform Department.</p>",
+        }
+        report = clarity.analyze(json.dumps(payload))
+        self.assertEqual(report["points"]["supervisor"]["status"], "present")
+        self.assertIn("Reports to the Head of Engineering", report["points"]["supervisor"]["quote"])
 
 
 class PayloadLintTest(unittest.TestCase):

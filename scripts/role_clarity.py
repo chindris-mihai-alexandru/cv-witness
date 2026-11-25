@@ -11,6 +11,7 @@ only; it never changes the fit score and never sends anything.
 from __future__ import annotations
 
 import argparse
+import html as html_module
 import json
 import re
 import sys
@@ -20,29 +21,32 @@ POINTS = {
     "supervisor": (
         r"(?:reports? to|reporting to|direct supervisor|line manager|department manager|"
         r"under the direction of|led by)[^\n.]{0,140}",
-        r"(?:department|team you(?:'ll| will) join|part of the)[^\n.]{0,120}",
+        r"(?:department|team you(?:'ll| will) join|"
+        r"part of the (?:team|department|group|organisation|organization))[^\n.]{0,120}",
     ),
     "scope": (
         r"(?:scope of (?:work|the role)|key responsibilities|core responsibilities|"
         r"responsibilities include|you will (?:own|manage|build|develop|lead|maintain))[^\n.]{0,180}",
-        r"(?:responsibilities|primary tasks|primary duties)[^\n.]{0,140}",
+        r"(?:responsibilities|primary tasks|primary duties|what you(?:'ll| will) do)[^\n.]{0,140}",
     ),
     "deliverables": (
         r"(?:deliverables?|artifacts?|outputs?|what you(?:'ll| will) (?:build|deliver|ship|produce))[^\n.]{0,180}",
-        r"(?:documentation|runbooks|dashboards?|reports?|services?|applications?)[^\n.]{0,140}",
+        r"(?:documentation|runbooks?|dashboards?|reports?|applications?)[^\n.]{0,140}",
     ),
     "success": (
         r"(?:success (?:measure|criteria|will be)|(?:measured|evaluated) by|KPIs?|OKRs?|"
         r"in the first (?:3|three|6|six) months|first (?:30|60|90) days)[^\n.]{0,180}",
-        r"(?:improve|increase|reduce|decrease|achieve)[^\n.]{0,140}",
+        (r"(?:improve|increase|reduce|decrease|achieve)[^\n.]{0,140}"
+         r"\b(?:uptime|latency|conversion|accuracy|quality|performance|retention|"
+         r"cost|time|rate|target|metric|revenue|by\s+\d)\b"),
     ),
     "coordination": (
         r"(?:collaborat(?:e|ing|ion) with|coordinate(?:s|ing)? with|work(?:ing)? "
         r"(?:closely )?with|stakeholders?|cross-functional)[^\n.]{0,160}",
     ),
     "cadence": (
-        r"(?:cadence|weekly|monthly|quarterly|daily|sprint|stand-?up|review rhythm|"
-        r"regular meetings?)[^\n.]{0,140}",
+        r"(?:cadence|weekly|daily|sprint|stand-?up|review rhythm|"
+        r"regular meetings?|monthly (?:meeting|review|sync|check-in|report))[^\n.]{0,140}",
     ),
 }
 QUESTION = {
@@ -60,6 +64,57 @@ SOFT_VERBS = (
 
 
 MAX_QUOTE = 240
+
+
+NOISE_LINE_RE = re.compile(
+    r"(?:@context|outputFormat=|@media|text-align|font-family|font-size|"
+    r"cookie preferences|accept all cookies|decline all non-necessary|"
+    r"this website uses cookies|select which cookies)",
+    re.I,
+)
+
+
+def _jsonld_description(line: str) -> str | None:
+    """Return a JSON-LD job description as plain text, if this line has one."""
+    stripped = line.strip()
+    if not (stripped.startswith("{") and '"@context"' in stripped):
+        return None
+    try:
+        payload = json.loads(stripped)
+    except json.JSONDecodeError:
+        return None
+    description = payload.get("description")
+    if not isinstance(description, str):
+        return ""
+    plain = html_module.unescape(re.sub(r"<[^>]+>", " ", description))
+    return " ".join(plain.split())
+
+
+def _candidate_text(text: str) -> str:
+    """Drop raw HTML/CSS/JSON and cookie banners scraped with the job body.
+
+    Postings are often saved by stripping tags from the whole page. Without
+    this filter, role clarity quoted stylesheet and cookie text as job duties.
+    The filter is deliberately conservative: it drops only lines carrying
+    machine-readable or banner markers, not prose that merely mentions a
+    monthly cadence or a team department.
+    """
+    lines = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        described = _jsonld_description(stripped)
+        if described is not None:
+            if described:
+                lines.append(described)
+            continue
+        if NOISE_LINE_RE.search(stripped):
+            continue
+        lines.append(stripped)
+    return "\n".join(lines)
+
+
 def _placeholder_supervisor(value: str) -> bool:
     return bool(re.fullmatch(r"(?:reports? to|reporting to)?\s*(?:tbd|n/?a|the|a|team)[\s.!?]*", value, re.I))
 
@@ -81,6 +136,7 @@ def _sentence_at(text: str, position: int) -> str:
 
 
 def analyze(text: str) -> dict:
+    text = _candidate_text(text)
     if not text.strip():
         return {
             "status": "ok",
