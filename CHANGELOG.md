@@ -13,10 +13,15 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 - Layout gate: `cv_layout.check_page_fill` fails any page whose bottom whitespace exceeds its top whitespace by more than 20pt (`layout_bottom_whitespace`). The mandatory `scripts/verify_layout.py` delivery gate now passes that tolerance, so an underfilled page with a large empty footer cannot be delivered. Sparse internal render fixtures remain valid because render-time geometry checks leave page fill opt-in.
 - Site: the fictional sample and project page now reflect the balanced-spacing layout and the page-fill gate.
 
+### Changed
+
+- README: replaced the exhaustive repository tree with a short orientation table and a link to the new canonical [repository map](docs/repository-map.md). The drift guard now checks the map instead of forcing the README to carry every filename.
+
 ### Fixed
 
 - Pages deploy: split artifact build and deployment into separate jobs and moved to current `checkout`, `configure-pages`, `upload-pages-artifact` and `deploy-pages` releases. The former single-job workflow uploaded the artifact successfully but the immediate metadata lookup sometimes found zero artifacts.
 - README preview: removed the decorative plus/cross marks from the generated workflow image and added a generator-level regression test.
+- Browser cleanup: tolerate `PermissionError` during process-group termination on macOS and fall back to direct process cleanup. A process exiting between poll and kill no longer fails a successful render.
 
 ### Versioning policy
 

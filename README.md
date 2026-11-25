@@ -183,75 +183,7 @@ The store defaults to `~/.cv-witness/voice`. Generate a profile, optionally appr
 
 ## Repository structure
 
-Key files and folders:
-
-```text
-cv-witness/
-├── .claude-plugin/
-├── .github/
-│   └── workflows/
-├── assets/
-│   └── explore/
-├── docs/
-├── examples/
-│   ├── fit/
-│   ├── sample-cv.json
-│   └── structured-cv.json
-├── references/
-│   ├── career-ops-candidate-audit.md
-│   ├── company_lists/
-│   ├── treg-jobs-sourcing.md
-│   └── recruiter-search-positioning.md
-├── scripts/
-│   ├── ats_text_export.py
-│   ├── ats_validate.py
-│   ├── bookface_mcp_auth.py
-│   ├── build_cv.py
-│   ├── bullet_audit.py
-│   ├── check_cv.py
-│   ├── check_cv_numbers.py
-│   ├── check_cv_titles.py
-│   ├── check_posting_liveness.py
-│   ├── ci_pdf_smoke.py
-│   ├── comp_data.py
-│   ├── company_context.py
-│   ├── cv_checks.py
-│   ├── cv_layout.py
-│   ├── eu_network.py
-│   ├── fit_score.py
-│   ├── humane_audit.py
-│   ├── jd_overlap.py
-│   ├── knockout_check.py
-│   ├── payload_lint.py
-│   ├── posting_integrity.py
-│   ├── preflight.py
-│   ├── public_footprint.py
-│   ├── render_cv.py
-│   ├── render_exploration.py
-│   ├── render_sample.py
-│   ├── render_template_gallery.py
-│   ├── rms_metadata.py
-│   ├── role_clarity.py
-│   ├── star_worksheet.py
-│   ├── story_provenance.py
-│   ├── trust_data.py
-│   ├── verify_layout.py
-│   ├── voice_corpus.py
-│   └── yc_network.py
-├── templates/
-│   └── structured.html
-├── tests/
-├── .gitignore
-├── AGENTS.md
-├── CHANGELOG.md
-├── CONTRIBUTING.md
-├── LICENSE
-├── README.md
-├── SKILL.md
-├── index.html
-├── render.sh
-└── template.html
-```
+The short table below orients new readers. The complete grouped inventory of scripts and directories lives in the [repository map](docs/repository-map.md); the [interactive source map](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/codegraph.html) shows the code graph.
 
 | Location | Purpose |
 | --- | --- |

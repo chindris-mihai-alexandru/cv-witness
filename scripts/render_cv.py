@@ -188,20 +188,25 @@ def run_browser(command, pdf, timeout=90, stderr=subprocess.DEVNULL):
                 raise CheckError("Browser PDF production timed out; no output was published.")
             finally:
                 # A separate session and fresh profile isolate this invocation.
-                # Never search for or stop the user's shared browser.
+                # Never search for or stop the user's shared browser. Cleanup is
+                # best effort: a process that exited between poll and kill may
+                # report ProcessLookupError or PermissionError on macOS.
                 if process.poll() is None:
-                    try:
-                        os.killpg(process.pid, signal.SIGTERM)
-                    except ProcessLookupError:
-                        pass
-                    try:
-                        process.wait(timeout=2)
-                    except subprocess.TimeoutExpired:
+                    for signal_number in (signal.SIGTERM, signal.SIGKILL):
                         try:
-                            os.killpg(process.pid, signal.SIGKILL)
-                        except ProcessLookupError:
+                            os.killpg(process.pid, signal_number)
+                        except (ProcessLookupError, PermissionError):
                             pass
-                        process.wait(timeout=2)
+                        try:
+                            process.wait(timeout=2)
+                            break
+                        except subprocess.TimeoutExpired:
+                            continue
+                    else:
+                        try:
+                            process.kill()
+                        except (ProcessLookupError, PermissionError, OSError):
+                            pass
     except (OSError, subprocess.SubprocessError) as error:
         raise CheckError("Browser rendering failed; no output was published.") from error
 

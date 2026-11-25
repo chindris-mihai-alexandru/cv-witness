@@ -243,6 +243,14 @@ class RendererContractTests(unittest.TestCase):
             render_cv.run_browser([sys.executable, "-c", code, str(output)], output, timeout=3)
             self.assertIsNotNone(render_cv.complete_pdf(output))
 
+    def test_browser_cleanup_survives_permission_denied_process_group_kill(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary).resolve() / "candidate.pdf"
+            code = "import pathlib,sys,time; pathlib.Path(sys.argv[1]).write_bytes(b'%PDF-synthetic\\n%%EOF\\n'); time.sleep(30)"
+            with patch.object(render_cv.os, "killpg", side_effect=PermissionError):
+                render_cv.run_browser([sys.executable, "-c", code, str(output)], output, timeout=3)
+            self.assertIsNotNone(render_cv.complete_pdf(output))
+
     def test_incomplete_pdf_is_not_accepted_when_process_lingers(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary).resolve() / "candidate.pdf"
