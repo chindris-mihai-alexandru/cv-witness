@@ -5,6 +5,7 @@ already-rendered PDF. The non-CLI parts are covered by their own tests; these
 cover the CLI: input validation, check-failure passthrough, layout hookup.
 """
 import json
+import importlib
 import sys
 import unittest
 from pathlib import Path
@@ -13,6 +14,38 @@ from io import StringIO
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import verify_layout
+cv_layout = importlib.import_module("cv_layout")
+
+
+class PageFillTests(unittest.TestCase):
+    def test_underfilled_page_is_flagged(self):
+        pages = [{"width": 595, "height": 842, "rows": [
+            {"y0": 42.0, "y1": 50.0, "text": "a"},
+            {"y0": 60.0, "y1": 70.0, "text": "b"},
+        ]}]
+        problems = cv_layout.check_page_fill(pages)
+        self.assertEqual(len(problems), 1)
+        self.assertEqual(problems[0]["code"], "layout_bottom_whitespace")
+        self.assertEqual(problems[0]["page"], 1)
+        self.assertEqual(problems[0]["top_pt"], 42.0)
+        self.assertEqual(problems[0]["bottom_pt"], 772.0)
+
+    def test_balanced_page_passes(self):
+        pages = [{"width": 595, "height": 842, "rows": [
+            {"y0": 42.9, "y1": 50.0, "text": "a"},
+            {"y0": 790.0, "y1": 799.5, "text": "b"},
+        ]}]
+        self.assertEqual(cv_layout.check_page_fill(pages), [])
+
+    def test_tolerance_boundary_is_allowed(self):
+        pages = [{"width": 595, "height": 842, "rows": [
+            {"y0": 42.0, "y1": 50.0, "text": "a"},
+            {"y0": 770.0, "y1": 780.0, "text": "b"},
+        ]}]
+        self.assertEqual(cv_layout.check_page_fill(pages), [])
+
+    def test_empty_page_is_ignored(self):
+        self.assertEqual(cv_layout.check_page_fill([{"width": 595, "height": 842, "rows": []}]), [])
 
 
 class VerifyLayoutCliTests(unittest.TestCase):
@@ -67,6 +100,28 @@ class VerifyLayoutCliTests(unittest.TestCase):
             run.return_value = mock.Mock(returncode=1, stdout="")
             code = verify_layout.main()
         self.assertEqual(code, 1)
+
+    @mock.patch("sys.argv", ["verify_layout", "cv.pdf", "--json"])
+    def test_bottom_whitespace_problem_fails_cli(self):
+        def fake_validate(*args_item, **kwargs):
+            return {"passed": True, "problems": []}
+        bbox = ('<page width="595" height="842">'
+                '<line xMin="42" yMin="42" xMax="100" yMax="50"><word xMin="42" yMin="42" xMax="100" yMax="50">A</word></line>'
+                '<line xMin="42" yMin="60" xMax="100" yMax="70"><word xMin="42" yMin="60" xMax="100" yMax="70">B</word></line>'
+                '</page>')
+        run = mock.Mock(returncode=0, stdout=bbox)
+        out = StringIO()
+        with mock.patch.object(verify_layout.Path, "is_file", return_value=True), \
+             mock.patch.object(verify_layout.Path, "stat") as st, \
+             mock.patch.object(verify_layout, "validate_pdf",
+                               side_effect=fake_validate), \
+             mock.patch.object(verify_layout.subprocess, "run", return_value=run), \
+             mock.patch("sys.stdout", out):
+            st.return_value.st_size = 1000
+            code = verify_layout.main()
+        self.assertEqual(code, 1)
+        report = json.loads(out.getvalue())
+        self.assertEqual(report["layout_problems"][0]["code"], "layout_bottom_whitespace")
 
     @mock.patch("sys.argv", ["verify_layout", "cv.pdf", "--json"])
     def test_layout_problems_append_to_report(self):

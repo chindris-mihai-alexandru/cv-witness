@@ -11,7 +11,7 @@ Checks (all reuse existing modules - nothing new here):
   - cv_checks.validate_pdf: paper size, page limit, expected/ordered section
     text, placeholder-marker scan, posting overlap review.
   - cv_layout.check_layout: date right-alignment, heading-gap consistency,
-    bullet left edges from pdftotext -bbox-layout.
+    bullet left edges, and vertical page fill (no oversized empty footer).
 
 Usage:
   python3 scripts/verify_layout.py <cv.pdf> [--paper a4|letter] [--max-pages 1]
@@ -34,10 +34,10 @@ from pathlib import Path
 
 if __package__:
     from .cv_checks import CheckError, CheckFailure, MAX_BYTES, validate_pdf
-    from .cv_layout import parse_pages, check_layout
+    from .cv_layout import parse_pages, check_layout, PAGE_FILL_TOLERANCE_PT
 else:
     from cv_checks import CheckError, CheckFailure, MAX_BYTES, validate_pdf
-    from cv_layout import parse_pages, check_layout
+    from cv_layout import parse_pages, check_layout, PAGE_FILL_TOLERANCE_PT
 
 
 def main() -> int:
@@ -74,12 +74,13 @@ def main() -> int:
         print(f"verify-layout: {e}", file=sys.stderr)
         return 2
 
-    # Layout gate: date alignment, heading gaps, bullet edges (same as render_cv).
+    # Layout gate: date alignment, heading gaps, bullet edges and page fill.
     bbox = subprocess.run(["pdftotext", "-bbox-layout", str(pdf), "-"],
                           capture_output=True, text=True)
     if bbox.returncode == 0 and bbox.stdout:
         try:
-            layout_problems = check_layout(parse_pages(bbox.stdout))
+            layout_problems = check_layout(parse_pages(bbox.stdout),
+                                           fill_tolerance=PAGE_FILL_TOLERANCE_PT)
             if layout_problems:
                 report["layout_problems"] = layout_problems
         except Exception:

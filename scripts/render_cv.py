@@ -238,7 +238,8 @@ def render_html(source, output, paper="a4", max_pages=1, expected_text=(),
         if not report["passed"]:
             raise CheckFailure(report)
         # Layout gate: verify date right-alignment, heading-gap consistency and
-        # bullet left edges from the rendered PDF's bbox output.
+        # bullet left edges from the rendered PDF's bbox output. The delivery
+        # gate (verify_layout.py) additionally enforces vertical page fill.
         import subprocess as _sp
         bbox = _sp.run(["pdftotext", "-bbox-layout", str(pdf_path), "-"],
                        capture_output=True, text=True)

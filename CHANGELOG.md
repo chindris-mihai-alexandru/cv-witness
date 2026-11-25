@@ -8,6 +8,10 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 ## [Unreleased]
 
+### Added
+
+- Layout gate: `cv_layout.check_page_fill` fails any page whose bottom whitespace exceeds its top whitespace by more than 20pt (`layout_bottom_whitespace`). The mandatory `scripts/verify_layout.py` delivery gate now passes that tolerance, so an underfilled page with a large empty footer cannot be delivered. Sparse internal render fixtures remain valid because render-time geometry checks leave page fill opt-in.
+
 ### Versioning policy
 
 From 1.0.0 onward, releases follow a slower SemVer cadence: patch for backwards-compatible bug fixes, minor for new compatible scripts/flags/docs, and major only for breaking template fields, CLI output contracts or privacy/safety behavior. Multiple related fixes are grouped into one release instead of tagging every work session. Existing 0.x tags are not renumbered.

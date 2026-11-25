@@ -194,7 +194,7 @@ When content overflows to 2 pages, trim bullets (3 → 2 for older roles) rather
 The structured template uses one spacing scale in `pt` only. Every vertical gap is a margin between siblings (never a trailing margin), so each section boundary is identical by construction. Title and date share a flex row (`justify-content: space-between`) so dates sit flush right on the same baseline — never on a separate line below the title.
 
 - `--design classic` reproduces the approved centred-header, ruled-uppercase-heading, justified-text look. `--design default` is the plain single-column preset. Pick the one that matches the approved CV baseline; switching designs needs approval.
-- `scripts/cv_layout.py` checks layout geometry from `pdftotext -bbox-layout` output: date right-alignment, heading-gap consistency, bullet left edges. Run it after rendering to catch regressions. It reports codes, indices and point measurements only (no CV text).
+- `scripts/cv_layout.py` checks layout geometry from `pdftotext -bbox-layout` output: date right-alignment, heading-gap consistency and bullet left edges. `scripts/verify_layout.py` additionally passes the page-fill tolerance, so the delivery gate fails when a page's bottom whitespace exceeds its top whitespace by more than 20pt (`layout_bottom_whitespace`). That catches the recurring oversized empty footer; fix it by adjusting section/role spacing or content density, never by shrinking the house font size. Both report codes, indices and measurements only (no CV text).
 - Run `scripts/cv_layout.py < bbox-file` as a post-render gate; any failure means the build's layout drifted.
 - `render.sh` exits 0 even when checks fail; always read the `"passed"` field in the JSON output, not the exit code. A `"passed": false` with `"problems"` means the PDF was not published (the previous output is preserved). Verify the rendered PDF text with `pdftotext -layout` after every build to confirm changes actually landed.
 - After changing layout or spacing tokens, regenerate the public sample with `scripts/render_sample.py` and commit the updated `assets/sample-cv.pdf` and `assets/sample-cv.png`. The GitHub Pages preview shows this sample; a stale file misrepresents the current layout.
@@ -729,7 +729,7 @@ Before delivering a CV, verify ALL of:
 11. **Layout gate (any authoring path)**: run `python3 scripts/verify_layout.py <cv.pdf>`
     on the finished PDF - page count, paper size, all section headings extract in
     order, no placeholder markers, date right-alignment, heading-gap consistency
-    and bullet left edges. This is the same check battery the structured pipeline
+    and bullet left edges and vertical page fill (no oversized empty footer). This is the same check battery the structured pipeline
     runs, verified over the final artifact; a Quick-exported, DOCX-converted or
     template-filled CV must pass it just like a structured build. No manual
     layout inspection substitutes for it.

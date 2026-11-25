@@ -14,6 +14,7 @@ PAGE = re.compile(r'<page width="([\d.]+)" height="([\d.]+)">(.*?)</page>', re.S
 LINE = re.compile(r'<line xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">(.*?)</line>', re.S)
 WORD = re.compile(r'<word [^>]*>(.*?)</word>', re.S)
 SAME_ROW_POINTS = 2.0
+PAGE_FILL_TOLERANCE_PT = 20.0
 
 
 def normalized_text(text):
@@ -95,9 +96,41 @@ def _body_rows(pages, headings):
     return body
 
 
-def check_layout(pages, headings=(), gap_groups=(), right_aligned=(), max_left_edges=2, tolerance=1.0):
-    """Return problem dicts; an empty list means the geometry is consistent."""
+def check_page_fill(pages, tolerance=PAGE_FILL_TOLERANCE_PT):
+    """Flag a page whose bottom whitespace greatly exceeds its top whitespace.
+
+    A centred header starts well below the top page margin, so comparing the
+    first and last text rows catches an underfilled page without needing the
+    CSS margin values. Codes and point measurements only: no CV text is echoed.
+    """
     problems = []
+    for index, page in enumerate(pages, 1):
+        rows = page.get("rows") or []
+        if not rows:
+            continue
+        top = min(row["y0"] for row in rows)
+        bottom = page["height"] - max(row["y1"] for row in rows)
+        excess = bottom - top
+        if excess > tolerance:
+            problems.append({
+                "code": "layout_bottom_whitespace",
+                "page": index,
+                "top_pt": round(top, 2),
+                "bottom_pt": round(bottom, 2),
+                "excess_pt": round(excess, 2),
+                "allowed_pt": tolerance,
+            })
+    return problems
+
+
+def check_layout(pages, headings=(), gap_groups=(), right_aligned=(), max_left_edges=2,
+                 tolerance=1.0, fill_tolerance=None):
+    """Return problem dicts; an empty list means the geometry is consistent.
+
+    Page fill is opt-in because sparse render fixtures are valid internal test
+    inputs. The delivery gate (verify_layout.py) passes a tolerance and enforces it.
+    """
+    problems = check_page_fill(pages, fill_tolerance) if fill_tolerance is not None else []
     headings = [normalized_text(h) for h in headings]
     if headings:
         found, gaps = _gaps_before(pages, headings, exact=True)
