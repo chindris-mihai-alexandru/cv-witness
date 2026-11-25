@@ -21,9 +21,10 @@ Codex, and any agent that reads AGENTS.md.
   changing its layout/order or switching to a product template; verify design
   continuity and extracted text/order after export. Use `scripts/build_cv.py`
   for approved structured wording or `render.sh` for approved self-contained
-  HTML. Select A4/Letter and an approved page limit; pass `--posting` when
-  present. Failed checks must preserve previous output. Inspect every page and
-  verify facts before delivery.
+  HTML. Run `scripts/verify_layout.py` on the finished PDF; it includes the
+  balanced page-fill gate. Select A4/Letter and an approved page limit; pass
+  `--posting` when present. Failed checks must preserve previous output.
+  Inspect every page and verify facts before delivery.
 - Voice corpora and derived references are private style sources, never CV
   facts. Do not read real sources while developing; tests use synthetic prose.
   Imports require explicit source selection and human-authorship attestation.
@@ -33,16 +34,3 @@ Codex, and any agent that reads AGENTS.md.
 - Regenerate public diagrams only from committed, reviewed public sources.
   Forbidden tracked paths must fail before any content read; do not scan this
   working tree or private vaults directly. See `docs/exploration.md`.
-
-- **Format baseline rule (enforced, not advisory):** The candidate-approved CV
-  (path set in SKILL.md "Personal configuration") is the format baseline for
-  every tailored output.
-  The local template `template.html` is the only rendering format the skill
-  produces unless the user explicitly approves a redesign. Never generate a
-  new CV layout, switch column structure, change section order, or substitute
-  a different design baseline without explicit written approval. The
-  deliverable must match the approved baseline's typography, spacing,
-  color treatment, bullet treatment, date alignment, and section order.
-  If a job posting or role requires a structural deviation (e.g., a two-column
-  layout for a specific employer), propose it explicitly and wait for approval
-  before applying it.

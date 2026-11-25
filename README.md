@@ -266,7 +266,7 @@ cv-witness/
 | --- | --- |
 | `SKILL.md`, `AGENTS.md` | Agent workflow and contributor guidance. |
 | `scripts/`, `templates/` | CV building, validation, rendering, voice references and regeneration tools. |
-| `references/` | Public company lists used by the screening and network tools (no personal data). |
+| `references/` | Candidate-side rules plus public company lists used by screening and network tools (no personal data). |
 | `docs/`, `examples/` | Usage guides, contracts and fictional inputs. |
 | `assets/explore/` | Interactive maps and the fictional PDF gallery. |
 | `tests/` | Synthetic contracts and actual PDF export regressions. |
