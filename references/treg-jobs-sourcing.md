@@ -112,6 +112,18 @@ its auth stay upstream; this skill only documents the workflow.
   header (or `treg balance`) and keep a running sum.
 - Before a loop over many inputs, tell the user the expected total and stop
   before exceeding it. Cap a single routed call with `X-Treg-Route-Max-Cost`.
+  The cap is a floor check, not a discount: on 2026-11-26 a
+  `treg.companies.jobs.search` cap of `$0.02` returned HTTP 402
+  `route_max_cost` because the cheapest provider in the plan was `$0.03`.
+  Read the error's `cheapest_micro` and either raise the cap with the user's
+  consent or switch sources. A cap of `$0.015` on a narrow routed call later
+  charged only `$0.0015` because the first provider missed, so cap first and
+  read the actual `_treg.charged_micro` after the call.
+- A cheap direct catalog entry is a price quote, not a connected capability.
+  On 2026-11-26 `mobiusengine-jobs.jobs.search.post` advertised `$0.000016`
+  per row but returned "needs to be connected" for this org. Treat that as a
+  missing source and fall back to the routed endpoint; do not reimplement a
+  client or keep retrying the unconnected provider.
 - A provider 4xx (not 429) is about the request — fix it, do not retry elsewhere.
   After 429/5xx the routed tool tries the next provider and names it. treg's own
   refusals carry `X-Treg-Error: 1` — branch on that header, not the status code.

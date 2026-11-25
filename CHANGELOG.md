@@ -23,6 +23,7 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 - README preview: removed the decorative plus/cross marks from the generated workflow image and added a generator-level regression test.
 - Template: justified the Professional Summary paragraph. Full summary lines now share the same right edge instead of ending ragged.
 - Advisory role clarity: ignore page chrome (cookie banners, CSS and JSON-LD markup) when a posting is scraped as one text blob, while still reading a JSON-LD job description. Narrowed "part of the", "monthly" and generic "improve" matches that produced false clarity quotes. Regression tests cover both cases.
+- Treg sourcing reference: document that `X-Treg-Route-Max-Cost` below the cheapest provider returns a 402 plan, that actual charges must be read after the call, and that a cheap catalog entry can still be an unconnected source.
 - Browser cleanup: tolerate `PermissionError` during process-group termination on macOS and fall back to direct process cleanup. A process exiting between poll and kill no longer fails a successful render.
 
 ### Versioning policy
