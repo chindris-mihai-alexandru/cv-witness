@@ -21,6 +21,7 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 
 - Pages deploy: split artifact build and deployment into separate jobs and moved to current `checkout`, `configure-pages`, `upload-pages-artifact` and `deploy-pages` releases. The former single-job workflow uploaded the artifact successfully but the immediate metadata lookup sometimes found zero artifacts.
 - README preview: removed the decorative plus/cross marks from the generated workflow image and added a generator-level regression test.
+- Template: justified the Professional Summary paragraph. Full summary lines now share the same right edge instead of ending ragged.
 - Browser cleanup: tolerate `PermissionError` during process-group termination on macOS and fall back to direct process cleanup. A process exiting between poll and kill no longer fails a successful render.
 
 ### Versioning policy

@@ -39,6 +39,11 @@ class FillTemplateTests(unittest.TestCase):
         out = rs.fill_template(TEMPLATE, fields)
         self.assertNotIn("{{", out)
 
+    def test_summary_paragraph_is_justified_in_canonical_template(self):
+        root = Path(rs.__file__).resolve().parents[1]
+        template = (root / "template.html").read_text(encoding="utf-8")
+        self.assertIn('<p class="just">{{SUMMARY}}</p>', template)
+
     def test_margin_override_replaces_all_three_tokens(self):
         src = ":root { --m-top: 18mm; --m-side: 13mm; --m-bottom: 14mm; --font: 9.3pt; }"
         out = rs._apply_margin(src, 15)
