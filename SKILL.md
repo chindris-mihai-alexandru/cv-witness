@@ -97,7 +97,7 @@ Verified target shape for a sample tailoring: 4 experience rows, 2 projects
 visible), 2 education rows, unchanged contact. Stale rows are removed by
 setting `hide: true` on their keys, not by deleting them.
 
-## Format baseline rule (enforced, not advisory)
+## Rezi write merge and keyword behavior (enforced, not advisory)
 
 Two behaviors of the live Rezi MCP that a write must verify:
 
