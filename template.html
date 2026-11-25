@@ -9,8 +9,8 @@
      cool-grey accent on section labels only, bold for structure only.
      Spacing uses CSS variables for easy adjustment. */
   :root { --m-top: 18mm; --m-side: 13mm; --m-bottom: 14mm;
-          --font: 9.3pt; --lh: 1.2; --small: 8.8pt; --gap: 2.5px;
-          --section: 10px; --role: 1px; }
+          --font: 9.3pt; --lh: 1.2; --small: 8.8pt; --gap: 4px;
+          --section: 12px; --role: 2.5px; }
   @page { size: A4; margin: var(--m-top) var(--m-side) var(--m-bottom); }
   * { box-sizing: border-box; }
   body {
@@ -18,7 +18,7 @@
     font-size: var(--font); line-height: var(--lh); color: #111;
     margin: 0; padding: 0;
   }
-  header { text-align: center; margin-bottom: 9px; }
+  header { text-align: center; margin-bottom: 10px; }
   header h1 { font-size: 17.5pt; margin: 0; letter-spacing: 0.5px; color: #111; }
   header .role { font-size: var(--small); color: #3f3f46; margin: 2px 0 0; }
   .contact { font-size: var(--small); color: #333; margin-top: 3px; }

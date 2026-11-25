@@ -354,7 +354,7 @@
           </article>
           <article class="principle">
             <div class="principle-head"><span class="number" aria-hidden="true">03</span><h3>Inspect the exported file</h3></div>
-            <p>Keep the latest approved CV as the design baseline. Check extracted text and section order, compare the exported pages with that reference, and review employer autofill when offered. Parser behavior varies, so these checks cannot certify every ATS.</p>
+            <p>Keep the latest approved CV as the design baseline. Check extracted text and section order, compare the exported pages with that reference, and review employer autofill when offered. The layout gate also fails an underfilled page with an oversized empty footer. Parser behavior varies, so these checks cannot certify every ATS.</p>
           </article>
           <article class="principle">
             <div class="principle-head"><span class="number" aria-hidden="true">04</span><h3>Keep personal files out of Git</h3></div>
@@ -409,7 +409,7 @@ in this short example.</pre>
         <ol class="steps">
           <li><h3>Choose facts and design</h3><p>Share the posting, verified sources and latest approved CV. The existing CV is the default design baseline; the agent asks before changing the look or section order.</p></li>
           <li><h3>Review the draft</h3><p>Approve wording and any proposed design improvements separately. Nothing about the visual structure changes without your approval.</p></li>
-          <li><h3>Check extraction and export</h3><p>Verify required text and section landmarks in extracted PDF text, compare each page with the approved CV, and review employer autofill when available. These checks do not certify every ATS.</p></li>
+          <li><h3>Check extraction and export</h3><p>Verify required text and section landmarks in extracted PDF text, compare each page with the approved CV, and review employer autofill when available. Balanced page fill is checked so an oversized empty footer fails delivery. These checks do not certify every ATS.</p></li>
         </ol>
         <p class="demo-note"><a href="assets/explore/">Explore the animated workflow, source map and fictional career-lane PDFs.</a></p>
       </div>
@@ -479,6 +479,10 @@ in this short example.</pre>
           <details>
             <summary>Can it sound exactly like me?</summary>
             <p>You can now build a private style reference from selected original Markdown, Cabinet pages, Obsidian notes, Sanity exports, or normalized original-text records. It describes writing habits rather than training a model. Generated memories and assistant prose are excluded when labelled; you still confirm authorship and review the draft. Exact voice matching is not promised. Read the <a href="https://github.com/chindris-mihai-alexandru/cv-witness/blob/main/docs/voice-corpus.md">voice corpus guide</a>.</p>
+          </details>
+          <details>
+            <summary>What if the CV has a large empty footer?</summary>
+            <p>The delivery check measures the first and last text rows from the PDF text layer and fails when bottom whitespace exceeds top whitespace by more than 20pt. Fix it with section/role spacing or content density, not by shrinking the house font size. Review the result visually too; the check is geometry, not a beauty score.</p>
           </details>
           <details>
             <summary>Can I change the layout or paper size?</summary>

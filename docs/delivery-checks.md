@@ -64,6 +64,7 @@ The report checks:
 - Expected text supplied by the caller. Failure reports use item numbers rather than printing private claims.
 - Optional `--ordered-text` landmarks, checked in the sequence supplied; reports never echo the private text.
 - Posting phrase overlap when a posting is selected.
+- For any authoring path, run `scripts/verify_layout.py exported.pdf` as the delivery gate. It adds standard-heading order, date alignment, bullet edges and vertical page fill; a bottom gap more than 20pt larger than the top gap fails with `layout_bottom_whitespace`. Fix spacing or content density rather than shrinking the font.
 
 Use `--expected-text` for the candidate's name and details that must survive export. Use repeated `--ordered-text` flags for important section headings in the approved order. Add `--strict-ordered-text` when each heading should match a standalone extracted line; this catches body-text mentions that could otherwise satisfy the landmark. The check still does not establish complete reading order or field-level ATS parsing. Compare the export visually with the latest candidate-approved CV, preserve its design unless a change was approved, and inspect each page for wrapping or clipping. Verify facts against the selected sources. If an application offers resume autofill, review and correct the fields before submitting.
 
