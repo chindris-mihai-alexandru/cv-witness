@@ -225,6 +225,14 @@ class ExplorationTests(unittest.TestCase):
                             for key, value in element.attrib.items()
                             if key.rsplit("}", 1)[-1] == "href"))
 
+    def test_published_readme_preview_has_no_decorative_crosses(self):
+        source = (ROOT / "assets/explore/workflow-preview.svg").read_text(encoding="utf-8")
+        workflow = (ROOT / "assets/explore/workflow.html").read_text(encoding="utf-8")
+        generated = diagrams.workflow_preview(workflow)
+        for result in (source, generated):
+            self.assertNotIn('href="#sparkle"', result)
+            self.assertNotIn('id="sparkle"', result)
+
     def test_preview_only_needs_no_plugins_and_leaves_other_artifacts_unchanged(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()

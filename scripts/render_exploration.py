@@ -307,7 +307,9 @@ def workflow_preview(source):
     tag = lambda element: element.tag.rsplit("}", 1)[-1]
     for parent in svg.iter():
         for child in list(parent):
-            if tag(child) in {"style", "script", "animate", "animateMotion", "filter"} or set(child.get("class", "").split()) & {"dot", "trail", "halo"}:
+            if tag(child) in {"style", "script", "animate", "animateMotion", "filter", "symbol"} \
+               or (tag(child) == "use" and "#sparkle" in (child.get("href") or "")) \
+               or set(child.get("class", "").split()) & {"dot", "trail", "halo"}:
                 parent.remove(child)
     font = "ui-monospace, Menlo, Consolas, monospace"
     for element in svg.iter():
