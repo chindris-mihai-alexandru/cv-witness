@@ -194,6 +194,10 @@ def main() -> int:
         postings += fetch_adzuna_postings(args.adzuna_country, args.role, max(1, limit // 4))
     postings += fetch_arbeitnow_postings(args.role, max(1, limit // 4))
     postings += fetch_bundesagentur_postings(args.role, args.where, max(1, limit // 4))
+    # The flag is a global budget, not a per-source hint. ATS sources are
+    # unbounded by design, so truncate after aggregation before any paid or
+    # CPU-expensive checks run.
+    postings = postings[:limit]
 
     if not postings:
         print(json.dumps({"checked": 0, "note": "no postings available from any source"}))

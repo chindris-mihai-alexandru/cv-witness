@@ -36,7 +36,9 @@ import http.server
 import json
 import os
 import secrets
+import shutil
 import sys
+import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -110,8 +112,10 @@ class _CallbackHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):  # noqa: N802
         q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
         data = {"code": q.get("code", [None])[0], "error": q.get("error", [None])[0], "path": self.path}
-        with open(self.code_file, "w") as f:
-            json.dump(data, f)
+        try:
+            _write_code_file(self.code_file, data)
+        except FileExistsError:
+            pass
         body = b"<html><body><h1>Auth complete</h1><p>Close this tab.</p></body></html>"
         self.send_response(200)
         self.send_header("Content-Type", "text/html")
@@ -164,6 +168,26 @@ def refresh_token(client_id: str, refresh: str) -> dict:
     return json.loads(body)
 
 
+def _private_dir(path: str) -> None:
+    directory = os.path.dirname(os.path.abspath(path))
+    os.makedirs(directory, mode=0o700, exist_ok=True)
+    os.chmod(directory, 0o700)
+
+
+def _write_code_file(path: str, data: dict) -> None:
+    """Write the OAuth redirect code once, owner-only, never following symlinks."""
+    _private_dir(path)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+        json.dump(data, handle)
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.chmod(path, 0o600)
+
+
 def _read_token_file(path: str) -> dict | None:
     if os.path.exists(path):
         try:
@@ -175,9 +199,20 @@ def _read_token_file(path: str) -> dict | None:
 
 
 def _write_token_file(path: str, data: dict) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
-        json.dump(data, f)
+    """Atomically replace a refreshable token with owner-only permissions."""
+    _private_dir(path)
+    descriptor, staging = tempfile.mkstemp(prefix=".bookface-token-",
+                                           dir=os.path.dirname(os.path.abspath(path)))
+    try:
+        os.fchmod(descriptor, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            json.dump(data, handle)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(staging, path)
+    finally:
+        if os.path.exists(staging):
+            os.unlink(staging)
     os.chmod(path, 0o600)
 
 
@@ -318,18 +353,22 @@ def cmd_full(token_path: str) -> int:
         daemon_threads = True
         allow_reuse_address = True
 
-    code_file = f"/tmp/yc-oauth-code-{os.getpid()}.json"
+    code_dir = tempfile.mkdtemp(prefix="yc-oauth-")
+    os.chmod(code_dir, 0o700)
+    code_file = os.path.join(code_dir, "callback.json")
     handler = type("H", (_CallbackHandler,), {"code_file": code_file})
     srv = Server(("127.0.0.1", 8090), handler)
     t = threading.Thread(target=srv.serve_forever, daemon=True)
     t.start()
 
     try:
-        code = _wait_for_code(code_file)
+        try:
+            code = _wait_for_code(code_file)
+        finally:
+            srv.shutdown()
+            srv.server_close()
     finally:
-        srv.shutdown()
-        if os.path.exists(code_file):
-            os.unlink(code_file)
+        shutil.rmtree(code_dir, ignore_errors=True)
 
     tok = exchange_code(client_id, verifier, code)
     tok["client_id"] = client_id

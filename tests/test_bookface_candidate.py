@@ -1,5 +1,7 @@
 """Candidate-side Bookface action helpers (fictional tool schemas only)."""
 import json
+import os
+import stat
 import sys
 import tempfile
 import unittest
@@ -70,6 +72,22 @@ class CandidateActionTest(unittest.TestCase):
 
 
 class TokenCleanupTest(unittest.TestCase):
+    def test_write_token_file_is_atomic_and_owner_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = str(Path(d) / ".cv-witness" / "token.json")
+            bf._write_token_file(path, {"refresh_token": "fictional"})
+            self.assertEqual(stat.S_IMODE(os.stat(path).st_mode), 0o600)
+            self.assertEqual(stat.S_IMODE(os.stat(Path(path).parent).st_mode), 0o700)
+            self.assertFalse(list(Path(path).parent.glob(".bookface-token-*")))
+
+    def test_code_file_is_created_once_owner_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = str(Path(d) / "callback.json")
+            bf._write_code_file(path, {"code": "fictional"})
+            self.assertEqual(stat.S_IMODE(os.stat(path).st_mode), 0o600)
+            with self.assertRaises(FileExistsError):
+                bf._write_code_file(path, {"code": "second"})
+
     def test_forget_removes_token_file(self):
         with tempfile.TemporaryDirectory() as d:
             path = str(Path(d) / "token.json")

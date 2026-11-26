@@ -15,6 +15,14 @@ LINE = re.compile(r'<line xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="
 WORD = re.compile(r'<word [^>]*>(.*?)</word>', re.S)
 SAME_ROW_POINTS = 2.0
 PAGE_FILL_TOLERANCE_PT = 20.0
+LAYOUT_TOLERANCE_PT = 2.0
+STANDARD_HEADINGS = (
+    "Professional Summary", "Skills", "Certifications", "Professional Experience",
+    "Work Experience", "Projects", "Education", "Publications", "Languages",
+)
+_MONTH = r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*"
+_DATE_PART_RE = re.compile(
+    rf"^(?:(?:{_MONTH} \d{{4}})(?: - (?:{_MONTH} \d{{4}}|present))?|present)$")
 
 
 def normalized_text(text):
@@ -94,6 +102,26 @@ def _body_rows(pages, headings):
             if started:
                 body.append(row)
     return body
+
+
+def section_headings(values):
+    """Keep only known section landmarks; never treat a candidate name as one."""
+    wanted = {normalized_text(item) for item in STANDARD_HEADINGS}
+    return [item for item in values if normalized_text(item) in wanted]
+
+
+def right_aligned_dates(pages, headings=()):
+    """Infer float-right date strings from the same body rows the check uses."""
+    body = _body_rows(pages, headings) if headings else [
+        row for page in pages for row in page.get("rows", [])]
+    found = []
+    for row in body:
+        for part in row.get("parts", []):
+            text = part.get("text", "")
+            if part.get("x0", 0) > row.get("x0", 0) and _DATE_PART_RE.fullmatch(text):
+                if text not in found:
+                    found.append(text)
+    return found
 
 
 def check_page_fill(pages, tolerance=PAGE_FILL_TOLERANCE_PT):

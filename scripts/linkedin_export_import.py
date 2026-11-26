@@ -30,6 +30,11 @@ import sys
 import zipfile
 from pathlib import Path
 
+if __package__:
+    from .private_files import PrivateOutputError, write_private_text
+else:
+    from private_files import PrivateOutputError, write_private_text
+
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 200 * 1024 * 1024
 MAX_FILES = 100
@@ -198,13 +203,12 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     try:
         snapshot = build_snapshot(args.export)
-    except (OSError, ValueError, zipfile.BadZipFile) as error:
+        if args.output:
+            write_private_text(args.output,
+                               json.dumps(snapshot, ensure_ascii=False, indent=2))
+    except (OSError, ValueError, zipfile.BadZipFile, PrivateOutputError) as error:
         print(f"linkedin-export-import: {error}", file=sys.stderr)
         return 2
-    if args.output:
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2),
-                               encoding="utf-8")
     if args.json:
         print(json.dumps(snapshot["_meta"], ensure_ascii=False, indent=2))
     else:

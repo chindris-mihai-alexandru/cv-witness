@@ -248,16 +248,26 @@ def render_html(source, output, paper="a4", max_pages=1, expected_text=(),
         import subprocess as _sp
         bbox = _sp.run(["pdftotext", "-bbox-layout", str(pdf_path), "-"],
                        capture_output=True, text=True)
-        if bbox.returncode == 0 and bbox.stdout:
-            try:
-                from cv_layout import parse_pages, check_layout
-            except ImportError:
-                from scripts.cv_layout import parse_pages, check_layout
-            pages = parse_pages(bbox.stdout)
-            layout_problems = check_layout(pages)
-            if layout_problems:
-                report["layout_problems"] = layout_problems
-                raise CheckFailure(report)
+        if bbox.returncode != 0 or not bbox.stdout:
+            report["layout_problems"] = [{"code": "layout_check_unavailable",
+                                          "detail": "pdftotext bbox produced no usable output"}]
+            raise CheckFailure(report)
+        try:
+            from cv_layout import (parse_pages, check_layout, LAYOUT_TOLERANCE_PT,
+                                   section_headings, right_aligned_dates)
+        except ImportError:
+            from scripts.cv_layout import (parse_pages, check_layout, LAYOUT_TOLERANCE_PT,
+                                           section_headings, right_aligned_dates)
+        pages = parse_pages(bbox.stdout)
+        layout_problems = check_layout(
+            pages,
+            headings=section_headings(expected_text),
+            right_aligned=right_aligned_dates(pages, section_headings(expected_text)),
+            tolerance=LAYOUT_TOLERANCE_PT,
+        )
+        if layout_problems:
+            report["layout_problems"] = layout_problems
+            raise CheckFailure(report)
         descriptor, staging = tempfile.mkstemp(prefix=".cv-witness-", suffix=".pdf", dir=output.parent)
         try:
             with os.fdopen(descriptor, "wb") as destination, pdf_path.open("rb") as candidate:

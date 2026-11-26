@@ -1,8 +1,14 @@
 """Deadline and cover-letter check tests (fictional dates and people only)."""
 import datetime
+import io
 import os
+import subprocess
 import sys
 import unittest
+from contextlib import redirect_stdout, redirect_stderr
+from email.message import Message
+from unittest import mock
+from urllib.error import HTTPError
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
 
@@ -56,6 +62,26 @@ class DeadlineTest(unittest.TestCase):
     def test_filled_requisition_is_closure(self):
         body = "We are sorry, the job you are trying to apply for has been filled."
         self.assertIn("filled", liveness.closure_detail(body))
+
+    def test_cli_rejects_non_http_url_without_network(self):
+        with redirect_stderr(io.StringIO()), redirect_stdout(io.StringIO()):
+            code = liveness.main(["not a url", "--expect", "Engineer"])
+        self.assertEqual(code, 2)
+
+    def test_cli_rejects_file_scheme_without_local_read(self):
+        with redirect_stderr(io.StringIO()), redirect_stdout(io.StringIO()):
+            code = liveness.main(["file:///etc/passwd", "--expect", "Engineer"])
+        self.assertEqual(code, 2)
+
+    def test_cli_reads_http_error_body_for_closure(self):
+        error = HTTPError("https://jobs.example/1", 404, "Not Found", Message(),
+                          io.BytesIO(b"<p>This job is no longer available.</p>"))
+        out = io.StringIO()
+        with mock.patch.object(liveness.urllib.request, "urlopen", side_effect=error), \
+             redirect_stdout(out):
+            code = liveness.main(["https://jobs.example/1", "--expect", "Engineer"])
+        self.assertEqual(code, 1)
+        self.assertIn("closure phrase", out.getvalue())
 
 
 class CoverLetterTest(unittest.TestCase):

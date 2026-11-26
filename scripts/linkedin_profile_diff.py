@@ -40,10 +40,12 @@ if __package__:
     from .cv_checks import normalized_text
     from .rms_metadata import html_text
     from .check_cv_titles import normal, parse_master
+    from .private_files import PrivateOutputError, write_private_text
 else:
     from cv_checks import normalized_text
     from rms_metadata import html_text
     from check_cv_titles import normal, parse_master
+    from private_files import PrivateOutputError, write_private_text
 
 
 def _years(text: str) -> set[str]:
@@ -316,9 +318,8 @@ def main(argv=None) -> int:
         fields = _fields_data(args.fields)
         report = analyze(snapshot, source_text, provenance_text, aliases, fields)
         if args.preview:
-            args.preview.parent.mkdir(parents=True, exist_ok=True)
-            args.preview.write_text(render_preview(report), encoding="utf-8")
-    except (OSError, ValueError, json.JSONDecodeError) as error:
+            write_private_text(args.preview, render_preview(report))
+    except (OSError, ValueError, json.JSONDecodeError, PrivateOutputError) as error:
         print(f"linkedin-profile-diff: {error}", file=sys.stderr)
         return 2
     if args.json:

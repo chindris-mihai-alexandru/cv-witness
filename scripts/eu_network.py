@@ -378,8 +378,18 @@ def dedup_jobs(rows: list[dict]) -> tuple[list[dict], list[dict]]:
         other = kept[idx]
         dup_of = _row_url(other) or f"{other.get('company') or other.get('company_name')} - {other.get('title') or other.get('job_title')}"
         if _richness(row) > _richness(other):
+            old_url = _norm_url(_row_url(other))
+            old_company, old_title = _row_company_title(other)
             kept[idx] = row
             dropped.append({"row": other, "reason": reason, "duplicate_of": dup_of})
+            # A richer row can arrive with a different URL and company/title.
+            # Remove the replaced row's index keys, or a later distinct role
+            # sharing the old URL is falsely reported as a duplicate.
+            if old_url and old_url != url_key and by_url.get(old_url) == idx:
+                del by_url[old_url]
+            old_key = (old_company, old_title) if old_company and old_title else None
+            if old_key and old_key != ct_key and by_ct.get(old_key) == idx:
+                del by_ct[old_key]
         else:
             dropped.append({"row": row, "reason": reason, "duplicate_of": dup_of})
         win = kept[idx]

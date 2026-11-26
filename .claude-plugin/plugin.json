@@ -1,7 +1,7 @@
 {
   "name": "cv-witness",
   "description": "Draft and review CVs from verified experience, with optional private writing-style references.",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "author": {
     "name": "Mihai-Alexandru Chindriș",
     "url": "https://mihaichindris.me"

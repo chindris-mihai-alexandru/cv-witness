@@ -46,7 +46,7 @@ The filesystem is the source of truth. `tests/test_readme_structure.py` fails wh
 | Delivery checks | `ats_text_export.py`, `ats_validate.py`, `bullet_audit.py`, `check_cv.py`, `check_cv_numbers.py`, `check_cv_titles.py`, `cover_letter_check.py`, `cv_checks.py`, `cv_layout.py`, `humane_audit.py`, `jd_coverage.py`, `jd_overlap.py`, `payload_lint.py`, `verify_layout.py` |
 | Posting and role triage | `check_posting_liveness.py`, `posting_integrity.py`, `role_clarity.py`, `knockout_check.py`, `preflight.py`, `fit_score.py` |
 | Company, network and compensation | `company_context.py`, `comp_data.py`, `trust_data.py`, `public_footprint.py`, `eu_network.py`, `yc_network.py` |
-| Candidate evidence and interview prep | `linkedin_export_import.py`, `linkedin_profile_diff.py`, `star_worksheet.py`, `story_provenance.py`, `voice_corpus.py` |
+| Candidate evidence and interview prep | `linkedin_export_import.py`, `linkedin_profile_diff.py`, `private_files.py`, `star_worksheet.py`, `story_provenance.py`, `voice_corpus.py` |
 | Optional integrations and metadata | `bookface_mcp_auth.py`, `rms_metadata.py`, `ci_pdf_smoke.py` |
 
 ## Related maps

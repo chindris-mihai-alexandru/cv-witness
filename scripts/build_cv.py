@@ -145,7 +145,7 @@ def build_html(data, lane="engineering", section_order=None, design="default"):
     if design not in DESIGNS:
         raise CheckError("Choose the default or classic design.")
     if lane not in LANES:
-        raise CheckError("Choose engineering, operations, research or management.")
+        raise CheckError("Choose one of: " + ", ".join(LANES) + ".")
     active = {section for section in SECTIONS if data.get(section)}
     order = list(section_order) if section_order is not None else [section for section in LANES[lane] if section in active]
     if set(order) != active or len(order) != len(active):

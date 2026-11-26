@@ -47,6 +47,29 @@ class PageFillTests(unittest.TestCase):
     def test_empty_page_is_ignored(self):
         self.assertEqual(cv_layout.check_page_fill([{"width": 595, "height": 842, "rows": []}]), [])
 
+    def test_section_headings_excludes_candidate_name(self):
+        values = ["Mihai Example", "Professional Summary", "Skills", "Projects", "Education"]
+        self.assertEqual(cv_layout.section_headings(values),
+                         ["Professional Summary", "Skills", "Projects", "Education"])
+
+    def test_baseline_comparison_reports_metrics_only(self):
+        reference = {"left_margin_pt": 42.0, "right_edge_pt": 558.0, "top_pt": 42.9,
+                     "line_pitch_pt": 12.0, "heading_gap_pt": 15.0}
+        candidate = dict(reference, left_margin_pt=48.0)
+        problems = cv_layout.compare_baseline(candidate, reference)
+        self.assertEqual(problems, [{"code": "baseline_deviation", "metric": "left_margin_pt",
+                                     "delta_pt": 6.0, "allowed_pt": 2.5}])
+
+    def test_right_aligned_dates_are_inferred_from_float_right_parts(self):
+        pages = [{"width": 595, "height": 842, "rows": [
+            {"x0": 42, "x1": 500, "parts": [
+                {"x0": 42, "x1": 200, "text": "engineer"},
+                {"x0": 420, "x1": 500, "text": "may 2026 - present"}]},
+            {"x0": 42, "x1": 500, "parts": [
+                {"x0": 42, "x1": 500, "text": "diploma 2024"}]},
+        ]}]
+        self.assertEqual(cv_layout.right_aligned_dates(pages), ["may 2026 - present"])
+
 
 class VerifyLayoutCliTests(unittest.TestCase):
     @mock.patch("sys.argv", ["verify_layout", "/nonexistent-verify-layout.pdf"])
@@ -64,14 +87,12 @@ class VerifyLayoutCliTests(unittest.TestCase):
         self.assertEqual(code, 2)
 
     @mock.patch("sys.argv", ["verify_layout", "cv.pdf"])
-    def test_default_expected_headings(self):
-        """With no --expected, the seven standard headings are used."""
+    def test_default_expected_headings_are_mandatory_only(self):
+        """Optional sections may be omitted; only mandatory headings are default."""
         def fake_validate(path, paper, max_pages, expected, posting,
                           source_html=None, ordered_text=(),
                           strict_ordered_text=False):
-            self.assertEqual(tuple(expected), (
-                "Professional Summary", "Skills", "Professional Experience",
-                "Projects", "Education", "Certifications", "Languages"))
+            self.assertEqual(tuple(expected), verify_layout.MANDATORY_HEADINGS)
             return {"passed": True, "problems": []}
 
         with mock.patch.object(verify_layout.Path, "is_file", return_value=True), \
@@ -81,7 +102,15 @@ class VerifyLayoutCliTests(unittest.TestCase):
              mock.patch.object(verify_layout.subprocess, "run") as run, \
              mock.patch("sys.stdout"):
             st.return_value.st_size = 1000
-            run.return_value = mock.Mock(returncode=1, stdout="")
+            run.return_value = mock.Mock(
+                returncode=0,
+                stdout='<page width="595" height="110">'
+                       '<line xMin="42" yMin="42" xMax="100" yMax="50"><word xMin="42" yMin="42" xMax="100" yMax="50">Professional Summary</word></line>'
+                       '<line xMin="42" yMin="55" xMax="100" yMax="63"><word xMin="42" yMin="55" xMax="100" yMax="63">Skills</word></line>'
+                       '<line xMin="42" yMin="68" xMax="100" yMax="76"><word xMin="42" yMin="68" xMax="100" yMax="76">Professional Experience</word></line>'
+                       '<line xMin="42" yMin="81" xMax="100" yMax="89"><word xMin="42" yMin="81" xMax="100" yMax="89">Education</word></line>'
+                       '<line xMin="42" yMin="94" xMax="100" yMax="99"><word xMin="42" yMin="94" xMax="100" yMax="99">Body</word></line>'
+                       '</page>')
             code = verify_layout.main()
         self.assertEqual(code, 0)
 
@@ -100,6 +129,24 @@ class VerifyLayoutCliTests(unittest.TestCase):
             run.return_value = mock.Mock(returncode=1, stdout="")
             code = verify_layout.main()
         self.assertEqual(code, 1)
+
+    @mock.patch("sys.argv", ["verify_layout", "cv.pdf", "--json"])
+    def test_pdftotext_failure_fails_closed(self):
+        def fake_validate(*args_item, **kwargs):
+            return {"passed": True, "problems": []}
+        out = StringIO()
+        with mock.patch.object(verify_layout.Path, "is_file", return_value=True), \
+             mock.patch.object(verify_layout.Path, "stat") as st, \
+             mock.patch.object(verify_layout, "validate_pdf",
+                               side_effect=fake_validate), \
+             mock.patch.object(verify_layout.subprocess, "run",
+                               return_value=mock.Mock(returncode=1, stdout="")), \
+             mock.patch("sys.stdout", out):
+            st.return_value.st_size = 1000
+            code = verify_layout.main()
+        self.assertEqual(code, 1)
+        report = json.loads(out.getvalue())
+        self.assertEqual(report["layout_problems"][0]["code"], "layout_check_unavailable")
 
     @mock.patch("sys.argv", ["verify_layout", "cv.pdf", "--json"])
     def test_bottom_whitespace_problem_fails_cli(self):

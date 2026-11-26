@@ -21,7 +21,7 @@ import xml.etree.ElementTree as ET
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
-PRIVATE = {"foundation.md", "provenance.md", ".voice", "voice-corpus"}
+PRIVATE = {"foundation.md", "provenance.md", ".voice", "voice-corpus", "cvs"}
 
 WORKFLOW = {
     "mode": "flow", "darkTheme": "midnight", "lightTheme": "daylight",

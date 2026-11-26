@@ -12,7 +12,7 @@
       "name": "cv-witness",
       "source": "./",
       "description": "Draft and review CVs from verified experience, with optional private writing-style references.",
-      "version": "0.8.0",
+      "version": "1.0.0",
       "category": "productivity",
       "keywords": ["resume", "cv", "ats", "job-applications"]
     }

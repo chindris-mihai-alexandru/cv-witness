@@ -69,7 +69,7 @@ Add roles or employers by adding records, not numbered placeholders. Collections
 
 Empty optional lists produce no heading. Provide at least one nonempty section. Unknown fields, duplicate JSON keys, wrong types, empty required strings, unsafe link schemes, invalid Unicode and unresolved fill/template markers fail rather than disappearing silently. Supplied text is escaped before it enters the HTML.
 
-## Four ordering presets
+## Six ordering presets
 
 | `--lane` | Section order, omitting empty sections |
 | --- | --- |
@@ -77,6 +77,8 @@ Empty optional lists produce no heading. Provide at least one nonempty section. 
 | `operations` | Summary, Experience, Skills, Certifications, Projects, Education, Publications, Languages |
 | `research` | Summary, Education, Experience, Publications, Projects, Skills, Certifications, Languages |
 | `management` | Summary, Experience, Projects, Skills, Education, Certifications, Publications, Languages |
+| `security` | Summary, Skills, Certifications, Experience, Projects, Education, Publications, Languages |
+| `customer-success` | Summary, Experience, Skills, Certifications, Projects, Education, Publications, Languages |
 
 Operations includes support roles. These are presentation defaults, not rules about what experience someone should claim. The same supplied content appears in every preset.
 

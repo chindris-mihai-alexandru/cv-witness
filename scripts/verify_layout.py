@@ -34,10 +34,18 @@ from pathlib import Path
 
 if __package__:
     from .cv_checks import CheckError, CheckFailure, MAX_BYTES, validate_pdf
-    from .cv_layout import parse_pages, check_layout, PAGE_FILL_TOLERANCE_PT
+    from .cv_layout import (parse_pages, check_layout, PAGE_FILL_TOLERANCE_PT,
+                            LAYOUT_TOLERANCE_PT, section_headings, right_aligned_dates,
+                            layout_metrics, compare_baseline, BASELINE_TOLERANCE_PT)
 else:
     from cv_checks import CheckError, CheckFailure, MAX_BYTES, validate_pdf
-    from cv_layout import parse_pages, check_layout, PAGE_FILL_TOLERANCE_PT
+    from cv_layout import (parse_pages, check_layout, PAGE_FILL_TOLERANCE_PT,
+                           LAYOUT_TOLERANCE_PT, section_headings, right_aligned_dates,
+                           layout_metrics, compare_baseline, BASELINE_TOLERANCE_PT)
+
+
+MANDATORY_HEADINGS = ("Professional Summary", "Skills", "Professional Experience",
+                      "Education")
 
 
 def main() -> int:
@@ -48,6 +56,8 @@ def main() -> int:
     ap.add_argument("--expected", default="", help="comma-separated headings that must extract")
     ap.add_argument("--ordered", default="", help="comma-separated headings in expected order")
     ap.add_argument("--posting", default=None, help="posting text for overlap review")
+    ap.add_argument("--baseline", default=None,
+                    help="JSON metrics from layout_metrics for approved-baseline comparison")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
@@ -62,9 +72,16 @@ def main() -> int:
     expected = [h.strip() for h in args.expected.split(",") if h.strip()]
     ordered = [h.strip() for h in args.ordered.split(",") if h.strip()]
     if not expected and not ordered:
-        # Default: the seven standard section headings, in the approved order.
-        expected = ["Professional Summary", "Skills", "Professional Experience",
-                    "Projects", "Education", "Certifications", "Languages"]
+        # Optional sections may be omitted; only these four are always required.
+        expected = list(MANDATORY_HEADINGS)
+
+    baseline = None
+    if args.baseline:
+        try:
+            baseline = json.loads(Path(args.baseline).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as error:
+            print(f"verify-layout: invalid baseline ({error})", file=sys.stderr)
+            return 2
 
     try:
         report = validate_pdf(str(pdf), args.paper, args.max_pages, tuple(expected),
@@ -77,15 +94,32 @@ def main() -> int:
     # Layout gate: date alignment, heading gaps, bullet edges and page fill.
     bbox = subprocess.run(["pdftotext", "-bbox-layout", str(pdf), "-"],
                           capture_output=True, text=True)
-    if bbox.returncode == 0 and bbox.stdout:
+    if bbox.returncode != 0 or not bbox.stdout:
+        report["layout_problems"] = [{"code": "layout_check_unavailable",
+                                      "detail": "pdftotext bbox produced no usable output"}]
+    else:
         try:
-            layout_problems = check_layout(parse_pages(bbox.stdout),
-                                           fill_tolerance=PAGE_FILL_TOLERANCE_PT)
+            pages = parse_pages(bbox.stdout)
+            layout_problems = check_layout(
+                pages,
+                headings=section_headings(expected or ordered),
+                right_aligned=right_aligned_dates(pages, section_headings(expected or ordered)),
+                tolerance=LAYOUT_TOLERANCE_PT,
+                fill_tolerance=PAGE_FILL_TOLERANCE_PT,
+            )
+            report.setdefault("layout_problems", [])
             if layout_problems:
                 report["layout_problems"] = layout_problems
-        except Exception:
+            if baseline is not None:
+                headings = section_headings(expected or ordered)
+                reference = {name: float(baseline[name])
+                             for name in BASELINE_TOLERANCE_PT
+                             if name in baseline}
+                report["layout_problems"] += compare_baseline(
+                    layout_metrics(pages, headings), reference)
+        except Exception as error:
             report["layout_problems"] = [{"code": "layout_check_unavailable",
-                                          "detail": "pdftotext bbox parse failed"}]
+                                          "detail": type(error).__name__}]
 
     if args.json:
         print(json.dumps(report, ensure_ascii=False, indent=2))

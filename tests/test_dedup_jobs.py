@@ -88,12 +88,24 @@ class DedupJobsTest(unittest.TestCase):
         self.assertEqual(len(kept), 1)
         self.assertIn("much longer", kept[0]["description"])
 
+    def test_replaced_row_does_not_poison_old_url_key(self):
+        r1 = {"company": "A", "title": "Eng", "url": "https://a.example/1", "description": "short"}
+        r2 = {"company": "A", "title": "Eng", "application_link": "https://b.example/2",
+              "description": "much longer and richer description than the first row by a wide margin"}
+        r3 = {"company": "B", "title": "Other", "application_link": "https://a.example/1",
+              "description": "distinct role reusing the old URL"}
+        kept, dropped = eu.dedup_jobs([r1, r2, r3])
+        self.assertEqual(len(kept), 2)
+        self.assertEqual([r["company"] for r in kept], ["A", "B"])
+        self.assertEqual(len(dropped), 1)
+        self.assertEqual(dropped[0]["row"], r1)
+
     def test_treg_application_link_reindexed_after_swap(self):
         r1 = {"company": "A", "title": "Eng", "url": "https://a.example/1", "description": "short"}
         r2 = {"company": "A", "title": "Eng", "application_link": "https://b.example/2", "description": "much longer and richer description than the first row by a wide margin"}
         r3 = {"company": "B", "title": "Other", "application_link": "https://b.example/2", "description": "x"}
         kept, dropped = eu.dedup_jobs([r1, r2, r3])
-        # r3 shares the winner's application_link; reindexing must catch it
+        # r3 shares the winner's current application_link; reindexing must catch it
         self.assertEqual(len(kept), 1)
         self.assertEqual(len(dropped), 2)
         self.assertTrue(any("same URL" in d["reason"] for d in dropped))

@@ -21,7 +21,7 @@ python3 scripts/check_posting_liveness.py 'https://jobs.example.com/role' \
   --expect "Application Support Engineer"
 ```
 
-The script reports `dead` for HTTP 404/410 or a closure phrase on a non-200 response. A closure phrase on a 200 page, a missing expected title, an unexpected redirect or a network error is `suspicious`; verify it in a browser before treating it as live or closed. A `live` result is only a basic HTTP/content check. The script does not render JavaScript and does not fetch or store the candidate's CV.
+The script reports `dead` for HTTP 404/410 or a closure phrase on a non-200 response, and `expired` for an HTTP 200 page whose explicit deadline has passed. For a JavaScript-rendered deadline, pass `--deadline "Month Dayth"` from a browser-read page. A closure phrase on a 200 page, a missing expected title, an unexpected redirect or a network error is `suspicious`; a transient HTTP 429/5xx result is also `suspicious` and must be retried, never called expired. Verify suspicious results in a browser before treating them as live or closed. A `live` result is only a basic HTTP/content check. The script does not render JavaScript and does not fetch or store the candidate's CV.
 
 ## Render and check before publication
 
@@ -77,7 +77,7 @@ python3 scripts/check_cv_numbers.py exported.pdf \
   --source foundation.md --source provenance.md
 ```
 
-Repeat `--source` for any approved per-application evidence file. The gate flags numeric claims it cannot find in any selected source, normalizing grouping commas and respecting digit boundaries. It intentionally skips years from 1900 to 2099, single-digit values and numbers embedded in alphanumeric identifiers. This is a lexical safeguard, not a fact checker: a matching number can still be used in the wrong context, and skipped values still need human review. Keep source files private and out of logs or public artifacts.
+Repeat `--source` for any approved per-application evidence file. The gate flags numeric claims it cannot find in any selected source. Equivalent spellings are folded to one claim before comparison (`45%` / `45 percent`, `$3m` / `USD 3M` / `3 million dollars`, `40 engineers` / `forty engineers`, `10x` / `tenfold`), and grouping commas and digit boundaries are respected. It intentionally skips years from 1900 to 2099, single-digit values and numbers embedded in alphanumeric identifiers. This is a lexical safeguard, not a fact checker: a matching number can still be used in the wrong context, and skipped values still need human review. Keep source files private and out of logs or public artifacts.
 
 ## Phrase diagnostics
 

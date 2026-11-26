@@ -20,7 +20,7 @@ NAMES = ("codegraph.html", "workflow.html", "workflow-preview.svg")
 
 class ExplorationTests(unittest.TestCase):
     def test_forbidden_tracked_path_blocks_content_read(self):
-        for name in ("foundation.md", "notes/provenance.md", ".voice/profile.md", "voice-corpus/source.json", "Foundation.md"):
+        for name in ("foundation.md", "notes/provenance.md", ".voice/profile.md", "voice-corpus/source.json", "cvs/tailored.pdf", "Foundation.md", "CVS/tailored.pdf"):
             with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
                 listing = b"100644 blob " + b"a" * 40 + b"\t" + name.encode() + b"\0"
                 with patch.object(diagrams.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, stdout=listing)) as command:

@@ -98,7 +98,7 @@ AdaL, Claude Code and Codex have installation paths above. Other hosts may read 
   <img alt="Amazon Quick optional" src="https://img.shields.io/badge/Amazon%20Quick-optional-2b3542?style=flat&labelColor=1b222c">
 </p>
 
-Rezi can provide resume facts from an account you choose. Writes require your explicit approval and a read-back check. The Treg jobs-api is an optional paid catalog for finding and ranking roles, the hiring manager and posted pay before tailoring; it is used through its own upstream CLI/MCP, not a bundled client (see `references/treg-jobs-sourcing.md`). Amazon Quick is a documented host-native DOCX workflow, not a bundled integration. None of these services is required for the local PDF path.
+Rezi can provide resume facts from an account you choose. Writes require your explicit approval and a read-back check. The Treg jobs-api is an optional paid catalog for finding and ranking roles, the hiring manager and posted pay before tailoring; it is used through its own upstream CLI/MCP, not a bundled client (see `references/treg-jobs-sourcing.md`). Amazon Quick is a documented host-native agent workflow with no bundled CV feature, not a bundled integration. None of these services is required for the local PDF path.
 
 ## Usage
 
@@ -183,7 +183,7 @@ The store defaults to `~/.cv-witness/voice`. Generate a profile, optionally appr
 
 ## Repository structure
 
-The short table below orients new readers. The complete grouped inventory of scripts and directories lives in the [repository map](docs/repository-map.md); the [interactive source map](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/codegraph.html) shows the code graph.
+The short table below orients new readers. The complete grouped inventory of scripts and directories lives in the [repository map](docs/repository-map.md); the [interactive source map](https://chindris-mihai-alexandru.github.io/cv-witness/assets/explore/codegraph.html) shows a dated snapshot of the code graph; regenerate it for current HEAD before relying on file counts.
 
 | Location | Purpose |
 | --- | --- |

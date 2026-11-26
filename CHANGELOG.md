@@ -25,6 +25,11 @@ public; their entries are consolidated summaries, not commit-for-commit notes.
 - Advisory role clarity: ignore page chrome (cookie banners, CSS and JSON-LD markup) when a posting is scraped as one text blob, while still reading a JSON-LD job description. Narrowed "part of the", "monthly" and generic "improve" matches that produced false clarity quotes. Regression tests cover both cases.
 - Treg sourcing reference: document that `X-Treg-Route-Max-Cost` below the cheapest provider returns a 402 plan, that actual charges must be read after the call, and that a cheap catalog entry can still be an unconnected source.
 - Browser cleanup: tolerate `PermissionError` during process-group termination on macOS and fall back to direct process cleanup. A process exiting between poll and kill no longer fails a successful render.
+- Delivery gates: fail closed when `pdftotext -bbox-layout` is unavailable, enforce heading-gap, bullet-edge and right-aligned date checks in both renderer and `verify_layout.py`, keep optional headings out of the default expected set, and add opt-in `--baseline` comparison using the previously dead `layout_metrics`/`compare_baseline` helpers.
+- Posting liveness: accept only http(s), never read `file://`, read HTTPError bodies for closure phrases, prefer closure evidence over a generic 404, and return exit 2 for invalid URLs. Regression tests cover all three paths.
+- Sourcing: remove stale index keys when `eu_network.dedup_jobs` replaces a row with a richer one, so a distinct role reusing the old URL is no longer dropped. `--max-postings` is now a global preflight budget, with a test.
+- Credentials and private data: write Bookface OAuth codes/tokens with 0600 in a 0700 directory using atomic, no-follow writes and close the callback server; write LinkedIn snapshots/previews through a shared symlink-safe 0600 helper that refuses public checkout destinations. Tests assert permissions and rejection paths.
+- Coverage and docs: add real gallery/preflight, baseline, private-write and liveness tests; update the stale Quick wording, six ordering presets, contributor repository-map pointer, filename convention, bullet-audit HTML shapes, delivery-check liveness/number-gate details, plugin manifests to 1.0.0 with a version guard, and the exploration private-path set (`cvs/`).
 
 ### Versioning policy
 

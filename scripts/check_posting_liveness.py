@@ -27,6 +27,8 @@ import argparse
 import datetime as _dt
 import re
 import sys
+import urllib.error
+import urllib.parse
 import urllib.request
 
 CLOSURE_PHRASES = (
@@ -113,12 +115,12 @@ def normalize(text):
 def classify(status, body, final_url, requested_url, expected, today=None,
              deadline_text=None):
     detailed = closure_detail(body)
+    if detailed:
+        return ("dead" if status != 200 else "suspicious"), detailed
     if status in TRANSIENT_STATUSES:
         return "suspicious", "transient HTTP %d; retry later, never expired" % status
     if status in (404, 410):
         return "dead", "HTTP %d" % status
-    if detailed:
-        return ("dead" if status != 200 else "suspicious"), detailed
 
     normalized_body = normalize(body)
     if expected and normalize(expected) not in normalized_body:
@@ -157,27 +159,38 @@ def main(argv=None):
                              "it from the raw HTML fetch")
     args = parser.parse_args(argv)
 
-    request = urllib.request.Request(
-        args.url,
-        headers={"User-Agent": "cv-witness liveness check",
-                 "Accept": "text/html"})
+    parsed = urllib.parse.urlsplit(args.url)
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        print("check-posting-liveness: expected an http(s) URL, got %r" % args.url,
+              file=sys.stderr)
+        return 2
+
     try:
+        request = urllib.request.Request(
+            args.url,
+            headers={"User-Agent": "cv-witness liveness check",
+                     "Accept": "text/html"})
         with urllib.request.urlopen(request, timeout=args.timeout) as response:
             status = response.status
             final_url = response.geturl()
             body = response.read(1024 * 1024).decode("utf-8", errors="replace")
     except urllib.error.HTTPError as error:
-        status, final_url, body = error.code, args.url, ""
+        status = error.code
+        final_url = getattr(error, "url", None) or args.url
+        body = error.read(1024 * 1024).decode("utf-8", errors="replace")
+    except ValueError as error:
+        print("check-posting-liveness: invalid URL (%s)" % error, file=sys.stderr)
+        return 2
     except (OSError, urllib.error.URLError) as error:
         print("suspicious: could not reach the posting (%s)" % error)
-        sys.exit(1)
+        return 1
 
     deadline_text = ("deadline for applying is " + args.deadline) if args.deadline else None
     verdict, detail = classify(status, body, final_url, args.url, args.expect,
                                deadline_text=deadline_text)
     print("%s: %s" % (verdict, detail))
-    sys.exit(0 if verdict == "live" else 1)
+    return 0 if verdict == "live" else 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

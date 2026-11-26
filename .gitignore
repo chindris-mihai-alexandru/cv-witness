@@ -1,5 +1,5 @@
 .DS_Store
-# Private files - never commit (see README: Verification principles)
+# Private files - never commit (see README: Repository structure)
 foundation.md
 provenance.md
 # Optional local writing corpus and generated style references

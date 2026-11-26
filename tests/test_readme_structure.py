@@ -7,6 +7,7 @@ when a tracked script or root file is missing from the map, keeping the
 documentation in sync with the actual tree (DRY: the filesystem is the source
 of truth). It stores no personal data.
 """
+import json
 import unittest
 from pathlib import Path
 
@@ -34,6 +35,18 @@ class DocumentationStructureTests(unittest.TestCase):
         for name in ("SKILL.md", "AGENTS.md", "CHANGELOG.md", "CONTRIBUTING.md",
                      "LICENSE", "template.html", "render.sh", "index.html"):
             self.assertIn(name, self.map, f"{name} missing from map")
+
+    def test_plugin_versions_match_the_skill_version(self):
+        skill_version = ""
+        for line in (ROOT / "SKILL.md").read_text(encoding="utf-8").splitlines():
+            if line.startswith("version:"):
+                skill_version = line.split(":", 1)[1].strip().strip('"')
+                break
+        self.assertTrue(skill_version)
+        plugin = json.loads((ROOT / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+        marketplace = json.loads((ROOT / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
+        self.assertEqual(plugin["version"], skill_version)
+        self.assertEqual(marketplace["plugins"][0]["version"], skill_version)
 
 
 if __name__ == "__main__":
